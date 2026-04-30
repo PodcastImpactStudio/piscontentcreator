@@ -33,7 +33,7 @@ function stripHtml(html) {
     .replace(/<\/p>/gi, "\n")
     .replace(/<\/div>/gi, "\n")
     .replace(/<\/li>/gi, "\n")
-    .replace(/<li[^>]*>/gi, "• ")
+    .replace(/<li[^>]*>/gi, "- ")
     .replace(/<h[1-6][^>]*>/gi, "\n")
     .replace(/<\/h[1-6]>/gi, "\n")
     .replace(/<[^>]+>/g, "")
@@ -401,7 +401,7 @@ function textToHtml(text){
       return `<a href="${href}">${url}</a>`;
     });
     // Bullets
-    if (/^[-•]\s/.test(t)) return `<p>• ${linked.replace(/^[-•]\s/,"")}</p>`;
+    if (/^[-•]\s/.test(t)) return `<p>- ${linked.replace(/^[-•]\s/,"")}</p>`;
     return `<p>${linked}</p>`;
   });
   return htmlLines.join("\n");
@@ -446,7 +446,7 @@ function renderContent(text){
     if(isEmpty)return <div key={li} style={{height:"6px"}}/>;
     if(isTop)return <div key={li} style={{fontWeight:"700",fontSize:"14px",letterSpacing:"2px",textTransform:"uppercase",color:T.coral,marginTop:"18px",marginBottom:"4px",fontFamily:"'Playfair Display', Georgia, serif"}}>{linkify(line)}</div>;
     if(isSub)return <div key={li} style={{fontWeight:"700",fontSize:"13px",color:T.text,marginTop:"14px",marginBottom:"4px",fontFamily:"'Playfair Display', Georgia, serif",letterSpacing:"1px"}}>{linkify(line)}</div>;
-    if(isBullet){const content=t.replace(/^[-\u2022]\s/,"");return <div key={li} style={{display:"flex",gap:"10px",fontSize:"16px",color:T.textSecondary,fontFamily:"'Playfair Display', Georgia, serif",lineHeight:"2.0",marginBottom:"5px"}}><span style={{color:T.textMuted,flexShrink:0,marginTop:"2px"}}>•</span><span>{linkify(content)}</span></div>;}
+    if(isBullet){const content=t.replace(/^[-\u2022]\s/,"");return <div key={li} style={{display:"flex",gap:"10px",fontSize:"16px",color:T.textSecondary,fontFamily:"'Playfair Display', Georgia, serif",lineHeight:"2.0",marginBottom:"5px"}}><span style={{color:T.textMuted,flexShrink:0,marginTop:"2px"}}>-</span><span>{linkify(content)}</span></div>;}
     return <div key={li} style={{fontSize:"16px",color:T.textSecondary,fontFamily:"'Playfair Display', Georgia, serif",lineHeight:"2.0",marginBottom:"5px"}}>{linkify(line)}</div>;
   });
 }
