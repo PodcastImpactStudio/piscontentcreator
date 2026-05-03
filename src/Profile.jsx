@@ -26,7 +26,7 @@ const inp = {
   width: "100%", background: T.surface, border: "1px solid " + T.cardBorder,
   borderRadius: "8px", padding: "11px 14px", color: T.text,
   fontSize: "15px", outline: "none", boxSizing: "border-box",
-  fontFamily: "'Playfair Display', Georgia, serif",
+  fontFamily: "'DM Sans', system-ui, sans-serif",
 };
 
 export default function Profile({ user, onClose, onSignOut }) {
@@ -105,8 +105,8 @@ export default function Profile({ user, onClose, onSignOut }) {
         {/* Header */}
         <div style={{ padding: "20px 24px", borderBottom: "1px solid " + T.cardBorder, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
-            <div style={{ fontSize: "18px", fontWeight: "700", color: T.text, fontFamily: "'Playfair Display', Georgia, serif" }}>My Account</div>
-            <div style={{ fontSize: "13px", color: T.textMuted, marginTop: "2px", fontFamily: "'Playfair Display', Georgia, serif" }}>{user.email}</div>
+            <div style={{ fontSize: "18px", fontWeight: "700", color: T.text, fontFamily: "'DM Sans', system-ui, sans-serif" }}>My Account</div>
+            <div style={{ fontSize: "13px", color: T.textMuted, marginTop: "2px", fontFamily: "'DM Sans', system-ui, sans-serif" }}>{user.email}</div>
           </div>
           <button onClick={onClose} style={{ padding: "6px 12px", background: "transparent", border: "1px solid " + T.cardBorder, borderRadius: "6px", color: T.textMuted, fontSize: "13px", cursor: "pointer" }}>✕</button>
         </div>
@@ -115,7 +115,7 @@ export default function Profile({ user, onClose, onSignOut }) {
         <div style={{ display: "flex", borderBottom: "1px solid " + T.cardBorder }}>
           {[["profile", "Profile"], ["password", "Password"]].map(([id, label]) => (
             <button key={id} onClick={() => setTab(id)}
-              style={{ padding: "12px 20px", background: "transparent", border: "none", borderBottom: tab === id ? "2px solid " + T.coral : "2px solid transparent", color: tab === id ? T.coral : T.textMuted, fontSize: "14px", cursor: "pointer", fontFamily: "'Playfair Display', Georgia, serif", fontWeight: tab === id ? "700" : "500" }}>
+              style={{ padding: "12px 20px", background: "transparent", border: "none", borderBottom: tab === id ? "2px solid " + T.coral : "2px solid transparent", color: tab === id ? T.coral : T.textMuted, fontSize: "14px", cursor: "pointer", fontFamily: "'DM Sans', system-ui, sans-serif", fontWeight: tab === id ? "700" : "500" }}>
               {label}
             </button>
           ))}
@@ -126,25 +126,25 @@ export default function Profile({ user, onClose, onSignOut }) {
           {tab === "profile" && (
             <div>
               <div style={{ marginBottom: "16px" }}>
-                <label style={{ fontSize: "12px", letterSpacing: "2px", textTransform: "uppercase", color: T.textMuted, display: "block", marginBottom: "8px", fontFamily: "'Playfair Display', Georgia, serif" }}>Full Name</label>
+                <label style={{ fontSize: "12px", letterSpacing: "2px", textTransform: "uppercase", color: T.textMuted, display: "block", marginBottom: "8px", fontFamily: "'DM Sans', system-ui, sans-serif" }}>Full Name</label>
                 <input value={name} onChange={e => setName(e.target.value)} placeholder="Your name" style={inp} />
               </div>
               <div style={{ marginBottom: "16px" }}>
-                <label style={{ fontSize: "12px", letterSpacing: "2px", textTransform: "uppercase", color: T.textMuted, display: "block", marginBottom: "8px", fontFamily: "'Playfair Display', Georgia, serif" }}>Company Name <span style={{ textTransform: "none", letterSpacing: "0", opacity: 0.6 }}>(optional)</span></label>
+                <label style={{ fontSize: "12px", letterSpacing: "2px", textTransform: "uppercase", color: T.textMuted, display: "block", marginBottom: "8px", fontFamily: "'DM Sans', system-ui, sans-serif" }}>Company Name <span style={{ textTransform: "none", letterSpacing: "0", opacity: 0.6 }}>(optional)</span></label>
                 <input value={companyName} onChange={e => setCompanyName(e.target.value)} placeholder="Your business or agency name" style={inp} />
               </div>
               <div style={{ marginBottom: "20px" }}>
-                <label style={{ fontSize: "12px", letterSpacing: "2px", textTransform: "uppercase", color: T.textMuted, display: "block", marginBottom: "8px", fontFamily: "'Playfair Display', Georgia, serif" }}>Timezone</label>
+                <label style={{ fontSize: "12px", letterSpacing: "2px", textTransform: "uppercase", color: T.textMuted, display: "block", marginBottom: "8px", fontFamily: "'DM Sans', system-ui, sans-serif" }}>Timezone</label>
                 <select value={timezone} onChange={e => setTimezone(e.target.value)} style={{ ...inp, cursor: "pointer" }}>
                   {TIMEZONES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
                 </select>
-                <div style={{ fontSize: "12px", color: T.textMuted, marginTop: "6px", fontStyle: "italic", fontFamily: "'Playfair Display', Georgia, serif" }}>
+                <div style={{ fontSize: "12px", color: T.textMuted, marginTop: "6px", fontStyle: "italic", fontFamily: "'DM Sans', system-ui, sans-serif" }}>
                   Publish schedules will display in {tzLabel}.
                 </div>
               </div>
-              {msg && <div style={{ fontSize: "14px", color: msg.startsWith("✓") ? "#52B788" : "#F09090", marginBottom: "12px", fontFamily: "'Playfair Display', Georgia, serif" }}>{msg}</div>}
+              {msg && <div style={{ fontSize: "14px", color: msg.startsWith("✓") ? "#52B788" : "#F09090", marginBottom: "12px", fontFamily: "'DM Sans', system-ui, sans-serif" }}>{msg}</div>}
               <button onClick={saveProfile} disabled={saving}
-                style={{ padding: "12px 24px", background: T.coral, border: "none", borderRadius: "8px", color: "#fff", fontSize: "14px", fontWeight: "700", cursor: "pointer", fontFamily: "'Playfair Display', Georgia, serif" }}>
+                style={{ padding: "12px 24px", background: T.coral, border: "none", borderRadius: "8px", color: "#fff", fontSize: "14px", fontWeight: "700", cursor: "pointer", fontFamily: "'DM Sans', system-ui, sans-serif" }}>
                 {saving ? "Saving..." : "Save Profile"}
               </button>
             </div>
@@ -152,16 +152,16 @@ export default function Profile({ user, onClose, onSignOut }) {
           {tab === "password" && (
             <div>
               <div style={{ marginBottom: "14px" }}>
-                <label style={{ fontSize: "12px", letterSpacing: "2px", textTransform: "uppercase", color: T.textMuted, display: "block", marginBottom: "8px", fontFamily: "'Playfair Display', Georgia, serif" }}>New Password</label>
+                <label style={{ fontSize: "12px", letterSpacing: "2px", textTransform: "uppercase", color: T.textMuted, display: "block", marginBottom: "8px", fontFamily: "'DM Sans', system-ui, sans-serif" }}>New Password</label>
                 <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="At least 8 characters" style={inp} />
               </div>
               <div style={{ marginBottom: "20px" }}>
-                <label style={{ fontSize: "12px", letterSpacing: "2px", textTransform: "uppercase", color: T.textMuted, display: "block", marginBottom: "8px", fontFamily: "'Playfair Display', Georgia, serif" }}>Confirm Password</label>
+                <label style={{ fontSize: "12px", letterSpacing: "2px", textTransform: "uppercase", color: T.textMuted, display: "block", marginBottom: "8px", fontFamily: "'DM Sans', system-ui, sans-serif" }}>Confirm Password</label>
                 <input type="password" value={confirm} onChange={e => setConfirm(e.target.value)} onKeyDown={e => e.key === "Enter" && changePassword()} placeholder="Confirm new password" style={inp} />
               </div>
-              {msg && <div style={{ fontSize: "14px", color: msg.startsWith("✓") ? "#52B788" : "#F09090", marginBottom: "12px", fontFamily: "'Playfair Display', Georgia, serif" }}>{msg}</div>}
+              {msg && <div style={{ fontSize: "14px", color: msg.startsWith("✓") ? "#52B788" : "#F09090", marginBottom: "12px", fontFamily: "'DM Sans', system-ui, sans-serif" }}>{msg}</div>}
               <button onClick={changePassword} disabled={saving}
-                style={{ padding: "12px 24px", background: T.coral, border: "none", borderRadius: "8px", color: "#fff", fontSize: "14px", fontWeight: "700", cursor: "pointer", fontFamily: "'Playfair Display', Georgia, serif" }}>
+                style={{ padding: "12px 24px", background: T.coral, border: "none", borderRadius: "8px", color: "#fff", fontSize: "14px", fontWeight: "700", cursor: "pointer", fontFamily: "'DM Sans', system-ui, sans-serif" }}>
                 {saving ? "Updating..." : "Update Password"}
               </button>
             </div>
@@ -171,7 +171,7 @@ export default function Profile({ user, onClose, onSignOut }) {
         {/* Sign out */}
         <div style={{ padding: "16px 24px", borderTop: "1px solid " + T.cardBorder }}>
           <button onClick={onSignOut}
-            style={{ padding: "10px 20px", background: "transparent", border: "1px solid " + T.cardBorder, borderRadius: "6px", color: T.textMuted, fontSize: "13px", cursor: "pointer", fontFamily: "'Playfair Display', Georgia, serif" }}>
+            style={{ padding: "10px 20px", background: "transparent", border: "1px solid " + T.cardBorder, borderRadius: "6px", color: T.textMuted, fontSize: "13px", cursor: "pointer", fontFamily: "'DM Sans', system-ui, sans-serif" }}>
             Sign out
           </button>
         </div>

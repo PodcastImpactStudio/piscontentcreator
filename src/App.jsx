@@ -18,7 +18,7 @@ const MODES = [
   { id: "clips", icon: "✂️", label: "Short-Form Content", desc: "SEO-optimized titles, captions & hashtags for YouTube Shorts, Instagram Reels, TikTok & Facebook Reels" },
   { id: "editor", icon: "🎬", label: "Editor Assistant", desc: "Intro hook recommendations, timestamped clip suggestions & production notes your editor can act on immediately" },
 ];
-const PF = "'Playfair Display', Georgia, serif";
+const PF = "'DM Sans', system-ui, sans-serif";
 
 function strip(t){if(!t)return "";const B=String.fromCharCode(96);const r1=new RegExp(B+"{3}[\\s\\S]*?"+B+"{3}","g");const r2=new RegExp(B+"([^"+B+"]+)"+B,"g");return t.replace(/^#{1,6}\s+/gm,"").replace(/\*\*\*(.*?)\*\*\*/g,"$1").replace(/\*\*(.*?)\*\*/g,"$1").replace(/\*(.*?)\*/g,"$1").replace(/__(.*?)__/g,"$1").replace(r1,"").replace(r2,"$1").replace(/^\s*[-*+]\s+/gm,"- ").replace(/\[([^\]]+)\]\([^)]+\)/g,"$1").replace(/^>\s+/gm,"").replace(/^---+$/gm,"").replace(/\n{3,}/g,"\n\n").trim();}
 function parse(raw){const ps=[{id:"titles",r:[/SEO TITLE/i]},{id:"shownotes",r:[/SHOW NOTES/i]},{id:"spotify-creators",r:[/SPOTIFY FOR CREATORS/i]},{id:"editor-hooks",r:[/INTRO HOOK REC/i]},{id:"editor-clips",r:[/SOCIAL (MEDIA )?CLIP REC/i,/SOCIAL CLIP REC/i]},{id:"editor-notes",r:[/EDITOR NOTES/i]},{id:"youtube",r:[/YOUTUBE DESC/i]},{id:"social",r:[/SOCIAL MEDIA(?! CLIP)/i]},{id:"quotes",r:[/QUOTE CARDS/i,/PULL QUOTES/i]},{id:"poll-questions",r:[/POLL QUESTIONS/i]},{id:"story-slides",r:[/STORY SLIDES/i]},{id:"engagement-prompts",r:[/ENGAGEMENT PROMPTS/i]},{id:"takeaway-graphics",r:[/KEY TAKEAWAY GRAPHICS/i]},{id:"guestkit",r:[/GUEST SHARE/i]},{id:"email",r:[/EMAIL NEWS/i,/^(?!.*(PATREON|CIRCLE|MIGHTY|KAJABI|SKOOL|FACEBOOK GROUP)).*NEWSLETTER/i]},{id:"blog",r:[/BLOG ART/i,/BLOG POST/i]},{id:"community-companion",r:[/COMPANION POST/i]},{id:"community-prompts",r:[/COMMUNITY FEED PROMPTS/i,/DISCUSSION PROMPTS/i]},{id:"community-polls",r:[/POLL IDEAS/i,/(?:PATREON|CIRCLE|MIGHTY|KAJABI|SKOOL|FACEBOOK) POLL/i]},{id:"community-starters",r:[/CONVERSATION STARTERS/i]},{id:"clips",r:[/^\d+\.\s*CLIPS/i,/^\d+\.\s*SHORTS/i,/^\d+\.\s*REELS/i]}];const c=strip(raw),lines=c.split("\n"),secs=[];let ti=null,id="intro",buf=[];for(const l of lines){let h=false;for(const p of ps){if(p.r.some(r=>r.test(l))){if(buf.length)secs.push({id,title:ti||"Overview",content:buf.join("\n").trim()});ti=l.replace(/^\d+\.\s*/,"").trim();id=p.id;buf=[];h=true;break;}}if(!h)buf.push(l);}if(buf.length)secs.push({id,title:ti||"Content",content:buf.join("\n").trim()});return secs.filter(s=>s.content.length>0);}
@@ -470,7 +470,7 @@ function fallbackCopy(text){
   sel.removeAllRanges();document.body.removeChild(el);
 }
 
-function Cp({text}){const[ok,setOk]=useState(false);return <button onClick={()=>{copyText(text);setOk(true);setTimeout(()=>setOk(false),1800);}} style={{padding:"5px 14px",background:ok?T.coralSoft:"transparent",border:`1px solid ${ok?T.coralMid:T.cardBorder}`,borderRadius:"6px",color:ok?T.coral:T.textMuted,fontSize:"12px",cursor:"pointer",fontFamily:"'Playfair Display', Georgia, serif",transition:"all .25s",whiteSpace:"nowrap",letterSpacing:"1px"}}>{ok?"✓ COPIED":"COPY"}</button>;}
+function Cp({text}){const[ok,setOk]=useState(false);return <button onClick={()=>{copyText(text);setOk(true);setTimeout(()=>setOk(false),1800);}} style={{padding:"5px 14px",background:ok?T.coralSoft:"transparent",border:`1px solid ${ok?T.coralMid:T.cardBorder}`,borderRadius:"6px",color:ok?T.coral:T.textMuted,fontSize:"12px",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",transition:"all .25s",whiteSpace:"nowrap",letterSpacing:"1px"}}>{ok?"✓ COPIED":"COPY"}</button>;}
 
 function isTopSection(line){const t=line.trim();return /^(\d+\.\s*)?(SEO TITLE|SHOW NOTES|SPOTIFY FOR CREATORS|INTRO HOOK|SOCIAL CLIP|EDITOR NOTES|YOUTUBE DESC|SOCIAL MEDIA|QUOTE CARDS|POLL QUESTIONS|STORY SLIDES|ENGAGEMENT PROMPTS|KEY TAKEAWAY GRAPHICS|GUEST SHARE|EMAIL NEWS|NEWSLETTER|BLOG (ARTICLE|POST)|PATREON|CLIPS|SHORTS|REELS)/i.test(t);}
 function isSubHeader(line){const t=line.trim();if(!t||t.length<3)return false;if(/^[-\u2022*\d"(@]/.test(t))return false;if(isTopSection(line))return false;if(t.split(/\s+/).length>8)return false;const allCaps=/^[A-Z][A-Z\s&()\u00ae\u2122\/\-:\.]+$/.test(t)&&t.length>3;const titleCase=/^[A-Z][a-zA-Z]*(\s(&|[A-Z][a-zA-Z]*))*:?$/.test(t)&&t.length>3&&t.split(/\s+/).length<=6;return allCaps||titleCase;}
@@ -485,10 +485,10 @@ function renderContent(text){
     const isBullet=/^[-\u2022]\s/.test(t);
     const isEmpty=!t;
     if(isEmpty)return <div key={li} style={{height:"6px"}}/>;
-    if(isTop)return <div key={li} style={{fontWeight:"700",fontSize:"14px",letterSpacing:"2px",textTransform:"uppercase",color:T.coral,marginTop:"18px",marginBottom:"4px",fontFamily:"'Playfair Display', Georgia, serif"}}>{linkify(line)}</div>;
-    if(isSub)return <div key={li} style={{fontWeight:"700",fontSize:"13px",color:T.text,marginTop:"14px",marginBottom:"4px",fontFamily:"'Playfair Display', Georgia, serif",letterSpacing:"1px"}}>{linkify(line)}</div>;
-    if(isBullet){const content=t.replace(/^[-\u2022]\s/,"");return <div key={li} style={{display:"flex",gap:"10px",fontSize:"16px",color:T.textSecondary,fontFamily:"'Playfair Display', Georgia, serif",lineHeight:"2.0",marginBottom:"5px"}}><span style={{color:T.textMuted,flexShrink:0,marginTop:"2px"}}>-</span><span>{linkify(content)}</span></div>;}
-    return <div key={li} style={{fontSize:"16px",color:T.textSecondary,fontFamily:"'Playfair Display', Georgia, serif",lineHeight:"2.0",marginBottom:"5px"}}>{linkify(line)}</div>;
+    if(isTop)return <div key={li} style={{fontWeight:"700",fontSize:"14px",letterSpacing:"2px",textTransform:"uppercase",color:T.coral,marginTop:"18px",marginBottom:"4px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{linkify(line)}</div>;
+    if(isSub)return <div key={li} style={{fontWeight:"700",fontSize:"13px",color:T.text,marginTop:"14px",marginBottom:"4px",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1px"}}>{linkify(line)}</div>;
+    if(isBullet){const content=t.replace(/^[-\u2022]\s/,"");return <div key={li} style={{display:"flex",gap:"10px",fontSize:"16px",color:T.textSecondary,fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"2.0",marginBottom:"5px"}}><span style={{color:T.textMuted,flexShrink:0,marginTop:"2px"}}>-</span><span>{linkify(content)}</span></div>;}
+    return <div key={li} style={{fontSize:"16px",color:T.textSecondary,fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"2.0",marginBottom:"5px"}}>{linkify(line)}</div>;
   });
 }
 
@@ -497,7 +497,7 @@ function Sec({s,clr}){const m=SM[s.id]||SM.intro;
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"13px 20px",borderBottom:`1px solid ${T.cardBorder}`,background:T.surface}}>
       <div style={{display:"flex",alignItems:"center",gap:"8px"}}>
         <span style={{fontSize:"14px"}}>{m.i}</span>
-        <span style={{fontSize:"14px",letterSpacing:"2px",textTransform:"uppercase",color:clr||T.coral,fontWeight:"700",fontFamily:"'Playfair Display', Georgia, serif"}}>{m.l}</span>
+        <span style={{fontSize:"14px",letterSpacing:"2px",textTransform:"uppercase",color:clr||T.coral,fontWeight:"700",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{m.l}</span>
       </div>
       <Cp text={s.content}/>
     </div>
@@ -561,12 +561,12 @@ function OnboardingScreen({ step, user, orgId, orgName, userProfile, onProfileDo
     width:"100%", background:T.surface, border:`1px solid ${T.cardBorder}`,
     borderRadius:"8px", padding:"12px 16px", color:T.text, fontSize:"16px",
     outline:"none", boxSizing:"border-box",
-    fontFamily:"'Playfair Display', Georgia, serif",
+    fontFamily:"'DM Sans', system-ui, sans-serif",
   };
   const obLbl = {
     fontSize:"12px", letterSpacing:"2px", textTransform:"uppercase",
     color:T.textMuted, display:"block", marginBottom:"8px",
-    fontFamily:"'Playfair Display', Georgia, serif",
+    fontFamily:"'DM Sans', system-ui, sans-serif",
   };
 
   async function handleProfileSave() {
@@ -597,7 +597,7 @@ function OnboardingScreen({ step, user, orgId, orgName, userProfile, onProfileDo
         {/* Logo bar */}
         <div style={{ display:"flex", alignItems:"center", gap:"12px", marginBottom:"48px", justifyContent:"center" }}>
           <div style={{ width:"3px", height:"24px", background:T.coral, borderRadius:"2px" }} />
-          <span style={{ fontSize:"18px", letterSpacing:"4px", textTransform:"uppercase", color:T.text, fontFamily:"'Playfair Display', Georgia, serif", fontWeight:"800" }}>Content Creator</span>
+          <span style={{ fontSize:"18px", letterSpacing:"4px", textTransform:"uppercase", color:T.text, fontFamily:"'DM Sans', system-ui, sans-serif", fontWeight:"800" }}>Content Creator</span>
         </div>
 
         {step === "profile" && (
@@ -606,7 +606,7 @@ function OnboardingScreen({ step, user, orgId, orgName, userProfile, onProfileDo
               <h1 style={{ fontSize:"40px", fontWeight:"700", color:T.text, margin:"0 0 12px", fontFamily:PF, lineHeight:"1.2" }}>
                 Welcome{company ? ` to ${company}` : ""}! 👋
               </h1>
-              <p style={{ fontSize:"15px", color:T.textMuted, margin:0, lineHeight:"1.6", fontFamily:"'Playfair Display', Georgia, serif" }}>
+              <p style={{ fontSize:"15px", color:T.textMuted, margin:0, lineHeight:"1.6", fontFamily:"'DM Sans', system-ui, sans-serif" }}>
                 Before you dive in, let's make sure we have your details right.
               </p>
             </div>
@@ -624,12 +624,12 @@ function OnboardingScreen({ step, user, orgId, orgName, userProfile, onProfileDo
                 <select value={timezone} onChange={e=>setTimezone(e.target.value)} style={{ ...obInp, cursor:"pointer" }}>
                   {OB_TIMEZONES.map(([v,l])=><option key={v} value={v}>{l}</option>)}
                 </select>
-                <p style={{ fontSize:"12px", color:T.textMuted, margin:"6px 0 0", fontStyle:"italic", fontFamily:"'Playfair Display', Georgia, serif" }}>
+                <p style={{ fontSize:"12px", color:T.textMuted, margin:"6px 0 0", fontStyle:"italic", fontFamily:"'DM Sans', system-ui, sans-serif" }}>
                   Publish schedules will display in your local time.
                 </p>
               </div>
-              {err && <p style={{ color:"#F09090", fontSize:"14px", margin:0, fontFamily:"'Playfair Display', Georgia, serif" }}>{err}</p>}
-              <button onClick={handleProfileSave} disabled={saving} style={{ padding:"14px 28px", background:T.coral, border:"none", borderRadius:"8px", color:"#fff", fontSize:"16px", fontWeight:"700", cursor:"pointer", letterSpacing:"1px", fontFamily:"'Playfair Display', Georgia, serif", alignSelf:"flex-start" }}>
+              {err && <p style={{ color:"#F09090", fontSize:"14px", margin:0, fontFamily:"'DM Sans', system-ui, sans-serif" }}>{err}</p>}
+              <button onClick={handleProfileSave} disabled={saving} style={{ padding:"14px 28px", background:T.coral, border:"none", borderRadius:"8px", color:"#fff", fontSize:"16px", fontWeight:"700", cursor:"pointer", letterSpacing:"1px", fontFamily:"'DM Sans', system-ui, sans-serif", alignSelf:"flex-start" }}>
                 {saving ? "Saving..." : "Continue →"}
               </button>
             </div>
@@ -642,22 +642,22 @@ function OnboardingScreen({ step, user, orgId, orgName, userProfile, onProfileDo
               <h1 style={{ fontSize:"40px", fontWeight:"700", color:T.text, margin:"0 0 12px", fontFamily:PF, lineHeight:"1.2" }}>
                 Now let's add your first show
               </h1>
-              <p style={{ fontSize:"15px", color:T.textMuted, margin:0, lineHeight:"1.6", fontFamily:"'Playfair Display', Georgia, serif" }}>
+              <p style={{ fontSize:"15px", color:T.textMuted, margin:0, lineHeight:"1.6", fontFamily:"'DM Sans', system-ui, sans-serif" }}>
                 Set up a show profile so the AI knows exactly how to write for your podcast — voice, audience, platforms, and format.
               </p>
             </div>
             <div style={{ background:T.card, border:`1px solid ${T.cardBorder}`, borderRadius:"12px", padding:"32px" }}>
               <div style={{ fontSize:"48px", marginBottom:"16px", textAlign:"center" }}>🎙️</div>
-              <p style={{ fontSize:"15px", color:T.textMuted, textAlign:"center", lineHeight:"1.6", margin:"0 0 28px", fontFamily:"'Playfair Display', Georgia, serif" }}>
+              <p style={{ fontSize:"15px", color:T.textMuted, textAlign:"center", lineHeight:"1.6", margin:"0 0 28px", fontFamily:"'DM Sans', system-ui, sans-serif" }}>
                 The more detail you add, the better your content will be. You can always come back and update it.
               </p>
               <div style={{ textAlign:"center" }}>
-                <button onClick={onAddShow} style={{ padding:"14px 36px", background:T.coral, border:"none", borderRadius:"8px", color:"#fff", fontSize:"16px", fontWeight:"700", cursor:"pointer", letterSpacing:"1px", fontFamily:"'Playfair Display', Georgia, serif" }}>
+                <button onClick={onAddShow} style={{ padding:"14px 36px", background:T.coral, border:"none", borderRadius:"8px", color:"#fff", fontSize:"16px", fontWeight:"700", cursor:"pointer", letterSpacing:"1px", fontFamily:"'DM Sans', system-ui, sans-serif" }}>
                   Add My First Show →
                 </button>
               </div>
             </div>
-            <p style={{ fontSize:"13px", color:T.textMuted, textAlign:"center", marginTop:"20px", fontFamily:"'Playfair Display', Georgia, serif" }}>
+            <p style={{ fontSize:"13px", color:T.textMuted, textAlign:"center", marginTop:"20px", fontFamily:"'DM Sans', system-ui, sans-serif" }}>
               Once you've saved your show, you'll go straight into the app.
             </p>
           </div>
@@ -895,10 +895,10 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
     else if(step==="result"){setStep("input");}
   }
 
-  const lbl={fontSize:"15px",letterSpacing:"2px",textTransform:"uppercase",color:T.textMuted,marginBottom:"10px",display:"block",fontFamily:"'Playfair Display', Georgia, serif"};
-  const field={width:"100%",background:T.surface,border:`1px solid ${T.cardBorder}`,borderRadius:"8px",padding:"14px 18px",color:T.text,fontSize:"15px",fontFamily:"'Playfair Display', Georgia, serif",outline:"none",boxSizing:"border-box"};
-  const primary=c=>({width:"100%",padding:"16px",background:c||T.coral,border:"none",borderRadius:"8px",color:"#fff",fontSize:"16px",fontWeight:"700",cursor:"pointer",letterSpacing:"2px",fontFamily:"'Playfair Display', Georgia, serif",textTransform:"uppercase",marginTop:"20px"});
-  const ghost={padding:"9px 18px",background:"transparent",border:`1px solid ${T.cardBorder}`,borderRadius:"6px",color:T.textMuted,fontSize:"14px",cursor:"pointer",fontFamily:"'Playfair Display', Georgia, serif",letterSpacing:"1.5px",textTransform:"uppercase"};
+  const lbl={fontSize:"15px",letterSpacing:"2px",textTransform:"uppercase",color:T.textMuted,marginBottom:"10px",display:"block",fontFamily:"'DM Sans', system-ui, sans-serif"};
+  const field={width:"100%",background:T.surface,border:`1px solid ${T.cardBorder}`,borderRadius:"8px",padding:"14px 18px",color:T.text,fontSize:"15px",fontFamily:"'DM Sans', system-ui, sans-serif",outline:"none",boxSizing:"border-box"};
+  const primary=c=>({width:"100%",padding:"16px",background:c||T.coral,border:"none",borderRadius:"8px",color:"#fff",fontSize:"16px",fontWeight:"700",cursor:"pointer",letterSpacing:"2px",fontFamily:"'DM Sans', system-ui, sans-serif",textTransform:"uppercase",marginTop:"20px"});
+  const ghost={padding:"9px 18px",background:"transparent",border:`1px solid ${T.cardBorder}`,borderRadius:"6px",color:T.textMuted,fontSize:"14px",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1.5px",textTransform:"uppercase"};
 
   async function sendToDescript(clipSections) {
     let apiKey = descriptApiKey.trim();
@@ -977,8 +977,8 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
         <div style={{display:"flex",alignItems:"center",gap:"16px"}}>
           <div style={{width:"3px",height:"28px",background:T.coral,borderRadius:"2px"}}/>
           <div style={{display:"flex",alignItems:"baseline",gap:"12px"}}>
-            <span style={{fontSize:"24px",letterSpacing:"4px",textTransform:"uppercase",color:T.text,fontFamily:"'Playfair Display', Georgia, serif",fontWeight:"800"}}>{orgName||"Podcast Impact Studio"}</span>
-            <span style={{fontSize:"15px",letterSpacing:"4px",textTransform:"uppercase",color:T.coral,fontFamily:"'Playfair Display', Georgia, serif",fontWeight:"600"}}>Content Creator</span>
+            <span style={{fontSize:"24px",letterSpacing:"4px",textTransform:"uppercase",color:T.text,fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"800"}}>{orgName||"Podcast Impact Studio"}</span>
+            <span style={{fontSize:"15px",letterSpacing:"4px",textTransform:"uppercase",color:T.coral,fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600"}}>Content Creator</span>
           </div>
         </div>
         <div style={{display:"flex",gap:"10px",alignItems:"center"}}>
@@ -1002,12 +1002,12 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
             {/* SELECT SHOW */}
             {step==="select"&&<div style={{animation:"fadeUp .4s ease"}}>
               <div style={{marginBottom:"40px"}}>
-                {(orgName||userProfile?.name)&&<p style={{fontSize:"14px",color:T.coral,margin:"0 0 10px",letterSpacing:"2px",textTransform:"uppercase",fontFamily:"'Playfair Display', Georgia, serif",fontWeight:"600"}}>Welcome back, {orgName||userProfile?.name} 👋</p>}
+                {(orgName||userProfile?.name)&&<p style={{fontSize:"14px",color:T.coral,margin:"0 0 10px",letterSpacing:"2px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600"}}>Welcome back, {orgName||userProfile?.name} 👋</p>}
                 <h1 style={{fontSize:"52px",fontWeight:"700",color:T.text,margin:"0 0 8px",letterSpacing:"-1px",fontFamily:PF,lineHeight:"1.1"}}>Select a show</h1>
-                <p style={{fontSize:"15px",color:T.textMuted,margin:0,fontFamily:"'Playfair Display', Georgia, serif",letterSpacing:"2px",textTransform:"uppercase"}}>Choose the podcast you're creating content for</p>
+                <p style={{fontSize:"15px",color:T.textMuted,margin:0,fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"2px",textTransform:"uppercase"}}>Choose the podcast you're creating content for</p>
               </div>
               {loadingShows?(
-                <div style={{textAlign:"center",padding:"60px",color:T.textMuted,fontFamily:"'Playfair Display', Georgia, serif",letterSpacing:"2px",fontSize:"12px"}}>LOADING SHOWS...</div>
+                <div style={{textAlign:"center",padding:"60px",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"2px",fontSize:"12px"}}>LOADING SHOWS...</div>
               ):Object.keys(shows).length===0?(
                 <div style={{background:T.card,border:`1px solid ${T.cardBorder}`,borderRadius:"12px",padding:"48px",textAlign:"center",animation:"fadeUp .4s ease"}}>
                   <div style={{fontSize:"48px",marginBottom:"20px"}}>🎙️</div>
@@ -1034,9 +1034,9 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
             {/* MODE */}
             {step==="mode"&&d&&<div style={{animation:"fadeUp .4s ease"}}>
               <div style={{marginBottom:"40px"}}>
-                <p style={{fontSize:"14px",color:T.coral,margin:"0 0 10px",letterSpacing:"2px",textTransform:"uppercase",fontFamily:"'Playfair Display', Georgia, serif",fontWeight:"600"}}>{d.name}</p>
+                <p style={{fontSize:"14px",color:T.coral,margin:"0 0 10px",letterSpacing:"2px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600"}}>{d.name}</p>
                 <h1 style={{fontSize:"52px",fontWeight:"700",color:T.text,margin:"0 0 10px",letterSpacing:"-1px",fontFamily:PF,lineHeight:"1.1"}}>What are you creating?</h1>
-                <p style={{fontSize:"15px",color:T.textMuted,margin:0,fontFamily:"'Playfair Display', Georgia, serif"}}>Choose a content type below — each one is powered by your show's unique voice and platform settings.</p>
+                <p style={{fontSize:"15px",color:T.textMuted,margin:0,fontFamily:"'DM Sans', system-ui, sans-serif"}}>Choose a content type below — each one is powered by your show's unique voice and platform settings.</p>
               </div>
               <div style={{display:"flex",flexDirection:"column",gap:"10px"}}>
                 {MODES.map(m=>(
@@ -1055,9 +1055,9 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
             {/* CONFIGURE */}
             {step==="configure"&&d&&<div style={{animation:"fadeUp .4s ease"}}>
               <div style={{marginBottom:"40px"}}>
-                <p style={{fontSize:"14px",color:T.coral,margin:"0 0 10px",letterSpacing:"2px",textTransform:"uppercase",fontFamily:"'Playfair Display', Georgia, serif",fontWeight:"600"}}>{MODES.find(m=>m.id===mode)?.label}</p>
+                <p style={{fontSize:"14px",color:T.coral,margin:"0 0 10px",letterSpacing:"2px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600"}}>{MODES.find(m=>m.id===mode)?.label}</p>
                 <h1 style={{fontSize:"52px",fontWeight:"700",color:T.text,margin:"0 0 8px",letterSpacing:"-1px",fontFamily:PF,lineHeight:"1.1"}}>{d.name}</h1>
-                <p style={{fontSize:"15px",color:T.textMuted,margin:0,fontFamily:"'Playfair Display', Georgia, serif"}}>Tell us a bit about this episode so we can tailor the content.</p>
+                <p style={{fontSize:"15px",color:T.textMuted,margin:0,fontFamily:"'DM Sans', system-ui, sans-serif"}}>Tell us a bit about this episode so we can tailor the content.</p>
               </div>
               {mode!=="clips"&&<div style={{marginBottom:"20px"}}>
                 {d?.publishDay&&d?.publishTime&&d?.publishTz&&(()=>{try{const sched=formatPublishSchedule(d,userProfile?.timezone);if(!sched)return null;return(<div style={{background:T.coralSoft,border:"1px solid "+T.coralMid,borderRadius:"8px",padding:"12px 16px",marginBottom:"20px",display:"flex",alignItems:"center",gap:"10px"}}><span>📅</span><div><div style={{fontSize:"13px",color:T.coral,fontWeight:"600"}}>PUBLISH SCHEDULE</div><div style={{fontSize:"14px",color:T.textSecondary,marginTop:"2px"}}>{sched.showTime}{sched.isDifferent?" · "+sched.localTime+" your time":""}</div></div></div>);}catch{return null;}})()}
@@ -1068,7 +1068,7 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
                 <label style={lbl}>Episode Type</label>
                 <div style={{display:"flex",gap:"10px"}}>
                   {[true,false].map(v=>(
-                    <button key={String(v)} onClick={()=>setGuest(v)} style={{flex:1,padding:"14px",background:guest===v?`${d.clr}18`:T.card,border:guest===v?`1px solid ${d.clr}`:`1px solid ${T.cardBorder}`,borderRadius:"8px",color:guest===v?T.text:T.textSecondary,fontSize:"14px",cursor:"pointer",fontFamily:"'Playfair Display', Georgia, serif",fontWeight:guest===v?"700":"400",letterSpacing:"1px",transition:"all .15s"}}>
+                    <button key={String(v)} onClick={()=>setGuest(v)} style={{flex:1,padding:"14px",background:guest===v?`${d.clr}18`:T.card,border:guest===v?`1px solid ${d.clr}`:`1px solid ${T.cardBorder}`,borderRadius:"8px",color:guest===v?T.text:T.textSecondary,fontSize:"14px",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:guest===v?"700":"400",letterSpacing:"1px",transition:"all .15s"}}>
                       {v?"GUEST EPISODE":"SOLO / HOST ONLY"}
                     </button>
                   ))}
@@ -1079,7 +1079,7 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
                   <label style={lbl}>Platforms for Clips</label>
                   <div style={{display:"flex",flexWrap:"wrap",gap:"8px"}}>
                     {["YouTube","Instagram","Facebook","TikTok","Spotify"].map(p=>{const on=clipPlatforms.includes(p);return(
-                      <button key={p} onClick={()=>setClipPlatforms(prev=>on&&prev.length>1?prev.filter(x=>x!==p):on?prev:[...prev,p])} style={{padding:"8px 18px",background:on?`${d.clr}18`:T.card,border:on?`1px solid ${d.clr}`:`1px solid ${T.cardBorder}`,borderRadius:"6px",fontSize:"13px",color:on?d.clr:T.textMuted,fontFamily:"'Playfair Display', Georgia, serif",cursor:"pointer",fontWeight:on?"700":"400",transition:"all .15s",letterSpacing:"1px"}}>
+                      <button key={p} onClick={()=>setClipPlatforms(prev=>on&&prev.length>1?prev.filter(x=>x!==p):on?prev:[...prev,p])} style={{padding:"8px 18px",background:on?`${d.clr}18`:T.card,border:on?`1px solid ${d.clr}`:`1px solid ${T.cardBorder}`,borderRadius:"6px",fontSize:"13px",color:on?d.clr:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",cursor:"pointer",fontWeight:on?"700":"400",transition:"all .15s",letterSpacing:"1px"}}>
                         {on?"✓ ":""}{p.toUpperCase()}
                       </button>
                     );})}
@@ -1091,7 +1091,7 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
                   <div style={{fontSize:"14px",color:T.textSecondary,fontFamily:"'EB Garamond',serif",fontStyle:"italic",marginBottom:"8px"}}>Configured in Admin — generating content for all selected platforms</div>
                   <div style={{display:"flex",flexWrap:"wrap",gap:"8px"}}>
                     {[...(d.platforms?.social||[]),...(d.platforms?.podcast||[]),...(d.platforms?.community||[]),...(d.platforms?.email||[]),...(d.platforms?.blog||[]),...(d.platforms?.extras||[])].map(p=>(
-                      <span key={p} style={{padding:"6px 14px",background:`${d.clr}18`,border:`1px solid ${d.clr}44`,borderRadius:"6px",fontSize:"12px",color:d.clr,fontFamily:"'Playfair Display', Georgia, serif",fontWeight:"600",letterSpacing:"1px"}}>✓ {p.toUpperCase()}</span>
+                      <span key={p} style={{padding:"6px 14px",background:`${d.clr}18`,border:`1px solid ${d.clr}44`,borderRadius:"6px",fontSize:"12px",color:d.clr,fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600",letterSpacing:"1px"}}>✓ {p.toUpperCase()}</span>
                     ))}
                   </div>
                 </div>
@@ -1102,9 +1102,9 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
             {/* CLIPS SETUP */}
             {step==="clips-setup"&&d&&<div style={{animation:"fadeUp .4s ease"}}>
               <div style={{marginBottom:"40px"}}>
-                <p style={{fontSize:"14px",color:T.coral,margin:"0 0 10px",letterSpacing:"2px",textTransform:"uppercase",fontFamily:"'Playfair Display', Georgia, serif",fontWeight:"600"}}>{d.name} · {clipPlatforms.join(", ")}</p>
+                <p style={{fontSize:"14px",color:T.coral,margin:"0 0 10px",letterSpacing:"2px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600"}}>{d.name} · {clipPlatforms.join(", ")}</p>
                 <h1 style={{fontSize:"52px",fontWeight:"700",color:T.text,margin:"0 0 8px",letterSpacing:"-1px",fontFamily:PF,lineHeight:"1.1"}}>How many clips?</h1>
-                <p style={{fontSize:"15px",color:T.textMuted,margin:0,fontFamily:"'Playfair Display', Georgia, serif"}}>Each clip gets its own SEO-optimized title, caption, hashtags and platform copy.</p>
+                <p style={{fontSize:"15px",color:T.textMuted,margin:0,fontFamily:"'DM Sans', system-ui, sans-serif"}}>Each clip gets its own SEO-optimized title, caption, hashtags and platform copy.</p>
               </div>
               <label style={lbl}>Number of Clips</label>
               <div style={{display:"flex",flexWrap:"wrap",gap:"8px",marginBottom:"32px"}}>
@@ -1120,16 +1120,16 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
               {mode==="clips"?(
                 <>
                   <div style={{marginBottom:"32px"}}>
-                    <p style={{fontSize:"14px",color:T.coral,margin:"0 0 10px",letterSpacing:"2px",textTransform:"uppercase",fontFamily:"'Playfair Display', Georgia, serif",fontWeight:"600"}}>{d.name} · {clipPlatforms.join(", ")}</p>
+                    <p style={{fontSize:"14px",color:T.coral,margin:"0 0 10px",letterSpacing:"2px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600"}}>{d.name} · {clipPlatforms.join(", ")}</p>
                     <h1 style={{fontSize:"52px",fontWeight:"700",color:T.text,margin:"0 0 10px",letterSpacing:"-1px",fontFamily:PF,lineHeight:"1.1"}}>Paste your clip transcripts</h1>
-                    <p style={{fontSize:"15px",color:T.textMuted,margin:0,fontFamily:"'Playfair Display', Georgia, serif",lineHeight:"1.6"}}>Paste the transcript for each clip below. The AI will write SEO-optimized titles, captions and hashtags tailored for each platform.</p>
+                    <p style={{fontSize:"15px",color:T.textMuted,margin:0,fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.6"}}>Paste the transcript for each clip below. The AI will write SEO-optimized titles, captions and hashtags tailored for each platform.</p>
                   </div>
-                  {err&&<div style={{background:"#D94F4F18",border:"1px solid #D94F4F44",borderRadius:"8px",padding:"12px 16px",color:"#F09090",fontSize:"14px",marginBottom:"16px",fontFamily:"'Playfair Display', Georgia, serif"}}>{err}</div>}
+                  {err&&<div style={{background:"#D94F4F18",border:"1px solid #D94F4F44",borderRadius:"8px",padding:"12px 16px",color:"#F09090",fontSize:"14px",marginBottom:"16px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{err}</div>}
                   {Array.from({length:clipCount},(_,i)=>(
                     <div key={i} style={{marginBottom:"16px"}}>
                       <label style={{...lbl,color:d.clr}}>Clip {i+1}</label>
                       <textarea style={{...field,minHeight:"120px",lineHeight:"1.6",resize:"vertical",borderColor:clipTexts[i].trim()?`${d.clr}55`:T.cardBorder}} placeholder={`Paste transcript for Clip ${i+1}...`} value={clipTexts[i]} onChange={e=>{const next=[...clipTexts];next[i]=e.target.value;setClipTexts(next);}}/>
-                      {clipTexts[i].trim()&&<div style={{fontSize:"11px",color:T.textMuted,marginTop:"4px",fontFamily:"'Playfair Display', Georgia, serif",letterSpacing:"1px"}}>{clipTexts[i].trim().split(/\s+/).length} WORDS</div>}
+                      {clipTexts[i].trim()&&<div style={{fontSize:"11px",color:T.textMuted,marginTop:"4px",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1px"}}>{clipTexts[i].trim().split(/\s+/).length} WORDS</div>}
                     </div>
                   ))}
                   <button onClick={genClips} disabled={clipTexts.slice(0,clipCount).every(t=>!t.trim())} style={{...primary(T.red),opacity:clipTexts.slice(0,clipCount).some(t=>t.trim())?1:.35}}>Generate {clipCount} Clip{clipCount>1?"s":""} →</button>
@@ -1137,17 +1137,17 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
               ):(
                 <>
                   <div style={{marginBottom:"32px"}}>
-                    <p style={{fontSize:"14px",color:T.coral,margin:"0 0 10px",letterSpacing:"2px",textTransform:"uppercase",fontFamily:"'Playfair Display', Georgia, serif",fontWeight:"600"}}>{d.name}{mode!=="clips"?` · ${guest?"Guest Episode":"Solo Episode"}`:""}{ ep?` · Ep ${ep}`:""}</p>
+                    <p style={{fontSize:"14px",color:T.coral,margin:"0 0 10px",letterSpacing:"2px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600"}}>{d.name}{mode!=="clips"?` · ${guest?"Guest Episode":"Solo Episode"}`:""}{ ep?` · Ep ${ep}`:""}</p>
                     <h1 style={{fontSize:"52px",fontWeight:"700",color:T.text,margin:"0 0 10px",letterSpacing:"-1px",fontFamily:PF,lineHeight:"1.1"}}>{mode==="editor"?"Paste the transcript":"Add your transcript"}</h1>
-                    <p style={{fontSize:"15px",color:T.textMuted,margin:0,fontFamily:"'Playfair Display', Georgia, serif",lineHeight:"1.6"}}>{mode==="editor"?"Paste your raw transcript below — include timestamps if available (e.g. from Descript or Rev). The AI will identify the best clip moments and write production-ready notes for your editor.":mode==="clips"?"Paste your transcript below. The AI will extract the best short-form moments and write SEO-optimized copy for each clip across your selected platforms.":"Paste your full episode transcript below and the AI will generate your complete content package — show notes, social captions, newsletter, YouTube description and more."}</p>
+                    <p style={{fontSize:"15px",color:T.textMuted,margin:0,fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.6"}}>{mode==="editor"?"Paste your raw transcript below — include timestamps if available (e.g. from Descript or Rev). The AI will identify the best clip moments and write production-ready notes for your editor.":mode==="clips"?"Paste your transcript below. The AI will extract the best short-form moments and write SEO-optimized copy for each clip across your selected platforms.":"Paste your full episode transcript below and the AI will generate your complete content package — show notes, social captions, newsletter, YouTube description and more."}</p>
                   </div>
-                  {err&&<div style={{background:"#D94F4F18",border:"1px solid #D94F4F44",borderRadius:"8px",padding:"12px 16px",color:"#F09090",fontSize:"14px",marginBottom:"16px",fontFamily:"'Playfair Display', Georgia, serif"}}>{err}</div>}
+                  {err&&<div style={{background:"#D94F4F18",border:"1px solid #D94F4F44",borderRadius:"8px",padding:"12px 16px",color:"#F09090",fontSize:"14px",marginBottom:"16px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{err}</div>}
                   {mode==="editor"&&<div style={{marginBottom:"24px"}}>
                     <label style={lbl}>How many clip suggestions?</label>
                     <div style={{display:"flex",flexWrap:"wrap",gap:"8px"}}>
                       {[3,4,5,6,7,8,9,10].map(n=>(
                         <button key={n} onClick={()=>setEditorClipCount(n)}
-                          style={{padding:"10px 20px",background:editorClipCount===n?T.coral:T.card,border:"1px solid "+(editorClipCount===n?T.coral:T.cardBorder),borderRadius:"6px",color:editorClipCount===n?"#fff":T.textSecondary,fontSize:"15px",fontWeight:editorClipCount===n?"700":"400",cursor:"pointer",fontFamily:"'Playfair Display', Georgia, serif",letterSpacing:"1px",transition:"all .15s"}}>
+                          style={{padding:"10px 20px",background:editorClipCount===n?T.coral:T.card,border:"1px solid "+(editorClipCount===n?T.coral:T.cardBorder),borderRadius:"6px",color:editorClipCount===n?"#fff":T.textSecondary,fontSize:"15px",fontWeight:editorClipCount===n?"700":"400",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1px",transition:"all .15s"}}>
                           {n}
                         </button>
                       ))}
@@ -1157,11 +1157,11 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
                     <input ref={fileRef} type="file" accept=".txt,.md" style={{display:"none"}} onChange={handleFileInput}/>
                     <div style={{fontSize:"24px",marginBottom:"8px"}}>{dragging?"📥":"📄"}</div>
                     <div style={{fontSize:"14px",color:T.textSecondary,marginBottom:"4px"}}>Drag & drop a transcript file</div>
-                    <div style={{fontSize:"12px",color:T.textMuted,fontFamily:"'Playfair Display', Georgia, serif",letterSpacing:"1px"}}>OR CLICK TO BROWSE · .TXT FILES</div>
+                    <div style={{fontSize:"12px",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1px"}}>OR CLICK TO BROWSE · .TXT FILES</div>
                   </div>
-                  <div style={{textAlign:"center",fontSize:"12px",color:T.textMuted,marginBottom:"16px",fontFamily:"'Playfair Display', Georgia, serif",letterSpacing:"1px"}}>— OR PASTE BELOW —</div>
+                  <div style={{textAlign:"center",fontSize:"12px",color:T.textMuted,marginBottom:"16px",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1px"}}>— OR PASTE BELOW —</div>
                   <textarea style={{...field,minHeight:"220px",lineHeight:"1.7",resize:"vertical"}} placeholder={mode==="editor"?"Paste your raw transcript here — timestamps from Descript or Rev work best. The AI will scan for the strongest clip moments and write notes your editor can act on immediately…":"Paste your full episode transcript here. The AI will read it in full and generate every piece of content in one go — no extra prompting needed…"} value={tx} onChange={e=>setTx(e.target.value)}/>
-                  {tx.length>0&&<div style={{fontSize:"15px",color:T.textMuted,marginTop:"6px",fontFamily:"'Playfair Display', Georgia, serif",letterSpacing:"1px"}}>{Math.round(tx.split(/\s+/).length).toLocaleString()} WORDS</div>}
+                  {tx.length>0&&<div style={{fontSize:"15px",color:T.textMuted,marginTop:"6px",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1px"}}>{Math.round(tx.split(/\s+/).length).toLocaleString()} WORDS</div>}
                   <button onClick={gen} disabled={!tx.trim()} style={{...primary(T.red),opacity:tx.trim()?1:.35}}>Generate {MODES.find(m=>m.id===mode)?.label} →</button>
                 </>
               )}
@@ -1171,16 +1171,16 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
             {step==="generating"&&<div style={{textAlign:"center",padding:"100px 20px",animation:"fadeUp .4s ease"}}>
               <div style={{width:"40px",height:"40px",border:`2px solid ${T.cardBorder}`,borderTopColor:T.coral,borderRadius:"50%",animation:"spin 1s linear infinite",margin:"0 auto 28px"}}/>
               <h2 style={{fontSize:"38px",fontWeight:"600",color:T.text,marginBottom:"12px",fontFamily:PF,lineHeight:"1.2"}}>{mode==="editor"?"Preparing your editor notes…":mode==="clips"?"Writing your short-form copy…":"Building your content package…"}</h2>
-              <p style={{fontSize:"16px",color:T.textMuted,margin:"0 0 8px",fontFamily:"'Playfair Display', Georgia, serif"}}>{d?.name} · {MODES.find(m=>m.id===mode)?.label}</p>
-              <p style={{fontSize:"13px",color:T.coral,animation:"pulse 2s ease-in-out infinite",fontFamily:"'Playfair Display', Georgia, serif",letterSpacing:"1px"}}>THIS TAKES ABOUT 30 SECONDS</p>
+              <p style={{fontSize:"16px",color:T.textMuted,margin:"0 0 8px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{d?.name} · {MODES.find(m=>m.id===mode)?.label}</p>
+              <p style={{fontSize:"13px",color:T.coral,animation:"pulse 2s ease-in-out infinite",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1px"}}>THIS TAKES ABOUT 30 SECONDS</p>
             </div>}
 
             {/* RESULT */}
             {step==="result"&&<div style={{animation:"fadeUp .4s ease"}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"28px",flexWrap:"wrap",gap:"12px"}}>
                 <div>
-                  <h2 style={{fontSize:"36px",fontWeight:"700",color:T.text,margin:"0 0 4px",letterSpacing:"-0.5px",fontFamily:"'Playfair Display', Georgia, serif"}}>{mode==="clips"?"Clips Ready":"Content Package Ready"}</h2>
-                  <p style={{fontSize:"16px",color:T.textMuted,margin:0,fontFamily:"'Playfair Display', Georgia, serif",letterSpacing:"1px"}}>{d?.name.toUpperCase()}{ep?` · EP ${ep}`:""}{mode==="clips"?` · ${clipResults.filter(r=>!r.skipped).length} CLIPS`:` · ${secs.length} SECTIONS`}</p>
+                  <h2 style={{fontSize:"36px",fontWeight:"700",color:T.text,margin:"0 0 4px",letterSpacing:"-0.5px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{mode==="clips"?"Clips Ready":"Content Package Ready"}</h2>
+                  <p style={{fontSize:"16px",color:T.textMuted,margin:0,fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1px"}}>{d?.name.toUpperCase()}{ep?` · EP ${ep}`:""}{mode==="clips"?` · ${clipResults.filter(r=>!r.skipped).length} CLIPS`:` · ${secs.length} SECTIONS`}</p>
                 </div>
                 <div style={{display:"flex",gap:"8px"}}>
                   {mode!=="clips"&&<button onClick={()=>{copyText(raw);setCpAll(true);setTimeout(()=>setCpAll(false),2000);}} style={{...ghost,background:cpAll?T.coralSoft:"transparent",borderColor:cpAll?T.coralMid:T.cardBorder,color:cpAll?T.coral:T.textMuted}}>{cpAll?"✓ COPIED":"COPY ALL"}</button>}
@@ -1189,13 +1189,13 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
                   <button onClick={()=>{setStep(mode==="clips"?"clips-setup":"input");setRaw("");setSecs([]);setClipResults([]);}} style={ghost}>{mode==="clips"?"NEW CLIPS":"NEW EPISODE"}</button>
                 </div>
               </div>
-              {err&&<div style={{background:"#D94F4F18",border:"1px solid #D94F4F44",borderRadius:"8px",padding:"12px 16px",color:"#F09090",fontSize:"14px",marginBottom:"12px",fontFamily:"'Playfair Display', Georgia, serif"}}>{err}</div>}
+              {err&&<div style={{background:"#D94F4F18",border:"1px solid #D94F4F44",borderRadius:"8px",padding:"12px 16px",color:"#F09090",fontSize:"14px",marginBottom:"12px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{err}</div>}
               {mode==="clips"?(
                 <div>
                   {clipResults.map((clip,i)=>clip.skipped?null:(
                     <div key={i} style={{background:T.card,border:`1px solid ${T.cardBorder}`,borderRadius:"10px",marginBottom:"10px",overflow:"hidden"}}>
                       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 20px",borderBottom:`1px solid ${T.cardBorder}`,background:T.surface}}>
-                        <span style={{fontSize:"11px",fontFamily:"'Playfair Display', Georgia, serif",letterSpacing:"2px",color:d.clr,fontWeight:"700"}}>✂️ CLIP {clip.index}</span>
+                        <span style={{fontSize:"11px",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"2px",color:d.clr,fontWeight:"700"}}>✂️ CLIP {clip.index}</span>
                         <button onClick={()=>copyText(clip.content)} style={ghost}>COPY</button>
                       </div>
                       <div style={{padding:"20px 24px"}}>{renderContent(clip.content)}</div>
@@ -1206,30 +1206,30 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
                 <>
                   <div>{secs.map((s,i)=><Sec key={s.id+i} s={s} clr={clr}/>)}</div>
                   <div style={{display:"flex",gap:"10px",marginTop:"16px",flexWrap:"wrap"}}>
-                    <button onClick={()=>setEditing(!editing)} style={{flex:1,padding:"13px",background:editing?T.coralSoft:T.card,border:`1px solid ${editing?T.coralMid:T.cardBorder}`,borderRadius:"8px",color:editing?T.coral:T.textSecondary,fontSize:"14px",cursor:"pointer",fontFamily:"'Playfair Display', Georgia, serif",letterSpacing:"1.5px",textTransform:"uppercase",transition:"all .2s"}}>{editing?"CLOSE EDITOR":"✏️  REVISE A SECTION"}</button>
-                    {mode!=="editor"&&<button onClick={()=>{dlDoc(raw,`${d?.name}${ep?` — Ep ${ep}`:""} Content Package`);setDlOk(true);setTimeout(()=>setDlOk(false),2500);}} style={{flex:1,padding:"13px",background:dlOk?T.coralSoft:T.card,border:`1px solid ${dlOk?T.coralMid:T.cardBorder}`,borderRadius:"8px",color:dlOk?T.coral:T.textSecondary,fontSize:"14px",cursor:"pointer",fontFamily:"'Playfair Display', Georgia, serif",letterSpacing:"1.5px",textTransform:"uppercase",transition:"all .2s"}}>{dlOk?"✓ DOWNLOADED":"📄  WORD DOC"}</button>}
-                    {mode!=="editor"&&<button onClick={()=>{dlHtml(raw,`${d?.name}${ep?` — Ep ${ep}`:""} Content Package`);setDlHtmlOk(true);setTimeout(()=>setDlHtmlOk(false),2500);}} title="Download HTML — upload to Google Drive to auto-convert to Google Doc" style={{flex:1,padding:"13px",background:dlHtmlOk?T.coralSoft:T.card,border:`1px solid ${dlHtmlOk?T.coralMid:T.cardBorder}`,borderRadius:"8px",color:dlHtmlOk?T.coral:T.textSecondary,fontSize:"14px",cursor:"pointer",fontFamily:"'Playfair Display', Georgia, serif",letterSpacing:"1.5px",textTransform:"uppercase",transition:"all .2s"}}>{dlHtmlOk?"✓ DOWNLOADED":"📁  GOOGLE DOCS"}</button>}
+                    <button onClick={()=>setEditing(!editing)} style={{flex:1,padding:"13px",background:editing?T.coralSoft:T.card,border:`1px solid ${editing?T.coralMid:T.cardBorder}`,borderRadius:"8px",color:editing?T.coral:T.textSecondary,fontSize:"14px",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1.5px",textTransform:"uppercase",transition:"all .2s"}}>{editing?"CLOSE EDITOR":"✏️  REVISE A SECTION"}</button>
+                    {mode!=="editor"&&<button onClick={()=>{dlDoc(raw,`${d?.name}${ep?` — Ep ${ep}`:""} Content Package`);setDlOk(true);setTimeout(()=>setDlOk(false),2500);}} style={{flex:1,padding:"13px",background:dlOk?T.coralSoft:T.card,border:`1px solid ${dlOk?T.coralMid:T.cardBorder}`,borderRadius:"8px",color:dlOk?T.coral:T.textSecondary,fontSize:"14px",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1.5px",textTransform:"uppercase",transition:"all .2s"}}>{dlOk?"✓ DOWNLOADED":"📄  WORD DOC"}</button>}
+                    {mode!=="editor"&&<button onClick={()=>{dlHtml(raw,`${d?.name}${ep?` — Ep ${ep}`:""} Content Package`);setDlHtmlOk(true);setTimeout(()=>setDlHtmlOk(false),2500);}} title="Download HTML — upload to Google Drive to auto-convert to Google Doc" style={{flex:1,padding:"13px",background:dlHtmlOk?T.coralSoft:T.card,border:`1px solid ${dlHtmlOk?T.coralMid:T.cardBorder}`,borderRadius:"8px",color:dlHtmlOk?T.coral:T.textSecondary,fontSize:"14px",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1.5px",textTransform:"uppercase",transition:"all .2s"}}>{dlHtmlOk?"✓ DOWNLOADED":"📁  GOOGLE DOCS"}</button>}
                   </div>
                   {mode==="editor"&&<div style={{background:T.card,border:"1px solid "+T.cardBorder,borderRadius:"10px",padding:"18px 20px",marginTop:"14px"}}>
-                    <div style={{fontSize:"13px",color:T.coral,letterSpacing:"2px",fontFamily:"'Playfair Display', Georgia, serif",marginBottom:"12px",fontWeight:"700"}}>🎬 SEND CLIPS TO DESCRIPT</div>
-                    <div style={{fontSize:"13px",color:T.textSecondary,fontFamily:"'Playfair Display', Georgia, serif",fontStyle:"italic",marginBottom:"12px"}}>Paste your Descript Project ID (last part of the project URL) to highlight clips in Descript.</div>
+                    <div style={{fontSize:"13px",color:T.coral,letterSpacing:"2px",fontFamily:"'DM Sans', system-ui, sans-serif",marginBottom:"12px",fontWeight:"700"}}>🎬 SEND CLIPS TO DESCRIPT</div>
+                    <div style={{fontSize:"13px",color:T.textSecondary,fontFamily:"'DM Sans', system-ui, sans-serif",fontStyle:"italic",marginBottom:"12px"}}>Paste your Descript Project ID (last part of the project URL) to highlight clips in Descript.</div>
                     <div style={{display:"flex",gap:"8px",marginBottom:"8px",flexWrap:"wrap"}}>
                       <input value={descriptProjectId} onChange={e=>setDescriptProjectId(e.target.value)} placeholder="Project ID (from Descript URL)"
                         style={{flex:1,minWidth:"160px",background:T.surface,border:"1px solid "+T.cardBorder,borderRadius:"6px",padding:"10px 12px",color:T.text,fontSize:"13px",outline:"none",fontFamily:"monospace"}}/>
                       <button onClick={()=>{const clipSec=secs.find(s=>s.id==="editor-clips");sendToDescript(clipSec?.content||raw);}}
                         disabled={descriptSending||!descriptProjectId.trim()}
-                        style={{padding:"10px 20px",background:descriptSending||!descriptProjectId.trim()?"#555":T.coral,border:"none",borderRadius:"6px",color:"#fff",fontSize:"13px",fontWeight:"700",cursor:descriptSending||!descriptProjectId.trim()?"not-allowed":"pointer",fontFamily:"'Playfair Display', Georgia, serif",letterSpacing:"1px",whiteSpace:"nowrap"}}>
+                        style={{padding:"10px 20px",background:descriptSending||!descriptProjectId.trim()?"#555":T.coral,border:"none",borderRadius:"6px",color:"#fff",fontSize:"13px",fontWeight:"700",cursor:descriptSending||!descriptProjectId.trim()?"not-allowed":"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1px",whiteSpace:"nowrap"}}>
                         {descriptSending?"Sending...":"Send to Descript →"}
                       </button>
                     </div>
                     {descriptStatus&&<div style={{fontSize:"13px",color:descriptStatus.startsWith("Sent")||descriptStatus.startsWith("Job")?"#52B788":"#F09090",fontFamily:"monospace",marginTop:"6px"}}>{descriptStatus}</div>}
-                    <div style={{fontSize:"11px",color:T.textMuted,fontFamily:"'Playfair Display', Georgia, serif",letterSpacing:"1px",marginTop:"8px"}}>API KEY: Settings → API Tokens in Descript · PROJECT ID: Last part of your Descript project URL</div>
+                    <div style={{fontSize:"11px",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1px",marginTop:"8px"}}>API KEY: Settings → API Tokens in Descript · PROJECT ID: Last part of your Descript project URL</div>
                   </div>}
                   {editing&&<div style={{background:T.surface,border:`1px solid ${T.cardBorder}`,borderRadius:"10px",padding:"24px",marginTop:"10px",animation:"fadeUp .3s ease"}}>
                     <label style={lbl}>Section to Revise</label>
                     <div style={{display:"flex",flexWrap:"wrap",gap:"6px",marginBottom:"16px"}}>
                       {ED.filter(s=>(!s.g||guest)&&(!s.pm||false)&&(!s.cm||mode==="clips")).map(s=>(
-                        <button key={s.id} onClick={()=>setESec(s.id)} style={{padding:"6px 14px",background:eSec===s.id?`${clr}18`:T.card,border:eSec===s.id?`1px solid ${clr}55`:`1px solid ${T.cardBorder}`,borderRadius:"6px",color:eSec===s.id?T.text:T.textMuted,fontSize:"12px",cursor:"pointer",fontFamily:"'Playfair Display', Georgia, serif",letterSpacing:"1px",transition:"all .15s"}}>{s.l}</button>
+                        <button key={s.id} onClick={()=>setESec(s.id)} style={{padding:"6px 14px",background:eSec===s.id?`${clr}18`:T.card,border:eSec===s.id?`1px solid ${clr}55`:`1px solid ${T.cardBorder}`,borderRadius:"6px",color:eSec===s.id?T.text:T.textMuted,fontSize:"12px",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1px",transition:"all .15s"}}>{s.l}</button>
                       ))}
                     </div>
                     {eSec&&<>
@@ -1248,8 +1248,8 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
 
       {/* FOOTER */}
       <div style={{padding:"14px 40px",background:T.surface,borderTop:`1px solid ${T.cardBorder}`,display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0}}>
-        <span style={{fontSize:"15px",color:T.textSecondary,fontFamily:"'Playfair Display', Georgia, serif",letterSpacing:"1.5px"}}>© {new Date().getFullYear()} PODCAST IMPACT STUDIO</span>
-        <span style={{fontSize:"15px",color:T.textSecondary,fontFamily:"'Playfair Display', Georgia, serif",letterSpacing:"1px"}}>CONTENT CREATOR</span>
+        <span style={{fontSize:"15px",color:T.textSecondary,fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1.5px"}}>© {new Date().getFullYear()} PODCAST IMPACT STUDIO</span>
+        <span style={{fontSize:"15px",color:T.textSecondary,fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1px"}}>CONTENT CREATOR</span>
       </div>
     </div>
   );

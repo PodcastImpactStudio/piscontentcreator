@@ -9,8 +9,8 @@ const T = {
   text: "#FFFFFF", textSecondary: "#CECECE", textMuted: "#FFFFFF",
   coral: "#D97757", coralSoft: "#D9775718", coralMid: "#D9775740",
 };;
-const FF = "'Playfair Display', Georgia, serif";
-const PF = "'Playfair Display', Georgia, serif";
+const FF = "'DM Sans', system-ui, sans-serif";
+const PF = "'DM Sans', system-ui, sans-serif";
 const LS = { fontFamily: FF };
 const GA = { fontFamily: FF };
 
@@ -363,7 +363,7 @@ function SettingsView({ globalSettings, setGlobalSettings, saveGlobalSettings, g
   function SaveBtn({ onClick }) {
     return (
       <button onClick={onClick || (() => saveGlobalSettings(globalSettings))}
-        style={{ padding: "10px 24px", background: T.coral, border: "none", borderRadius: "6px", color: "#fff", fontSize: "13px", fontWeight: "700", cursor: "pointer", fontFamily: "'Playfair Display', Georgia, serif", letterSpacing: "1px", textTransform: "uppercase" }}>
+        style={{ padding: "10px 24px", background: T.coral, border: "none", borderRadius: "6px", color: "#fff", fontSize: "13px", fontWeight: "700", cursor: "pointer", fontFamily: "'DM Sans', system-ui, sans-serif", letterSpacing: "1px", textTransform: "uppercase" }}>
         {globalSettingsSaved ? "✓ Saved" : globalSettingsLoading ? "Saving..." : "Save"}
       </button>
     );
@@ -379,7 +379,7 @@ function SettingsView({ globalSettings, setGlobalSettings, saveGlobalSettings, g
       <div style={{ width: "200px", background: T.surface, borderRight: "1px solid " + T.cardBorder, flexShrink: 0, padding: "16px 8px" }}>
         {sections.map(s => (
           <button key={s.id} onClick={() => setActiveSection(s.id)}
-            style={{ width: "100%", display: "flex", alignItems: "center", gap: "10px", padding: "10px 14px", background: activeSection === s.id ? T.coralSoft : "transparent", border: "none", borderRadius: "6px", color: activeSection === s.id ? T.coral : T.textSecondary, fontSize: "14px", cursor: "pointer", textAlign: "left", marginBottom: "2px", fontFamily: "'Playfair Display', Georgia, serif", fontWeight: activeSection === s.id ? "700" : "500", transition: "all .15s" }}>
+            style={{ width: "100%", display: "flex", alignItems: "center", gap: "10px", padding: "10px 14px", background: activeSection === s.id ? T.coralSoft : "transparent", border: "none", borderRadius: "6px", color: activeSection === s.id ? T.coral : T.textSecondary, fontSize: "14px", cursor: "pointer", textAlign: "left", marginBottom: "2px", fontFamily: "'DM Sans', system-ui, sans-serif", fontWeight: activeSection === s.id ? "700" : "500", transition: "all .15s" }}>
             <span>{s.icon}</span><span>{s.label}</span>
           </button>
         ))}
@@ -1003,14 +1003,14 @@ ${combined}`;
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             <div style={{ width: "3px", height: "24px", background: T.coral, borderRadius: "2px" }} />
             <span style={{ fontSize: "20px", color: T.text, fontFamily: PF, fontWeight: "700" }}>Podcast Impact Studio</span>
-            <span style={{ fontSize: "11px", color: T.textMuted, fontFamily: "'Playfair Display', Georgia, serif", background: T.card, padding: "3px 8px", borderRadius: "4px", border: "1px solid " + T.cardBorder }}>Admin</span>
+            <span style={{ fontSize: "11px", color: T.textMuted, fontFamily: "'DM Sans', system-ui, sans-serif", background: T.card, padding: "3px 8px", borderRadius: "4px", border: "1px solid " + T.cardBorder }}>Admin</span>
           </div>
-          <button onClick={onClose} style={{ padding: "8px 16px", background: "transparent", border: "1px solid " + T.cardBorder, borderRadius: "6px", color: T.textSecondary, fontSize: "13px", cursor: "pointer", fontFamily: "'Playfair Display', Georgia, serif" }}>✕ Close</button>
+          <button onClick={onClose} style={{ padding: "8px 16px", background: "transparent", border: "1px solid " + T.cardBorder, borderRadius: "6px", color: T.textSecondary, fontSize: "13px", cursor: "pointer", fontFamily: "'DM Sans', system-ui, sans-serif" }}>✕ Close</button>
         </div>
         <div style={{ display: "flex", padding: "0 32px" }}>
           {["shows", "settings"].map(v => (
             <button key={v} onClick={() => setAdminView(v)}
-              style={{ padding: "10px 24px", background: "transparent", border: "none", borderBottom: adminView === v ? "2px solid " + T.coral : "2px solid transparent", color: adminView === v ? T.coral : T.textMuted, fontSize: "13px", cursor: "pointer", fontFamily: "'Playfair Display', Georgia, serif", letterSpacing: "2px", textTransform: "uppercase", fontWeight: adminView === v ? "700" : "500", transition: "all .15s" }}>
+              style={{ padding: "10px 24px", background: "transparent", border: "none", borderBottom: adminView === v ? "2px solid " + T.coral : "2px solid transparent", color: adminView === v ? T.coral : T.textMuted, fontSize: "13px", cursor: "pointer", fontFamily: "'DM Sans', system-ui, sans-serif", letterSpacing: "2px", textTransform: "uppercase", fontWeight: adminView === v ? "700" : "500", transition: "all .15s" }}>
               {v === "shows" ? (accountType === "solo" ? "My Shows" : "Show DNA Manager") : "Settings"}
             </button>
           ))}
@@ -1074,8 +1074,8 @@ ${combined}`;
                 <div style={{ padding: "14px 24px", background: "#D9775710", borderBottom: "1px solid " + T.coral + "33", display: "flex", gap: "12px", alignItems: "flex-start" }}>
                   <span style={{ fontSize: "20px", flexShrink: 0 }}>💡</span>
                   <div>
-                    <div style={{ fontSize: "13px", fontWeight: "700", color: T.coral, marginBottom: "3px", letterSpacing: "1px", textTransform: "uppercase", fontFamily: "'Playfair Display', Georgia, serif" }}>For best results, fill in every tab</div>
-                    <div style={{ fontSize: "13px", color: T.textSecondary, lineHeight: "1.5", fontFamily: "'Playfair Display', Georgia, serif" }}>
+                    <div style={{ fontSize: "13px", fontWeight: "700", color: T.coral, marginBottom: "3px", letterSpacing: "1px", textTransform: "uppercase", fontFamily: "'DM Sans', system-ui, sans-serif" }}>For best results, fill in every tab</div>
+                    <div style={{ fontSize: "13px", color: T.textSecondary, lineHeight: "1.5", fontFamily: "'DM Sans', system-ui, sans-serif" }}>
                       The more detail you provide — voice DNA, audience, platforms, boilerplate — the more tailored and on-brand your generated content will be. Start with <strong style={{ color: T.text }}>Basic Info</strong>, then work through each tab. You can always come back and update.
                     </div>
                   </div>
