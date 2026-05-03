@@ -659,6 +659,10 @@ export function AdminPanel({ shows, orgId, onClose, onSaved }) {
   const [globalSettings, setGlobalSettings] = useState({});
   const [globalSettingsSaved, setGlobalSettingsSaved] = useState(false);
   const [globalSettingsLoading, setGlobalSettingsLoading] = useState(false);
+  const [transcriptFiles, setTranscriptFiles] = useState([]);
+  const [transcriptDragging, setTranscriptDragging] = useState(false);
+  const [transcriptParsing, setTranscriptParsing] = useState(false);
+  const [transcriptMsg, setTranscriptMsg] = useState("");
 
   useEffect(() => {
     async function loadGlobalSettings() {
@@ -792,6 +796,100 @@ export function AdminPanel({ shows, orgId, onClose, onSaved }) {
     finally { setParsing(false); }
   }
 
+  function handleTranscriptDrop(e) {
+    e.preventDefault(); setTranscriptDragging(false);
+    const files = Array.from(e.dataTransfer?.files || e.target?.files || [])
+      .filter(f => f.name.match(/\.(txt|md|docx?)$/i))
+      .slice(0, 5 - transcriptFiles.length);
+    if (!files.length) return;
+    Promise.all(files.map(f => new Promise((res, rej) => {
+      const reader = new FileReader();
+      reader.onload = e => res({ name: f.name, text: e.target.result });
+      reader.onerror = rej;
+      reader.readAsText(f);
+    }))).then(loaded => setTranscriptFiles(prev => [...prev, ...loaded].slice(0, 5)));
+  }
+
+  async function parseFromTranscripts() {
+    if (!transcriptFiles.length) return;
+    setTranscriptParsing(true); setTranscriptMsg("");
+    try {
+      const combined = transcriptFiles.map((f, i) =>
+        `=== TRANSCRIPT ${i + 1}: ${f.name} ===\n${f.text.slice(0, 5000)}`
+      ).join("\n\n");
+
+      const prompt = `You are a podcast content strategist. Analyze these ${transcriptFiles.length} podcast transcript(s) and extract the show's DNA — voice, audience, and content patterns.
+
+Return ONLY these labeled fields, one per line, label in ALL CAPS followed by colon and space, then the value. No other text, no explanations.
+
+NAME: show name (infer from context if not explicit)
+TAG: a one-line tagline that captures the show's essence
+HOSTS: host name(s) — infer from how people address each other
+VOICE_TRAITS: 4-6 adjectives describing the tone and voice (e.g. Warm. Curious. Direct. Science-backed.)
+VOICE_ENERGY: energy level from 1-10 with /10 (e.g. 6/10)
+VOICE_ARCH: host archetype in 2-4 words (e.g. The Curious Guide, The Expert Friend)
+VOICE_ARC: emotional journey listeners go on (e.g. Confused → Curious → Validated → Empowered)
+VOICE_PHRASES: recurring phrases or sign-offs separated by | (pull exact words from transcripts)
+VOICE_USE: types of language, analogies, or framing the show gravitates toward
+VOICE_AVOID: language, tone, or topics that seem absent or contrary to this show's voice
+AUD_WHO: describe the ideal listener in 2-3 sentences — who they are, what stage of life/career
+AUD_PAINS: 3-5 core struggles or questions the audience has, separated by |
+AUD_LANG: exact phrases or words the audience would use to describe their problem
+HASHTAGS: 5-8 relevant hashtags for this show
+RULES: 2-3 content rules that emerge from the transcripts (e.g. Always cite sources. Never give medical advice.)
+
+TRANSCRIPTS:
+${combined}`;
+
+      const r = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
+        body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 2000, messages: [{ role: "user", content: prompt }] })
+      });
+      if (!r.ok) throw new Error("API error " + r.status);
+      const j = await r.json();
+      const text = j.content?.filter(b => b.type === "text").map(b => b.text).join("") || "";
+
+      function getField(label) {
+        for (const line of text.split("\n")) {
+          const t = line.trim();
+          if (t.toUpperCase().startsWith(label + ":")) return t.slice(label.length + 1).trim();
+        }
+        return "";
+      }
+      function splitBy(str, sep) { return str ? str.split(sep).map(s => s.trim()).filter(Boolean) : []; }
+
+      setForm(prev => ({
+        ...prev,
+        name: getField("NAME") || prev?.name || "",
+        tag: getField("TAG") || prev?.tag || "",
+        hosts: getField("HOSTS") || prev?.hosts || "",
+        voice: {
+          traits: getField("VOICE_TRAITS") || prev?.voice?.traits || "",
+          energy: getField("VOICE_ENERGY") || prev?.voice?.energy || "5/10",
+          arch: getField("VOICE_ARCH") || prev?.voice?.arch || "",
+          arc: getField("VOICE_ARC") || prev?.voice?.arc || "",
+          phrases: splitBy(getField("VOICE_PHRASES"), "|").join("\n") || prev?.voice?.phrases || "",
+          use: getField("VOICE_USE") || prev?.voice?.use || "",
+          avoid: getField("VOICE_AVOID") || prev?.voice?.avoid || "",
+        },
+        aud: {
+          who: getField("AUD_WHO") || prev?.aud?.who || "",
+          pains: splitBy(getField("AUD_PAINS"), "|").join("\n") || prev?.aud?.pains || "",
+          lang: getField("AUD_LANG") || prev?.aud?.lang || "",
+        },
+        tags: getField("HASHTAGS") || prev?.tags || "",
+        rules: getField("RULES") || prev?.rules || "",
+        snElements: prev?.snElements || DEFAULT_SN_ELEMENTS,
+      }));
+      setTranscriptMsg("✓ Done! Fields filled from " + transcriptFiles.length + " transcript" + (transcriptFiles.length > 1 ? "s" : "") + ". Review each tab and save.");
+    } catch (e) {
+      setTranscriptMsg("Error: " + e.message);
+    } finally {
+      setTranscriptParsing(false);
+    }
+  }
+
   async function handleSave() {
     if (!form) return;
     const id = selKey === "__new__" ? newId.trim().toLowerCase().replace(/\s+/g, "-") : selKey;
@@ -826,7 +924,7 @@ export function AdminPanel({ shows, orgId, onClose, onSaved }) {
     { id: "platforms", label: "Platforms" },
     { id: "snnotes", label: "Show Notes Builder" },
     { id: "boilerplate", label: "Boilerplate" },
-
+    { id: "transcript", label: "✨ AI Fill from Transcripts" },
   ];
 
   return (
@@ -995,6 +1093,90 @@ export function AdminPanel({ shows, orgId, onClose, onSaved }) {
                   </Section>
                 )}
 
+                {tab === "transcript" && (
+                  <Section title="AI Fill from Transcripts">
+                    <div style={{ fontSize: "14px", color: T.textSecondary, marginBottom: "20px", ...GA, lineHeight: "1.7" }}>
+                      Drop 3–5 transcript files (.txt) and Claude will analyze them to fill in your show's Voice DNA, Audience, and more. You can review and edit every field before saving.
+                    </div>
+
+                    {/* Drop zone */}
+                    <div
+                      onDragOver={e => { e.preventDefault(); setTranscriptDragging(true); }}
+                      onDragLeave={() => setTranscriptDragging(false)}
+                      onDrop={handleTranscriptDrop}
+                      style={{
+                        border: "2px dashed " + (transcriptDragging ? T.coral : T.cardBorder),
+                        borderRadius: "10px",
+                        padding: "36px 24px",
+                        textAlign: "center",
+                        background: transcriptDragging ? T.coralSoft : T.surface,
+                        transition: "all .2s",
+                        marginBottom: "20px",
+                        cursor: "pointer",
+                      }}
+                      onClick={() => { if (transcriptFiles.length < 5) document.getElementById("transcript-file-input").click(); }}
+                    >
+                      <div style={{ fontSize: "32px", marginBottom: "10px" }}>📄</div>
+                      <div style={{ fontSize: "15px", color: T.text, fontFamily: FF, marginBottom: "6px", fontWeight: "600" }}>
+                        {transcriptFiles.length === 0 ? "Drop transcript files here" : `${transcriptFiles.length}/5 transcripts loaded`}
+                      </div>
+                      <div style={{ fontSize: "13px", color: T.textMuted, fontFamily: FF }}>
+                        {transcriptFiles.length < 5 ? "Click or drag .txt files — up to 5 transcripts" : "Maximum 5 transcripts reached"}
+                      </div>
+                      <input
+                        id="transcript-file-input"
+                        type="file"
+                        multiple
+                        accept=".txt,.md"
+                        style={{ display: "none" }}
+                        onChange={handleTranscriptDrop}
+                      />
+                    </div>
+
+                    {/* File list */}
+                    {transcriptFiles.length > 0 && (
+                      <div style={{ marginBottom: "20px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                        {transcriptFiles.map((f, i) => (
+                          <div key={i} style={{ display: "flex", alignItems: "center", gap: "12px", background: T.surface, border: "1px solid " + T.cardBorder, borderRadius: "6px", padding: "10px 14px" }}>
+                            <span style={{ fontSize: "16px" }}>📝</span>
+                            <span style={{ flex: 1, fontSize: "14px", color: T.text, fontFamily: FF }}>{f.name}</span>
+                            <span style={{ fontSize: "12px", color: T.textMuted, fontFamily: FF }}>{Math.round(f.text.length / 1000)}k chars</span>
+                            <button onClick={() => setTranscriptFiles(prev => prev.filter((_, j) => j !== i))}
+                              style={{ background: "transparent", border: "none", color: T.textMuted, cursor: "pointer", fontSize: "16px", padding: "0 4px", lineHeight: 1 }}>✕</button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Analyze button */}
+                    <button
+                      onClick={parseFromTranscripts}
+                      disabled={transcriptParsing || transcriptFiles.length === 0}
+                      style={{
+                        width: "100%", padding: "15px", background: transcriptFiles.length > 0 ? T.coral : T.cardBorder,
+                        border: "none", borderRadius: "8px", color: transcriptFiles.length > 0 ? "#fff" : T.textMuted,
+                        fontSize: "15px", fontWeight: "700", cursor: transcriptFiles.length > 0 ? "pointer" : "not-allowed",
+                        fontFamily: FF, letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: "14px",
+                      }}>
+                      {transcriptParsing ? "Analyzing transcripts…" : `✨ Analyze ${transcriptFiles.length > 0 ? transcriptFiles.length : ""} Transcript${transcriptFiles.length !== 1 ? "s" : ""} with AI →`}
+                    </button>
+
+                    {transcriptMsg && (
+                      <div style={{ padding: "14px 16px", background: transcriptMsg.startsWith("✓") ? "#52B78820" : "#F0909020", border: "1px solid " + (transcriptMsg.startsWith("✓") ? "#52B78844" : "#F0909044"), borderRadius: "8px", fontSize: "14px", color: transcriptMsg.startsWith("✓") ? "#52B788" : "#F09090", fontFamily: FF, lineHeight: "1.6" }}>
+                        {transcriptMsg}
+                        {transcriptMsg.startsWith("✓") && (
+                          <div style={{ marginTop: "10px", display: "flex", gap: "10px" }}>
+                            {["basic","voice","audience"].map(t => (
+                              <button key={t} onClick={() => setTab(t)} style={{ padding: "6px 14px", background: T.surface, border: "1px solid " + T.cardBorder, borderRadius: "6px", color: T.coral, fontSize: "12px", cursor: "pointer", fontFamily: FF, fontWeight: "700", letterSpacing: "1px", textTransform: "uppercase" }}>
+                                Review {t === "basic" ? "Basic Info" : t === "voice" ? "Voice DNA" : "Audience"} →
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </Section>
+                )}
 
               </div>
 
