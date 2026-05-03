@@ -100,33 +100,39 @@ function buildSections(show, g, snTemplate) {
   // SPOTIFY FOR CREATORS — after show notes, before YouTube
   if (podcast.includes("Spotify for Creators")) {
     out += `${n++}. SPOTIFY FOR CREATORS
-Generate interactive engagement content for the Spotify for Creators episode upload. Format exactly as follows:
+Generate interactive engagement content for the Spotify for Creators episode upload.
 
-QUESTIONS FOR LISTENERS (write 3 questions)
-Question 1: [A thought-provoking open-ended question directly tied to this episode's main topic — something listeners will want to answer]
+CRITICAL CHARACTER LIMITS — Spotify enforces these strictly:
+- Each poll QUESTION: 60 characters maximum (count every character including spaces)
+- Each poll OPTION (A/B/C/D): 24 characters maximum — this is Spotify's hard limit, do NOT exceed it
+- Listener questions: 100 characters maximum
+Count carefully before writing each item.
+
+QUESTIONS FOR LISTENERS (write 3 questions, each under 100 characters)
+Question 1: [A thought-provoking open-ended question tied to this episode's main topic]
 Question 2: [A personal reflection question — "Have you ever..." or "What's your experience with..."]
-Question 3: [A forward-looking or action question — "What will you try..." or "What's one thing you're taking away..."]
+Question 3: [A forward-looking question — "What will you try..." or "What's one thing you're taking away..."]
 
 POLL 1
-[Poll question tied to a key episode insight]
-Option A: [answer]
-Option B: [answer]
-Option C: [answer]
-Option D: [answer]
+[Poll question — 60 chars max]
+Option A: [answer — 24 chars max]
+Option B: [answer — 24 chars max]
+Option C: [answer — 24 chars max]
+Option D: [answer — 24 chars max]
 
 POLL 2
-[Poll question about listener experience or belief related to episode topic]
-Option A: [answer]
-Option B: [answer]
-Option C: [answer]
-Option D: [answer]
+[Poll question — 60 chars max]
+Option A: [answer — 24 chars max]
+Option B: [answer — 24 chars max]
+Option C: [answer — 24 chars max]
+Option D: [answer — 24 chars max]
 
 POLL 3
-[Poll question about what listeners want to hear more of or what they'll do next]
-Option A: [answer]
-Option B: [answer]
-Option C: [answer]
-Option D: [answer]
+[Poll question — 60 chars max]
+Option A: [answer — 24 chars max]
+Option B: [answer — 24 chars max]
+Option C: [answer — 24 chars max]
+Option D: [answer — 24 chars max]
 ---
 `;
   }
@@ -375,6 +381,41 @@ ${content.split("\n").map(l=>{
   const u=URL.createObjectURL(b);
   const a=document.createElement("a");
   a.href=u;a.download=`${filename}.doc`;
+  document.body.appendChild(a);a.click();
+  document.body.removeChild(a);URL.revokeObjectURL(u);
+}
+
+function dlHtml(content,filename){
+  const h=`<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>${filename}</title>
+<style>
+body{font-family:Arial,sans-serif;font-size:12pt;line-height:1.7;color:#111;max-width:820px;margin:40px auto;padding:0 24px}
+h1{font-size:18pt;font-weight:bold;color:#D97757;border-bottom:2px solid #D97757;padding-bottom:8px;margin-bottom:4px}
+.meta{font-size:10pt;color:#888;margin-bottom:24px}
+.sec{font-size:13pt;font-weight:bold;color:#D97757;margin-top:28px;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px}
+.sub{font-size:11pt;font-weight:bold;color:#333;margin-top:14px;margin-bottom:4px}
+p{margin:3pt 0}
+hr{border:none;border-top:1px solid #ddd;margin:18px 0}
+a{color:#D97757}
+</style></head>
+<body>
+<h1>${filename}</h1>
+<div class="meta">Podcast Impact Studio · Content Creator · Generated ${new Date().toLocaleDateString("en-US",{year:"numeric",month:"long",day:"numeric"})}</div>
+${content.split("\n").map(l=>{
+  const t=l.trim();
+  if(!t)return"<p>&nbsp;</p>";
+  if(t==="---")return"<hr>";
+  if(TOP_SECTIONS.test(t))return`<div class="sec">${t}</div>`;
+  if(SUB_HEADERS.test(t)&&t.split(/\s+/).length<=6)return`<div class="sub">${t}</div>`;
+  if(/^[-•]\s/.test(t))return`<p style="padding-left:16px">- ${linkifyLine(t.replace(/^[-•]\s/,""))}</p>`;
+  return`<p>${linkifyLine(l)}</p>`;
+}).join("\n")}
+</body></html>`;
+  const b=new Blob([h],{type:"text/html"});
+  const u=URL.createObjectURL(b);
+  const a=document.createElement("a");
+  a.href=u;a.download=`${filename}.html`;
   document.body.appendChild(a);a.click();
   document.body.removeChild(a);URL.revokeObjectURL(u);
 }
@@ -645,6 +686,7 @@ export default function App(){
   const[rev,setRev]=useState(false);
   const[cpAll,setCpAll]=useState(false);
   const[dlOk,setDlOk]=useState(false);
+  const[dlHtmlOk,setDlHtmlOk]=useState(false);
   const[dragging,setDragging]=useState(false);
   const[extraPlatforms,setExtraPlatforms]=useState([]);
   const[clipCount,setClipCount]=useState(3);
@@ -1140,6 +1182,7 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
                 <div style={{display:"flex",gap:"8px"}}>
                   {mode!=="clips"&&<button onClick={()=>{copyText(raw);setCpAll(true);setTimeout(()=>setCpAll(false),2000);}} style={{...ghost,background:cpAll?T.coralSoft:"transparent",borderColor:cpAll?T.coralMid:T.cardBorder,color:cpAll?T.coral:T.textMuted}}>{cpAll?"✓ COPIED":"COPY ALL"}</button>}
                   {mode!=="clips"&&<button onClick={()=>{dlDoc(raw,`${d?.name}${ep?` — Ep ${ep}`:""} Content Package`);setDlOk(true);setTimeout(()=>setDlOk(false),2500);}} style={{...ghost,background:dlOk?T.coralSoft:"transparent",borderColor:dlOk?T.coralMid:T.cardBorder,color:dlOk?T.coral:T.textMuted}}>{dlOk?"✓ DOWNLOADED":"📄 WORD DOC"}</button>}
+                  {mode!=="clips"&&<button onClick={()=>{dlHtml(raw,`${d?.name}${ep?` — Ep ${ep}`:""} Content Package`);setDlHtmlOk(true);setTimeout(()=>setDlHtmlOk(false),2500);}} title="Download as HTML — upload to Google Drive to auto-convert to Google Doc" style={{...ghost,background:dlHtmlOk?T.coralSoft:"transparent",borderColor:dlHtmlOk?T.coralMid:T.cardBorder,color:dlHtmlOk?T.coral:T.textMuted}}>{dlHtmlOk?"✓ DOWNLOADED":"📁 GOOGLE DOCS"}</button>}
                   <button onClick={()=>{setStep(mode==="clips"?"clips-setup":"input");setRaw("");setSecs([]);setClipResults([]);}} style={ghost}>{mode==="clips"?"NEW CLIPS":"NEW EPISODE"}</button>
                 </div>
               </div>
@@ -1161,7 +1204,8 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
                   <div>{secs.map((s,i)=><Sec key={s.id+i} s={s} clr={clr}/>)}</div>
                   <div style={{display:"flex",gap:"10px",marginTop:"16px",flexWrap:"wrap"}}>
                     <button onClick={()=>setEditing(!editing)} style={{flex:1,padding:"13px",background:editing?T.coralSoft:T.card,border:`1px solid ${editing?T.coralMid:T.cardBorder}`,borderRadius:"8px",color:editing?T.coral:T.textSecondary,fontSize:"14px",cursor:"pointer",fontFamily:"'Playfair Display', Georgia, serif",letterSpacing:"1.5px",textTransform:"uppercase",transition:"all .2s"}}>{editing?"CLOSE EDITOR":"✏️  REVISE A SECTION"}</button>
-                    {mode!=="editor"&&<button onClick={()=>{dlDoc(raw,`${d?.name}${ep?` — Ep ${ep}`:""} Content Package`);setDlOk(true);setTimeout(()=>setDlOk(false),2500);}} style={{flex:1,padding:"13px",background:dlOk?T.coralSoft:T.card,border:`1px solid ${dlOk?T.coralMid:T.cardBorder}`,borderRadius:"8px",color:dlOk?T.coral:T.textSecondary,fontSize:"14px",cursor:"pointer",fontFamily:"'Playfair Display', Georgia, serif",letterSpacing:"1.5px",textTransform:"uppercase",transition:"all .2s"}}>{dlOk?"✓ DOWNLOADED":"📄  DOWNLOAD WORD DOC"}</button>}
+                    {mode!=="editor"&&<button onClick={()=>{dlDoc(raw,`${d?.name}${ep?` — Ep ${ep}`:""} Content Package`);setDlOk(true);setTimeout(()=>setDlOk(false),2500);}} style={{flex:1,padding:"13px",background:dlOk?T.coralSoft:T.card,border:`1px solid ${dlOk?T.coralMid:T.cardBorder}`,borderRadius:"8px",color:dlOk?T.coral:T.textSecondary,fontSize:"14px",cursor:"pointer",fontFamily:"'Playfair Display', Georgia, serif",letterSpacing:"1.5px",textTransform:"uppercase",transition:"all .2s"}}>{dlOk?"✓ DOWNLOADED":"📄  WORD DOC"}</button>}
+                    {mode!=="editor"&&<button onClick={()=>{dlHtml(raw,`${d?.name}${ep?` — Ep ${ep}`:""} Content Package`);setDlHtmlOk(true);setTimeout(()=>setDlHtmlOk(false),2500);}} title="Download HTML — upload to Google Drive to auto-convert to Google Doc" style={{flex:1,padding:"13px",background:dlHtmlOk?T.coralSoft:T.card,border:`1px solid ${dlHtmlOk?T.coralMid:T.cardBorder}`,borderRadius:"8px",color:dlHtmlOk?T.coral:T.textSecondary,fontSize:"14px",cursor:"pointer",fontFamily:"'Playfair Display', Georgia, serif",letterSpacing:"1.5px",textTransform:"uppercase",transition:"all .2s"}}>{dlHtmlOk?"✓ DOWNLOADED":"📁  GOOGLE DOCS"}</button>}
                   </div>
                   {mode==="editor"&&<div style={{background:T.card,border:"1px solid "+T.cardBorder,borderRadius:"10px",padding:"18px 20px",marginTop:"14px"}}>
                     <div style={{fontSize:"13px",color:T.coral,letterSpacing:"2px",fontFamily:"'Playfair Display', Georgia, serif",marginBottom:"12px",fontWeight:"700"}}>🎬 SEND CLIPS TO DESCRIPT</div>

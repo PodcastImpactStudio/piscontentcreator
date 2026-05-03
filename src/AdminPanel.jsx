@@ -67,6 +67,9 @@ function Fld({ label: l, children }) {
 }
 
 function PlatformHub({ platforms, onChange }) {
+  const [customCommunity, setCustomCommunity] = useState("");
+  const [addingCustom, setAddingCustom] = useState(false);
+
   function isSelected(catId, p) {
     return (platforms[catId] || []).includes(p);
   }
@@ -79,6 +82,12 @@ function PlatformHub({ platforms, onChange }) {
       next = current.includes(p) ? current.filter(x => x !== p) : [...current, p];
     }
     onChange({ ...platforms, [catId]: next });
+  }
+  function addCustomPlatform() {
+    const name = customCommunity.trim();
+    if (!name) return;
+    onChange({ ...platforms, community: [name] });
+    setCustomCommunity(""); setAddingCustom(false);
   }
 
   return (
@@ -99,6 +108,41 @@ function PlatformHub({ platforms, onChange }) {
                 </button>
               );
             })}
+            {/* Custom community platform option */}
+            {cat.id === "community" && (() => {
+              const current = platforms.community || [];
+              const customVal = current.find(c => !cat.platforms.includes(c));
+              if (customVal) {
+                return (
+                  <button onClick={() => onChange({ ...platforms, community: [] })}
+                    style={{ padding: "8px 16px", background: T.coralSoft, border: "1px solid " + T.coral, borderRadius: "6px", color: T.text, fontSize: "14px", cursor: "pointer", ...LS, fontWeight: "700" }}>
+                    ✓ {customVal} ✕
+                  </button>
+                );
+              }
+              if (addingCustom) {
+                return (
+                  <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+                    <input
+                      autoFocus
+                      value={customCommunity}
+                      onChange={e => setCustomCommunity(e.target.value)}
+                      onKeyDown={e => { if (e.key === "Enter") addCustomPlatform(); if (e.key === "Escape") setAddingCustom(false); }}
+                      placeholder="Platform name..."
+                      style={{ padding: "8px 12px", background: T.surface, border: "1px solid " + T.coral, borderRadius: "6px", color: T.text, fontSize: "14px", outline: "none", width: "160px", fontFamily: FF }}
+                    />
+                    <button onClick={addCustomPlatform} style={{ padding: "8px 14px", background: T.coral, border: "none", borderRadius: "6px", color: "#fff", fontSize: "13px", cursor: "pointer", fontFamily: FF }}>Add</button>
+                    <button onClick={() => setAddingCustom(false)} style={{ padding: "8px 10px", background: "transparent", border: "1px solid " + T.cardBorder, borderRadius: "6px", color: T.textMuted, fontSize: "13px", cursor: "pointer", fontFamily: FF }}>✕</button>
+                  </div>
+                );
+              }
+              return (
+                <button onClick={() => setAddingCustom(true)}
+                  style={{ padding: "8px 16px", background: "transparent", border: "1px dashed " + T.cardBorder, borderRadius: "6px", color: T.textMuted, fontSize: "14px", cursor: "pointer", ...LS }}>
+                  + Custom Platform
+                </button>
+              );
+            })()}
           </div>
           {(platforms[cat.id] || []).length > 0 && (
             <div style={{ fontSize: "12px", color: T.textMuted, marginTop: "6px", ...LS, letterSpacing: "1px" }}>
