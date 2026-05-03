@@ -353,8 +353,8 @@ function SettingsView({ globalSettings, setGlobalSettings, saveGlobalSettings, g
   const sections = [
     { id: "integrations", label: "Integrations", icon: "🔌" },
     { id: "workspace", label: "Workspace", icon: "🏢" },
-    { id: "team", label: "Team", icon: "👥" },
-    { id: "codes", label: "Access Codes", icon: "🔑" },
+    ...(accountType === "agency" ? [{ id: "team", label: "Team", icon: "👥" }] : []),
+    ...(accountType === "agency" ? [{ id: "codes", label: "Access Codes", icon: "🔑" }] : []),
     { id: "billing", label: "Billing", icon: "💳" },
   ];
 
@@ -440,6 +440,31 @@ function SettingsView({ globalSettings, setGlobalSettings, saveGlobalSettings, g
                 <textarea value={(globalSettings.adminEmails || ["tamar@podcastimpactstudio.com", "tamarroutly@gmail.com"]).join("\n")} onChange={e => setGlobalSettings(s => ({ ...s, adminEmails: e.target.value.split("\n").map(x => x.trim()).filter(Boolean) }))} placeholder="admin@yourdomain.com" style={{ ...inp, minHeight: "100px", resize: "vertical", marginBottom: "20px", fontFamily: "monospace" }} />
                 <SaveBtn />
               </div>
+            </div>
+
+            {/* Account Type */}
+            <div style={{ background: T.card, border: "1px solid " + T.cardBorder, borderRadius: "12px", padding: "24px", marginTop: "16px" }}>
+              <div style={{ fontSize: "15px", fontWeight: "700", color: T.text, marginBottom: "4px", fontFamily: PF }}>Account Type</div>
+              <div style={{ fontSize: "13px", color: T.textMuted, marginBottom: "16px", fontStyle: "italic" }}>Switch between Solo and Agency mode. Agency unlocks team management and access codes.</div>
+              <div style={{ display: "flex", gap: "10px" }}>
+                {[{ id: "solo", icon: "🎙️", label: "Solo Podcaster" }, { id: "agency", icon: "🏢", label: "Production Company" }].map(opt => {
+                  const selected = (globalSettings.accountType || accountType) === opt.id;
+                  return (
+                    <button key={opt.id} onClick={async () => {
+                      const updated = { ...globalSettings, accountType: opt.id };
+                      setGlobalSettings(updated);
+                      await supabase.from("organizations").update({ account_type: opt.id }).eq("id", orgId);
+                      await saveGlobalSettings(updated);
+                    }}
+                      style={{ flex: 1, padding: "14px 10px", background: selected ? T.coralSoft : T.surface, border: "2px solid " + (selected ? T.coral : T.cardBorder), borderRadius: "10px", cursor: "pointer", textAlign: "center", transition: "all .15s", fontFamily: FF }}>
+                      <div style={{ fontSize: "22px", marginBottom: "6px" }}>{opt.icon}</div>
+                      <div style={{ fontSize: "13px", fontWeight: "700", color: selected ? T.coral : T.text, fontFamily: PF }}>{opt.label}</div>
+                      {selected && <div style={{ fontSize: "11px", color: T.coral, marginTop: "4px" }}>✓ Current</div>}
+                    </button>
+                  );
+                })}
+              </div>
+              <div style={{ fontSize: "12px", color: T.textMuted, marginTop: "10px", fontStyle: "italic", fontFamily: FF }}>Changes take effect after you close and reopen this panel.</div>
             </div>
           </div>
         )}
@@ -689,7 +714,7 @@ export function AdminGate({ onSuccess, onClose }) {
   );
 }
 
-export function AdminPanel({ shows, orgId, onClose, onSaved }) {
+export function AdminPanel({ shows, orgId, onClose, onSaved, accountType = "agency" }) {
   const [adminView, setAdminView] = useState("shows");
   const [selKey, setSelKey] = useState(null);
   const [form, setForm] = useState(null);
@@ -986,7 +1011,7 @@ ${combined}`;
           {["shows", "settings"].map(v => (
             <button key={v} onClick={() => setAdminView(v)}
               style={{ padding: "10px 24px", background: "transparent", border: "none", borderBottom: adminView === v ? "2px solid " + T.coral : "2px solid transparent", color: adminView === v ? T.coral : T.textMuted, fontSize: "13px", cursor: "pointer", fontFamily: "'Playfair Display', Georgia, serif", letterSpacing: "2px", textTransform: "uppercase", fontWeight: adminView === v ? "700" : "500", transition: "all .15s" }}>
-              {v === "shows" ? "Show DNA Manager" : "Settings"}
+              {v === "shows" ? (accountType === "solo" ? "My Shows" : "Show DNA Manager") : "Settings"}
             </button>
           ))}
         </div>

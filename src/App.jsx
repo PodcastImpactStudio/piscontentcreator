@@ -720,6 +720,7 @@ export default function App(){
   const[orgName,setOrgName]=useState("");
   const[onboardingComplete,setOnboardingComplete]=useState(true);
   const[onboardingStep,setOnboardingStep]=useState(null);
+  const[accountType,setAccountType]=useState("agency");
   const fileRef=useRef(null);
 
   const d=show?shows[show]:null;
@@ -841,9 +842,10 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
       // Load onboarding state
       if (myOrgId) {
         const { data: orgData } = await supabase.from("organizations")
-          .select("onboarding_complete").eq("id", myOrgId).single();
+          .select("onboarding_complete, account_type").eq("id", myOrgId).single();
         const complete = orgData?.onboarding_complete ?? true;
         setOnboardingComplete(complete);
+        setAccountType(orgData?.account_type || "agency");
         if (!complete) setOnboardingStep("profile");
       }
     } catch {
@@ -864,6 +866,7 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
     setShowProfile(false);
     setOnboardingComplete(true);
     setOnboardingStep(null);
+    setAccountType("agency");
     reset();
   }
 
@@ -944,7 +947,7 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
     return(
       <div style={{minHeight:"100vh",width:"100%",background:T.bg,color:T.text}}>
         <style>{`*{box-sizing:border-box}@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}button:hover{opacity:.85}`}</style>
-        {showAdmin&&<AdminPanel shows={shows} orgId={orgId} onClose={()=>setShowAdmin(false)} onSaved={async()=>{await refreshShows();await markOnboardingComplete();setShowAdmin(false);}}/>}
+        {showAdmin&&<AdminPanel shows={shows} orgId={orgId} accountType={accountType} onClose={()=>setShowAdmin(false)} onSaved={async()=>{await refreshShows();await markOnboardingComplete();setShowAdmin(false);}}/>}
         <OnboardingScreen
           step={onboardingStep}
           user={currentUser}
@@ -967,7 +970,7 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
       <style>{`*{box-sizing:border-box}@keyframes spin{to{transform:rotate(360deg)}}@keyframes pulse{0%,100%{opacity:.3}50%{opacity:1}}@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}textarea::placeholder,input::placeholder{color:${T.textMuted}}button:hover{opacity:.85}::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:${T.cardBorder};border-radius:2px}a{transition:opacity .2s}a:hover{opacity:.7}`}</style>
 
       {showProfile&&currentUser&&<Profile user={currentUser} onClose={()=>setShowProfile(false)} onSignOut={handleSignOut}/>}
-      {showAdmin&&<AdminPanel shows={shows} orgId={orgId} onClose={()=>setShowAdmin(false)} onSaved={async()=>{await refreshShows();if(!onboardingComplete)await markOnboardingComplete();}}/>}
+      {showAdmin&&<AdminPanel shows={shows} orgId={orgId} accountType={accountType} onClose={()=>setShowAdmin(false)} onSaved={async()=>{await refreshShows();if(!onboardingComplete)await markOnboardingComplete();}}/>}
 
       {/* HEADER */}
       <div style={{padding:"0 40px",background:T.surface,borderBottom:`1px solid ${T.cardBorder}`,display:"flex",justifyContent:"space-between",alignItems:"stretch",height:"64px",flexShrink:0}}>

@@ -6,7 +6,7 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: "Server not configured." });
   }
 
-  const { userId, orgName, userName, timezone, accessCode } = req.body || {};
+  const { userId, orgName, userName, timezone, accessCode, accountType } = req.body || {};
   if (!userId || !orgName || !userName) {
     return res.status(400).json({ error: "userId, orgName, and userName are required." });
   }
@@ -46,7 +46,7 @@ export default async function handler(req, res) {
 
     const { data: org, error: orgErr } = await admin
       .from("organizations")
-      .insert({ name: orgName, slug: finalSlug, owner_id: userId })
+      .insert({ name: orgName, slug: finalSlug, owner_id: userId, account_type: accountType || "solo" })
       .select()
       .single();
     if (orgErr) throw orgErr;

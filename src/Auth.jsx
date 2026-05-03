@@ -181,6 +181,7 @@ const ROLES = [
 ];
 
 function SignupScreen({ onSwitch, onAuthenticated }) {
+  const [accountType, setAccountType] = useState("solo");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [orgName, setOrgName] = useState("");
@@ -265,6 +266,7 @@ function SignupScreen({ onSwitch, onAuthenticated }) {
           timezone,
           role: role || "Other",
           accessCode: accessCode.trim(),
+          accountType,
         }),
       });
       const result = await r.json();
@@ -295,6 +297,22 @@ function SignupScreen({ onSwitch, onAuthenticated }) {
         </div>
         <div style={{ background: T.card, border: "1px solid " + T.cardBorder, borderRadius: "12px", padding: "32px" }}>
 
+          {/* Account Type Selector */}
+          <label style={lbl}>I am a... *</label>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "20px" }}>
+            {[
+              { id: "solo", icon: "🎙️", label: "Solo Podcaster", sub: "Just me & my show(s)" },
+              { id: "agency", icon: "🏢", label: "Production Company", sub: "I manage shows & have a team" },
+            ].map(opt => (
+              <button key={opt.id} type="button" onClick={() => setAccountType(opt.id)}
+                style={{ padding: "14px 10px", background: accountType === opt.id ? T.coralSoft : T.surface, border: "2px solid " + (accountType === opt.id ? T.coral : T.cardBorder), borderRadius: "10px", cursor: "pointer", textAlign: "center", transition: "all .15s" }}>
+                <div style={{ fontSize: "26px", marginBottom: "6px" }}>{opt.icon}</div>
+                <div style={{ fontSize: "13px", fontWeight: "700", color: accountType === opt.id ? T.coral : T.text, fontFamily: "'Playfair Display', Georgia, serif", marginBottom: "3px" }}>{opt.label}</div>
+                <div style={{ fontSize: "11px", color: T.textMuted, fontFamily: "'Playfair Display', Georgia, serif" }}>{opt.sub}</div>
+              </button>
+            ))}
+          </div>
+
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "0" }}>
             <div>
               <label style={lbl}>Your First Name *</label>
@@ -310,8 +328,8 @@ function SignupScreen({ onSwitch, onAuthenticated }) {
           </div>
 
           <div style={{ height: "12px" }} />
-          <label style={lbl}>Business / Agency Name *</label>
-          <input type="text" placeholder="Sound & Story Productions" value={orgName} onChange={e => setOrgName(e.target.value)} style={inp} />
+          <label style={lbl}>{accountType === "solo" ? "Podcast / Brand Name *" : "Business / Agency Name *"}</label>
+          <input type="text" placeholder={accountType === "solo" ? "e.g. The Daily Wellness Podcast" : "e.g. Sound & Story Productions"} value={orgName} onChange={e => setOrgName(e.target.value)} style={inp} />
 
           <label style={lbl}>Email Address *</label>
           <input type="email" placeholder="jane@yourstudio.com" value={email} onChange={e => setEmail(e.target.value)} style={inp} />
