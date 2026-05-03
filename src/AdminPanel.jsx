@@ -292,7 +292,7 @@ function BoilerplateEditor({ value, onChange }) {
 }
 
 
-function SettingsView({ globalSettings, setGlobalSettings, saveGlobalSettings, globalSettingsSaved, globalSettingsLoading, orgId }) {
+function SettingsView({ globalSettings, setGlobalSettings, saveGlobalSettings, globalSettingsSaved, globalSettingsLoading, orgId, accountType }) {
   const [activeSection, setActiveSection] = useState("integrations");
   const [team, setTeam] = useState([]);
   const [teamLoading, setTeamLoading] = useState(true);
@@ -1041,7 +1041,7 @@ ${combined}`;
       </div>
 
       {adminView === "settings" ? (
-        <SettingsView globalSettings={globalSettings} setGlobalSettings={setGlobalSettings} saveGlobalSettings={saveGlobalSettings} globalSettingsSaved={globalSettingsSaved} globalSettingsLoading={globalSettingsLoading} orgId={orgId} />
+        <SettingsView globalSettings={globalSettings} setGlobalSettings={setGlobalSettings} saveGlobalSettings={saveGlobalSettings} globalSettingsSaved={globalSettingsSaved} globalSettingsLoading={globalSettingsLoading} orgId={orgId} accountType={accountType} />
       ) : (
       <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
         <div style={{ width: "220px", background: T.surface, borderRight: "1px solid " + T.cardBorder, display: "flex", flexDirection: "column", flexShrink: 0 }}>
