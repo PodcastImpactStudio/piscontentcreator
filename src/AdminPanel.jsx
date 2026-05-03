@@ -725,6 +725,7 @@ export function AdminPanel({ shows, orgId, onClose, onSaved, accountType = "agen
   const [msg, setMsg] = useState("");
   const [addingNew, setAddingNew] = useState(false);
   const [newId, setNewId] = useState("");
+  const [newShowPath, setNewShowPath] = useState(null); // null | "manual" | "transcript" | "dna"
   const [globalSettings, setGlobalSettings] = useState({});
   const [globalSettingsSaved, setGlobalSettingsSaved] = useState(false);
   const [globalSettingsLoading, setGlobalSettingsLoading] = useState(false);
@@ -776,7 +777,7 @@ export function AdminPanel({ shows, orgId, onClose, onSaved, accountType = "agen
       }),
       descriptApiKey: s.descriptApiKey || "",
     });
-    setRawDna(""); setMsg(""); setTab("basic");
+    setRawDna(""); setMsg(""); setTab("basic"); setNewShowPath("manual");
   }
 
   function startNew() {
@@ -790,7 +791,7 @@ export function AdminPanel({ shows, orgId, onClose, onSaved, accountType = "agen
       snElements: DEFAULT_SN_ELEMENTS,
       descriptApiKey: "",
     });
-    setNewId(""); setRawDna(""); setMsg(""); setAddingNew(true); setTab("basic");
+    setNewId(""); setRawDna(""); setMsg(""); setAddingNew(true); setTab("basic"); setNewShowPath(null);
   }
 
   async function parseWithAI() {
@@ -1043,8 +1044,73 @@ ${combined}`;
               <div style={{ fontSize: "15px", ...LS, letterSpacing: "2px", textTransform: "uppercase" }}>Select a show or add a new one</div>
             </div>
           </div>
+
+        ) : selKey === "__new__" && newShowPath === null ? (
+          /* ── PATH CHOOSER ─────────────────────────────────────────── */
+          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 60px" }}>
+            <div style={{ maxWidth: "760px", width: "100%" }}>
+              <div style={{ textAlign: "center", marginBottom: "48px" }}>
+                <div style={{ fontSize: "30px", fontWeight: "700", color: T.text, fontFamily: PF, marginBottom: "10px" }}>How would you like to set up your show?</div>
+                <div style={{ fontSize: "16px", color: T.textSecondary, fontFamily: FF, lineHeight: "1.5" }}>
+                  The more we know about your show, the more your content will sound like you.
+                </div>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "16px" }}>
+
+                {/* Card 1 — Enter Manually */}
+                <button onClick={() => setNewShowPath("manual")}
+                  style={{ padding: "32px 24px", background: T.card, border: "2px solid " + T.cardBorder, borderRadius: "14px", cursor: "pointer", textAlign: "center", transition: "all .2s", display: "flex", flexDirection: "column", alignItems: "center", gap: "14px" }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = T.coral; e.currentTarget.style.background = T.coralSoft; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = T.cardBorder; e.currentTarget.style.background = T.card; }}>
+                  <div style={{ fontSize: "36px" }}>📝</div>
+                  <div>
+                    <div style={{ fontSize: "16px", fontWeight: "700", color: T.text, fontFamily: FF, marginBottom: "8px" }}>Enter Manually</div>
+                    <div style={{ fontSize: "13px", color: T.textSecondary, fontFamily: FF, lineHeight: "1.6" }}>
+                      Fill in your show's details yourself — name, voice, audience, and more — tab by tab.
+                    </div>
+                  </div>
+                  <div style={{ marginTop: "auto", fontSize: "13px", color: T.coral, fontFamily: FF, fontWeight: "600" }}>Start filling in →</div>
+                </button>
+
+                {/* Card 2 — AI from Transcripts */}
+                <button onClick={() => { setNewShowPath("transcript"); setTab("transcript"); }}
+                  style={{ padding: "32px 24px", background: T.card, border: "2px solid " + T.coral + "44", borderRadius: "14px", cursor: "pointer", textAlign: "center", transition: "all .2s", display: "flex", flexDirection: "column", alignItems: "center", gap: "14px", position: "relative" }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = T.coral; e.currentTarget.style.background = T.coralSoft; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = T.coral + "44"; e.currentTarget.style.background = T.card; }}>
+                  <div style={{ position: "absolute", top: "-12px", left: "50%", transform: "translateX(-50%)", background: T.coral, color: "#fff", fontSize: "11px", fontWeight: "700", letterSpacing: "1.5px", padding: "4px 12px", borderRadius: "20px", fontFamily: FF, whiteSpace: "nowrap" }}>RECOMMENDED</div>
+                  <div style={{ fontSize: "36px" }}>✨</div>
+                  <div>
+                    <div style={{ fontSize: "16px", fontWeight: "700", color: T.text, fontFamily: FF, marginBottom: "8px" }}>Draft from Episodes</div>
+                    <div style={{ fontSize: "13px", color: T.textSecondary, fontFamily: FF, lineHeight: "1.6" }}>
+                      Upload 3–5 of your best episode transcripts and AI will draft your show's voice, audience, and style automatically.
+                    </div>
+                  </div>
+                  <div style={{ marginTop: "auto", fontSize: "13px", color: T.coral, fontFamily: FF, fontWeight: "600" }}>Upload transcripts →</div>
+                </button>
+
+                {/* Card 3 — Paste Show DNA */}
+                <button onClick={() => setNewShowPath("dna")}
+                  style={{ padding: "32px 24px", background: T.card, border: "2px solid " + T.cardBorder, borderRadius: "14px", cursor: "pointer", textAlign: "center", transition: "all .2s", display: "flex", flexDirection: "column", alignItems: "center", gap: "14px" }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = T.coral; e.currentTarget.style.background = T.coralSoft; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = T.cardBorder; e.currentTarget.style.background = T.card; }}>
+                  <div style={{ fontSize: "36px" }}>📋</div>
+                  <div>
+                    <div style={{ fontSize: "16px", fontWeight: "700", color: T.text, fontFamily: FF, marginBottom: "8px" }}>Paste Show DNA</div>
+                    <div style={{ fontSize: "13px", color: T.textSecondary, fontFamily: FF, lineHeight: "1.6" }}>
+                      Already have a Show DNA document or detailed show brief? Paste it here and AI will extract all the fields for you.
+                    </div>
+                  </div>
+                  <div style={{ marginTop: "auto", fontSize: "13px", color: T.coral, fontFamily: FF, fontWeight: "600" }}>Paste & parse →</div>
+                </button>
+
+              </div>
+            </div>
+          </div>
+
         ) : (
           <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
+            {/* Left paste-DNA panel — only for "dna" path or existing shows */}
+            {(newShowPath === "dna" || selKey !== "__new__") && (
             <div style={{ width: "380px", borderRight: "1px solid " + T.cardBorder, display: "flex", flexDirection: "column", flexShrink: 0 }}>
               <div style={{ padding: "20px 24px", borderBottom: "1px solid " + T.cardBorder }}>
                 <div style={{ fontSize: "13px", letterSpacing: "2px", textTransform: "uppercase", color: T.textMuted, marginBottom: "8px", ...LS }}>Paste Show DNA</div>
@@ -1059,6 +1125,7 @@ ${combined}`;
                 {msg && <div style={{ fontSize: "13px", color: msg.startsWith("Saved") || msg.startsWith("DNA") ? "#52B788" : "#F09090", ...LS }}>{msg}</div>}
               </div>
             </div>
+            )}
 
             <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
               {addingNew && selKey === "__new__" && (
@@ -1073,12 +1140,13 @@ ${combined}`;
               {selKey === "__new__" && (
                 <div style={{ padding: "14px 24px", background: "#D9775710", borderBottom: "1px solid " + T.coral + "33", display: "flex", gap: "12px", alignItems: "flex-start" }}>
                   <span style={{ fontSize: "20px", flexShrink: 0 }}>💡</span>
-                  <div>
+                  <div style={{ flex: 1 }}>
                     <div style={{ fontSize: "13px", fontWeight: "700", color: T.coral, marginBottom: "3px", letterSpacing: "1px", textTransform: "uppercase", fontFamily: "'DM Sans', system-ui, sans-serif" }}>For best results, fill in every tab</div>
                     <div style={{ fontSize: "13px", color: T.textSecondary, lineHeight: "1.5", fontFamily: "'DM Sans', system-ui, sans-serif" }}>
                       The more detail you provide — voice DNA, audience, platforms, boilerplate — the more tailored and on-brand your generated content will be. Start with <strong style={{ color: T.text }}>Basic Info</strong>, then work through each tab. You can always come back and update.
                     </div>
                   </div>
+                  <button onClick={() => setNewShowPath(null)} style={{ flexShrink: 0, background: "transparent", border: "1px solid " + T.cardBorder, borderRadius: "6px", color: T.textMuted, fontSize: "12px", cursor: "pointer", padding: "5px 10px", fontFamily: FF, whiteSpace: "nowrap" }}>← Change path</button>
                 </div>
               )}
 
