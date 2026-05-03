@@ -193,6 +193,7 @@ function SignupScreen({ onSwitch, onAuthenticated }) {
   const [captchaToken, setCaptchaToken] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [confirming, setConfirming] = useState(false); // show "check your email" screen
   const turnstileRef = useRef(null);
   const widgetId = useRef(null);
 
@@ -272,7 +273,14 @@ function SignupScreen({ onSwitch, onAuthenticated }) {
       const result = await r.json();
       if (!r.ok) throw new Error(result.error || "Failed to create workspace.");
 
-      onAuthenticated(data.user);
+      // Check if email confirmation is required (session will be null if so)
+      if (data.session) {
+        // Email confirmation disabled — go straight in
+        onAuthenticated(data.user);
+      } else {
+        // Email confirmation required — show the check-your-inbox screen
+        setConfirming(true);
+      }
     } catch (e) {
       const msg = e.message || "";
       if (msg.toLowerCase().includes("captcha") || msg.toLowerCase().includes("security")) {
@@ -286,6 +294,36 @@ function SignupScreen({ onSwitch, onAuthenticated }) {
   }
 
   const lbl = { fontSize: "12px", letterSpacing: "2px", textTransform: "uppercase", color: T.text, display: "block", marginBottom: "6px", fontFamily: "'DM Sans', system-ui, sans-serif" };
+
+  // ── CONFIRMATION SCREEN ────────────────────────────────────────────────────
+  if (confirming) {
+    return (
+      <div style={{ minHeight: "100vh", background: T.bg, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}>
+        <div style={{ width: "100%", maxWidth: "440px", textAlign: "center" }}>
+          <img src="/logo.png" alt="Podcast Impact Studio" style={{ height: "80px", width: "auto", marginBottom: "32px" }} />
+          <div style={{ background: T.card, border: "1px solid " + T.cardBorder, borderRadius: "16px", padding: "48px 40px" }}>
+            <div style={{ fontSize: "48px", marginBottom: "20px" }}>📬</div>
+            <div style={{ fontSize: "26px", fontWeight: "700", color: T.text, fontFamily: "'DM Sans', system-ui, sans-serif", marginBottom: "14px", letterSpacing: "-0.3px" }}>
+              Check your inbox
+            </div>
+            <div style={{ fontSize: "15px", color: T.textSecondary, fontFamily: "'DM Sans', system-ui, sans-serif", lineHeight: "1.7", marginBottom: "28px" }}>
+              We sent a confirmation link to <strong style={{ color: T.text }}>{email}</strong>.<br />
+              Click the link in that email to activate your account, then come back here and sign in.
+            </div>
+            <div style={{ background: "#D9775712", border: "1px solid #D9775730", borderRadius: "10px", padding: "16px 20px", marginBottom: "28px", textAlign: "left" }}>
+              <div style={{ fontSize: "13px", fontWeight: "700", color: T.coral, letterSpacing: "1px", textTransform: "uppercase", fontFamily: "'DM Sans', system-ui, sans-serif", marginBottom: "8px" }}>Didn't get the email?</div>
+              <div style={{ fontSize: "13px", color: T.textSecondary, fontFamily: "'DM Sans', system-ui, sans-serif", lineHeight: "1.6" }}>
+                Check your spam or junk folder. The email comes from <em>noreply@mail.app.supabase.io</em>
+              </div>
+            </div>
+            <button onClick={onSwitch} style={btn(true)}>
+              Back to Sign In →
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ minHeight: "100vh", background: T.bg, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px 20px 40px" }}>
