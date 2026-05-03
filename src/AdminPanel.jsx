@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { saveShow } from "./lib/shows";
 import { supabase } from "./lib/supabase";
+import mammoth from "mammoth";
 
 const ANTHROPIC_KEY = import.meta.env.VITE_ANTHROPIC_API_KEY;
 
@@ -872,12 +873,33 @@ export function AdminPanel({ shows, orgId, onClose, onSaved, accountType = "agen
       .filter(f => f.name.match(/\.(txt|md|docx?)$/i))
       .slice(0, 5 - transcriptFiles.length);
     if (!files.length) return;
-    Promise.all(files.map(f => new Promise((res, rej) => {
-      const reader = new FileReader();
-      reader.onload = e => res({ name: f.name, text: e.target.result });
-      reader.onerror = rej;
-      reader.readAsText(f);
-    }))).then(loaded => setTranscriptFiles(prev => [...prev, ...loaded].slice(0, 5)));
+
+    function readFile(f) {
+      return new Promise((res, rej) => {
+        if (f.name.match(/\.docx?$/i)) {
+          // Word doc — use mammoth to extract plain text
+          const reader = new FileReader();
+          reader.onload = async (ev) => {
+            try {
+              const result = await mammoth.extractRawText({ arrayBuffer: ev.target.result });
+              res({ name: f.name, text: result.value });
+            } catch (err) { rej(err); }
+          };
+          reader.onerror = rej;
+          reader.readAsArrayBuffer(f);
+        } else {
+          // Plain text / markdown
+          const reader = new FileReader();
+          reader.onload = ev => res({ name: f.name, text: ev.target.result });
+          reader.onerror = rej;
+          reader.readAsText(f);
+        }
+      });
+    }
+
+    Promise.all(files.map(readFile))
+      .then(loaded => setTranscriptFiles(prev => [...prev, ...loaded].slice(0, 5)))
+      .catch(err => setTranscriptMsg("Error reading file: " + err.message));
   }
 
   async function parseFromTranscripts() {
@@ -1082,7 +1104,7 @@ ${combined}`;
                   <div>
                     <div style={{ fontSize: "16px", fontWeight: "700", color: T.text, fontFamily: FF, marginBottom: "8px" }}>Draft from Episodes</div>
                     <div style={{ fontSize: "13px", color: T.textSecondary, fontFamily: FF, lineHeight: "1.6" }}>
-                      Upload 3–5 of your best episode transcripts and AI will draft your show's voice, audience, and style automatically.
+                      Upload 3–5 of your best episode transcripts (.txt or .docx) and AI will draft your show's voice, audience, and style automatically.
                     </div>
                   </div>
                   <div style={{ marginTop: "auto", fontSize: "13px", color: T.coral, fontFamily: FF, fontWeight: "600" }}>Upload transcripts →</div>
@@ -1233,7 +1255,7 @@ ${combined}`;
                 {tab === "transcript" && (
                   <Section title="AI Fill from Transcripts">
                     <div style={{ fontSize: "14px", color: T.textSecondary, marginBottom: "20px", ...GA, lineHeight: "1.7" }}>
-                      Drop 3–5 transcript files (.txt) and Claude will analyze them to fill in your show's Voice DNA, Audience, and more. You can review and edit every field before saving.
+                      Drop 3–5 transcript files (.txt or .docx) and Claude will analyze them to fill in your show's Voice DNA, Audience, and more. You can review and edit every field before saving.
                     </div>
 
                     {/* Drop zone */}
@@ -1258,13 +1280,13 @@ ${combined}`;
                         {transcriptFiles.length === 0 ? "Drop transcript files here" : `${transcriptFiles.length}/5 transcripts loaded`}
                       </div>
                       <div style={{ fontSize: "13px", color: T.textMuted, fontFamily: FF }}>
-                        {transcriptFiles.length < 5 ? "Click or drag .txt files — up to 5 transcripts" : "Maximum 5 transcripts reached"}
+                        {transcriptFiles.length < 5 ? "Click or drag — .txt, .docx, or .md files — up to 5 transcripts" : "Maximum 5 transcripts reached"}
                       </div>
                       <input
                         id="transcript-file-input"
                         type="file"
                         multiple
-                        accept=".txt,.md"
+                        accept=".txt,.md,.doc,.docx"
                         style={{ display: "none" }}
                         onChange={handleTranscriptDrop}
                       />
