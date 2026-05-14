@@ -3,36 +3,30 @@
 :root {
   --font-sans: 'DM Sans', system-ui, sans-serif;
   --font-display: 'DM Sans', system-ui, sans-serif;
-  --bg: #1A1A1A; --surface: #212121; --card: #2A2A2A; --border: #3A3A3A;
-  --text: #FFFFFF; --text-secondary: #CECECE; --text-muted: #FFFFFF;
-  --coral: #D97757; --coral-soft: #D9775718; --coral-mid: #D9775740;
 }
 
 html, body, #root { height: 100%; width: 100%; }
 
 body {
   font-family: var(--font-sans);
-  background: var(--bg);
-  color: var(--text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-size: 15px;
   line-height: 1.6;
 }
 
+/* Scrollbar */
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #3A3A3A; border-radius: 2px; }
-::-webkit-scrollbar-thumb:hover { background: #4A4A4A; }
+::-webkit-scrollbar-thumb { background: #C4C0B8; border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: #A09890; }
 
 input, textarea, select { font-family: var(--font-sans); }
-input:focus, textarea:focus, select:focus { border-color: var(--coral) !important; }
-input::placeholder, textarea::placeholder { color: var(--text-muted); }
 
 button { font-family: var(--font-sans); cursor: pointer; transition: opacity 0.15s ease; }
 button:hover { opacity: 0.88; }
 
-a { color: var(--coral); text-decoration: none; }
+a { text-decoration: none; }
 a:hover { opacity: 0.8; }
 
 @keyframes spin { to { transform: rotate(360deg); } }

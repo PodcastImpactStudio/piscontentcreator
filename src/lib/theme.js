@@ -28,5 +28,5 @@ export const LIGHT_THEME = {
   red: "#C41230",
 };
 
-export const ThemeContext = createContext({ T: DARK_THEME, theme: "dark", toggleTheme: () => {} });
+export const ThemeContext = createContext({ T: LIGHT_THEME, theme: "light", toggleTheme: () => {} });
 export function useTheme() { return useContext(ThemeContext); }

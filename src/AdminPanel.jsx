@@ -6,10 +6,10 @@ import mammoth from "mammoth";
 const ANTHROPIC_KEY = import.meta.env.VITE_ANTHROPIC_API_KEY;
 
 const T = {
-  bg: "#1A1A1A", surface: "#212121", card: "#2A2520", cardBorder: "#3A3A3A",
-  text: "#FFFFFF", textSecondary: "#CECECE", textMuted: "#FFFFFF",
-  coral: "#FF3131", coralSoft: "#FF313112", coralMid: "#FF313140",
-};;
+  bg: "#F5F0E8", surface: "#FDFAF5", card: "#FFFFFF", cardBorder: "#E2D9CC",
+  text: "#1A1A1A", textSecondary: "#4A3F35", textMuted: "#6B5E52",
+  coral: "#C41230", coralSoft: "#C4123010", coralMid: "#C4123028",
+};
 const FF = "'DM Sans', system-ui, sans-serif";
 const PF = "'DM Sans', system-ui, sans-serif";
 const LS = { fontFamily: FF };
@@ -246,7 +246,7 @@ function BoilerplateEditor({ value, onChange }) {
       tmp.querySelectorAll("*").forEach(el => {
         el.style.color = ""; el.style.backgroundColor = ""; el.style.background = "";
         el.style.fontSize = ""; el.style.fontFamily = "";
-        if (el.tagName === "A") { el.style.color = "#FF3131"; el.style.textDecoration = "underline"; }
+        if (el.tagName === "A") { el.style.color = "#C41230"; el.style.textDecoration = "underline"; }
       });
       const clean = tmp.innerHTML.replace(/<span[^>]*>/gi, "<span>").replace(/<p[^>]*>/gi, "").replace(/<\/p>/gi, "<br>").replace(/<div[^>]*>/gi, "").replace(/<\/div>/gi, "<br>").replace(/(<br\s*\/?>\s*){3,}/gi, "<br><br>");
       document.execCommand("insertHTML", false, clean);
@@ -765,7 +765,7 @@ export function AdminPanel({ shows, orgId, onClose, onSaved, accountType = "agen
       name: s.name || "",
       tag: s.tag || "",
       hosts: s.hosts || "",
-      clr: s.clr || "#FF3131",
+      clr: s.clr || "#C41230",
       platforms: s.platforms || DEFAULT_PLATFORMS,
       voice: { traits: s.voice?.traits || "", energy: s.voice?.energy || "5/10", arch: s.voice?.arch || "", arc: s.voice?.arc || "", phrases: (s.voice?.phrases || []).join("\n"), use: s.voice?.use || "", avoid: s.voice?.avoid || "" },
       aud: { who: s.aud?.who || "", pains: (s.aud?.pains || []).join("\n"), lang: s.aud?.lang || "" },
@@ -784,7 +784,7 @@ export function AdminPanel({ shows, orgId, onClose, onSaved, accountType = "agen
   function startNew() {
     setSelKey("__new__");
     setForm({
-      name: "", tag: "", hosts: "", clr: "#FF3131",
+      name: "", tag: "", hosts: "", clr: "#C41230",
       platforms: DEFAULT_PLATFORMS,
       voice: { traits: "", energy: "5/10", arch: "", arc: "", phrases: "", use: "", avoid: "" },
       aud: { who: "", pains: "", lang: "" },
@@ -849,7 +849,7 @@ export function AdminPanel({ shows, orgId, onClose, onSaved, accountType = "agen
         name: getField("NAME") || prev?.name || "",
         tag: getField("TAG") || prev?.tag || "",
         hosts: getField("HOSTS") || prev?.hosts || "",
-        clr: getField("COLOR") || prev?.clr || "#FF3131",
+        clr: getField("COLOR") || prev?.clr || "#C41230",
         platforms: {
           ...DEFAULT_PLATFORMS,
           podcast: podcastPlatforms.length ? podcastPlatforms : DEFAULT_PLATFORMS.podcast,

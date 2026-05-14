@@ -2,9 +2,9 @@ import { useState, useEffect } from "react";
 import { supabase } from "./lib/supabase";
 
 const T = {
-  bg: "#1A1A1A", surface: "#212121", card: "#2A2520", cardBorder: "#3A3A3A",
-  text: "#FFFFFF", textSecondary: "#CECECE", textMuted: "#FFFFFF",
-  coral: "#FF3131", coralSoft: "#FF313112", coralMid: "#FF313140",
+  bg: "#F5F0E8", surface: "#FDFAF5", card: "#FFFFFF", cardBorder: "#E2D9CC",
+  text: "#1A1A1A", textSecondary: "#4A3F35", textMuted: "#6B5E52",
+  coral: "#C41230", coralSoft: "#C4123010", coralMid: "#C4123028",
 };
 
 const TIMEZONES = [
