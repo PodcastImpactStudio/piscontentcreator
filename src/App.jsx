@@ -986,6 +986,10 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
           {step!=="select"&&step!=="generating"&&<button onClick={reset} style={{...ghost,opacity:.5,fontSize:"13px",padding:"7px 14px"}}>Start Over</button>}
           <button onClick={()=>setShowProfile(true)} style={{...ghost,border:"none",opacity:.6,fontSize:"14px",padding:"8px 10px"}} title="My Account">👤</button>
           {isAdmin&&<button onClick={()=>setShowAdmin(true)} style={{...ghost,border:"none",opacity:.7,fontSize:"16px",padding:"8px 10px"}} title="Admin Settings">⚙️</button>}
+          <div style={{width:"1px",height:"20px",background:T.cardBorder,margin:"0 2px"}}/>
+          <button onClick={handleSignOut} style={{...ghost,border:"none",opacity:.5,fontSize:"13px",padding:"7px 12px",display:"flex",alignItems:"center",gap:"5px"}} title="Sign out">
+            <span>Sign out</span><span style={{fontSize:"15px"}}>→</span>
+          </button>
         </div>
       </div>
 
