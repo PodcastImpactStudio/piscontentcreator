@@ -556,6 +556,7 @@ function AccountSetupScreen({ onComplete }) {
 
 // ── MAIN AUTH WRAPPER ─────────────────────────────────────────────────────────
 export default function Auth({ onAuthenticated }) {
+  const { T } = useTheme();
   const [mode, setMode] = useState("loading"); // loading | login | signup | setup
 
   useEffect(() => {
