@@ -6,9 +6,9 @@ import mammoth from "mammoth";
 const ANTHROPIC_KEY = import.meta.env.VITE_ANTHROPIC_API_KEY;
 
 const T = {
-  bg: "#1A1A1A", surface: "#212121", card: "#2A2A2A", cardBorder: "#3A3A3A",
+  bg: "#1A1A1A", surface: "#212121", card: "#2A2520", cardBorder: "#3A3A3A",
   text: "#FFFFFF", textSecondary: "#CECECE", textMuted: "#FFFFFF",
-  coral: "#D97757", coralSoft: "#D9775718", coralMid: "#D9775740",
+  coral: "#FF3131", coralSoft: "#FF313112", coralMid: "#FF313140",
 };;
 const FF = "'DM Sans', system-ui, sans-serif";
 const PF = "'DM Sans', system-ui, sans-serif";
@@ -1160,7 +1160,7 @@ ${combined}`;
               )}
 
               {selKey === "__new__" && (
-                <div style={{ padding: "14px 24px", background: "#D9775710", borderBottom: "1px solid " + T.coral + "33", display: "flex", gap: "12px", alignItems: "flex-start" }}>
+                <div style={{ padding: "14px 24px", background: "#FF313110", borderBottom: "1px solid " + T.coral + "33", display: "flex", gap: "12px", alignItems: "flex-start" }}>
                   <span style={{ fontSize: "20px", flexShrink: 0 }}>💡</span>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: "13px", fontWeight: "700", color: T.coral, marginBottom: "3px", letterSpacing: "1px", textTransform: "uppercase", fontFamily: "'DM Sans', system-ui, sans-serif" }}>For best results, fill in every tab</div>

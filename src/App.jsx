@@ -8,9 +8,9 @@ import { AdminPanel, AdminGate } from "./AdminPanel";
 const ANTHROPIC_KEY = import.meta.env.VITE_ANTHROPIC_API_KEY;
 
 const T = {
-  bg: "#1A1A1A", surface: "#212121", card: "#2A2A2A", cardBorder: "#3A3A3A",
+  bg: "#1A1A1A", surface: "#212121", card: "#2A2520", cardBorder: "#3A3A3A",
   text: "#FFFFFF", textSecondary: "#CECECE", textMuted: "#FFFFFF",
-  coral: "#D97757", coralSoft: "#D9775718", coralMid: "#D9775740", red: "#D97757",
+  coral: "#FF3131", coralSoft: "#FF313112", coralMid: "#FF313140", red: "#FF3131",
 };
 
 const MODES = [
@@ -391,13 +391,13 @@ function dlHtml(content,filename){
 <head><meta charset="utf-8"><title>${filename}</title>
 <style>
 body{font-family:Arial,sans-serif;font-size:12pt;line-height:1.7;color:#111;max-width:820px;margin:40px auto;padding:0 24px}
-h1{font-size:18pt;font-weight:bold;color:#D97757;border-bottom:2px solid #D97757;padding-bottom:8px;margin-bottom:4px}
+h1{font-size:18pt;font-weight:bold;color:#FF3131;border-bottom:2px solid #FF3131;padding-bottom:8px;margin-bottom:4px}
 .meta{font-size:10pt;color:#888;margin-bottom:24px}
-.sec{font-size:13pt;font-weight:bold;color:#D97757;margin-top:28px;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px}
+.sec{font-size:13pt;font-weight:bold;color:#FF3131;margin-top:28px;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px}
 .sub{font-size:11pt;font-weight:bold;color:#333;margin-top:14px;margin-bottom:4px}
 p{margin:3pt 0}
 hr{border:none;border-top:1px solid #ddd;margin:18px 0}
-a{color:#D97757}
+a{color:#FF3131}
 </style></head>
 <body>
 <h1>${filename}</h1>

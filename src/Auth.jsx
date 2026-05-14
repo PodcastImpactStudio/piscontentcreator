@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "./lib/supabase";
+import { useTheme } from "./lib/theme";
 
 const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY || "";
 
@@ -38,12 +39,6 @@ function StrengthBar({ password }) {
     </div>
   );
 }
-
-const T = {
-  bg: "#1A1A1A", surface: "#212121", card: "#2A2A2A", cardBorder: "#3A3A3A",
-  text: "#FFFFFF", textSecondary: "#CECECE", textMuted: "#FFFFFF",
-  coral: "#D97757", coralSoft: "#D9775718", coralMid: "#D9775740",
-};
 
 const TIMEZONES = [
   // ── North America ──────────────────────────────────────────────
@@ -108,30 +103,31 @@ const TIMEZONES = [
   ["Pacific/Fiji",                  "Fiji (FJT, UTC+12)"],
 ];
 
-const inp = {
-  width: "100%", background: "#2A2A2A", border: "1px solid #3A3A3A",
-  borderRadius: "8px", padding: "14px 18px", color: "#FFFFFF",
-  fontSize: "17px", outline: "none", boxSizing: "border-box",
-  fontFamily: "'DM Sans', system-ui, sans-serif",
-  marginBottom: "14px",
-};
-
-const btn = (primary) => ({
-  width: "100%", padding: "16px", border: "none", borderRadius: "8px",
-  fontSize: "17px", fontWeight: "700", cursor: "pointer",
-  fontFamily: "'DM Sans', system-ui, sans-serif",
-  background: primary ? T.coral : T.card,
-  color: primary ? "#fff" : T.textMuted,
-  marginTop: primary ? "8px" : "0",
-});
 
 // ── LOGIN SCREEN ──────────────────────────────────────────────────────────────
 function LoginScreen({ onLogin, onSignup }) {
+  const { T } = useTheme();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [resetSent, setResetSent] = useState(false);
+
+  const inp = {
+    width: "100%", background: T.card, border: "1px solid " + T.cardBorder,
+    borderRadius: "8px", padding: "14px 18px", color: T.text,
+    fontSize: "17px", outline: "none", boxSizing: "border-box",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
+    marginBottom: "14px",
+  };
+  const btn = (primary) => ({
+    width: "100%", padding: "16px", border: "none", borderRadius: "8px",
+    fontSize: "17px", fontWeight: "700", cursor: "pointer",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
+    background: primary ? T.coral : T.card,
+    color: primary ? "#fff" : T.textMuted,
+    marginTop: primary ? "8px" : "0",
+  });
 
   async function handleForgotPassword() {
     if (!email.trim()) { setError("Enter your email address first, then click Forgot Password."); return; }
@@ -229,6 +225,7 @@ const ROLES = [
 ];
 
 function SignupScreen({ onSwitch, onAuthenticated }) {
+  const { T } = useTheme();
   const [accountType, setAccountType] = useState("solo");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -358,7 +355,7 @@ function SignupScreen({ onSwitch, onAuthenticated }) {
               We sent a confirmation link to <strong style={{ color: T.text }}>{email}</strong>.<br />
               Click the link in that email to activate your account, then come back here and sign in.
             </div>
-            <div style={{ background: "#D9775712", border: "1px solid #D9775730", borderRadius: "10px", padding: "16px 20px", marginBottom: "28px", textAlign: "left" }}>
+            <div style={{ background: "#FF313112", border: "1px solid #FF313130", borderRadius: "10px", padding: "16px 20px", marginBottom: "28px", textAlign: "left" }}>
               <div style={{ fontSize: "13px", fontWeight: "700", color: T.coral, letterSpacing: "1px", textTransform: "uppercase", fontFamily: "'DM Sans', system-ui, sans-serif", marginBottom: "8px" }}>Didn't get the email?</div>
               <div style={{ fontSize: "13px", color: T.textSecondary, fontFamily: "'DM Sans', system-ui, sans-serif", lineHeight: "1.6" }}>
                 Check your spam or junk folder. The email comes from <em>noreply@mail.app.supabase.io</em>
