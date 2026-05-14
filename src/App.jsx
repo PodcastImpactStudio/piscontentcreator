@@ -973,9 +973,9 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
       {showAdmin&&<AdminPanel shows={shows} orgId={orgId} accountType={accountType} onClose={()=>setShowAdmin(false)} onSaved={async()=>{await refreshShows();if(!onboardingComplete)await markOnboardingComplete();}}/>}
 
       {/* HEADER */}
-      <div style={{padding:"0 40px",background:T.surface,borderBottom:`1px solid ${T.cardBorder}`,display:"flex",justifyContent:"space-between",alignItems:"stretch",height:"64px",flexShrink:0}}>
+      <div style={{padding:"0 40px",background:T.surface,borderBottom:`1px solid ${T.cardBorder}`,display:"flex",justifyContent:"space-between",alignItems:"center",height:"80px",flexShrink:0}}>
         <div style={{display:"flex",alignItems:"center"}}>
-          <img src="/logo-nav.png" alt="Podcast Impact Content Planner" style={{height:"52px",objectFit:"contain"}}/>
+          <img src="/logo-nav.png" alt="Podcast Impact Content Planner" style={{height:"72px",objectFit:"contain"}}/>
         </div>
         <div style={{display:"flex",gap:"10px",alignItems:"center"}}>
           {step!=="select"&&step!=="generating"&&<button onClick={goBack} style={ghost}>← Back</button>}
