@@ -170,7 +170,7 @@ function LoginScreen({ onLogin, onSignup }) {
     <div style={{ minHeight: "100vh", background: T.bg, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}>
       <div style={{ width: "100%", maxWidth: "400px" }}>
         <div style={{ textAlign: "center", marginBottom: "40px" }}>
-          <img src="/logo.png" alt="Podcast Impact Studio" style={{ height: "112px", width: "auto", marginBottom: "16px" }} />
+          <img src="/logo-auth.png" alt="Podcast Impact Studio" style={{ height: "112px", width: "auto", marginBottom: "16px" }} />
           <div style={{ fontSize: "36px", fontWeight: "800", color: T.text, letterSpacing: "-0.5px", fontFamily: "'DM Sans', system-ui, sans-serif" }}>Podcast Impact Studio</div>
           <div style={{ fontSize: "18px", color: T.textMuted, marginTop: "8px", fontFamily: "'DM Sans', system-ui, sans-serif" }}>Content Creator</div>
         </div>
@@ -345,7 +345,7 @@ function SignupScreen({ onSwitch, onAuthenticated }) {
     return (
       <div style={{ minHeight: "100vh", background: T.bg, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}>
         <div style={{ width: "100%", maxWidth: "440px", textAlign: "center" }}>
-          <img src="/logo.png" alt="Podcast Impact Studio" style={{ height: "80px", width: "auto", marginBottom: "32px" }} />
+          <img src="/logo-auth.png" alt="Podcast Impact Studio" style={{ height: "80px", width: "auto", marginBottom: "32px" }} />
           <div style={{ background: T.card, border: "1px solid " + T.cardBorder, borderRadius: "16px", padding: "48px 40px" }}>
             <div style={{ fontSize: "48px", marginBottom: "20px" }}>📬</div>
             <div style={{ fontSize: "26px", fontWeight: "700", color: T.text, fontFamily: "'DM Sans', system-ui, sans-serif", marginBottom: "14px", letterSpacing: "-0.3px" }}>
@@ -374,7 +374,7 @@ function SignupScreen({ onSwitch, onAuthenticated }) {
     <div style={{ minHeight: "100vh", background: T.bg, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px 20px 40px" }}>
       <div style={{ width: "100%", maxWidth: "480px" }}>
         <div style={{ textAlign: "center", marginBottom: "36px" }}>
-          <img src="/logo.png" alt="Podcast Impact Studio" style={{ height: "112px", width: "auto", marginBottom: "16px" }} />
+          <img src="/logo-auth.png" alt="Podcast Impact Studio" style={{ height: "112px", width: "auto", marginBottom: "16px" }} />
           <div style={{ fontSize: "34px", fontWeight: "700", color: T.text, letterSpacing: "-0.5px", fontFamily: "'DM Sans', system-ui, sans-serif", lineHeight: "1.2" }}>Create your workspace</div>
           <div style={{ fontSize: "15px", color: T.textMuted, marginTop: "8px", fontFamily: "'DM Sans', system-ui, sans-serif" }}>All your podcasts, team, and content in one place.</div>
         </div>
@@ -521,7 +521,7 @@ function AccountSetupScreen({ onComplete }) {
     <div style={{ minHeight: "100vh", background: T.bg, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}>
       <div style={{ width: "100%", maxWidth: "440px" }}>
         <div style={{ textAlign: "center", marginBottom: "40px" }}>
-          <img src="/logo.png" alt="Podcast Impact Studio" style={{ height: "112px", width: "auto", marginBottom: "16px" }} />
+          <img src="/logo-auth.png" alt="Podcast Impact Studio" style={{ height: "112px", width: "auto", marginBottom: "16px" }} />
           <div style={{ fontSize: "28px", fontWeight: "800", color: T.text, letterSpacing: "-0.5px", fontFamily: "'DM Sans', system-ui, sans-serif" }}>Welcome!</div>
           <div style={{ fontSize: "15px", color: T.textMuted, marginTop: "6px", fontFamily: "'DM Sans', system-ui, sans-serif" }}>Set up your account to get started.</div>
         </div>

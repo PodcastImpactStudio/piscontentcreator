@@ -974,12 +974,8 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
 
       {/* HEADER */}
       <div style={{padding:"0 40px",background:T.surface,borderBottom:`1px solid ${T.cardBorder}`,display:"flex",justifyContent:"space-between",alignItems:"stretch",height:"64px",flexShrink:0}}>
-        <div style={{display:"flex",alignItems:"center",gap:"16px"}}>
-          <div style={{width:"3px",height:"28px",background:T.coral,borderRadius:"2px"}}/>
-          <div style={{display:"flex",alignItems:"baseline",gap:"12px"}}>
-            <span style={{fontSize:"24px",letterSpacing:"4px",textTransform:"uppercase",color:T.text,fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"800"}}>{orgName||"Podcast Impact Studio"}</span>
-            <span style={{fontSize:"15px",letterSpacing:"4px",textTransform:"uppercase",color:T.coral,fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600"}}>Content Creator</span>
-          </div>
+        <div style={{display:"flex",alignItems:"center"}}>
+          <img src="/logo-nav.png" alt="Podcast Impact Content Planner" style={{height:"52px",objectFit:"contain"}}/>
         </div>
         <div style={{display:"flex",gap:"10px",alignItems:"center"}}>
           {step!=="select"&&step!=="generating"&&<button onClick={goBack} style={ghost}>← Back</button>}
