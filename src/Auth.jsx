@@ -134,7 +134,7 @@ function LandingScreen({ onSignup, onLogin }) {
     <div style={{ minHeight: "100vh", background: T.bg, fontFamily: FF }}>
       {/* Header */}
       <div style={{ padding: "20px 40px", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid " + T.cardBorder, background: T.surface }}>
-        <img src="/logo-nav.png" alt="Podcast Impact Content Studio" style={{ height: "80px", objectFit: "contain" }} />
+        <img src="/logo-nav.png" alt="Podcast Impact Content Studio" style={{ height: "100px", objectFit: "contain" }} />
         <button onClick={onLogin} style={{ padding: "9px 20px", background: "transparent", border: "1px solid " + T.cardBorder, borderRadius: "6px", color: T.textSecondary, fontSize: "14px", cursor: "pointer", fontFamily: FF, fontWeight: "600" }}>Sign In</button>
       </div>
 
