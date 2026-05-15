@@ -337,7 +337,7 @@ function SettingsView({ globalSettings, setGlobalSettings, saveGlobalSettings, g
         },
       });
     }
-    gTokenClientRef.current.requestAccessToken();
+    gTokenClientRef.current.requestAccessToken({ prompt: "select_account" });
   }
 
   function disconnectGoogleDrive() {
