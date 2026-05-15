@@ -435,21 +435,6 @@ function SettingsView({ globalSettings, setGlobalSettings, saveGlobalSettings, g
               <div style={{ fontSize: "28px", fontWeight: "600", color: T.text, marginBottom: "6px", fontFamily: PF }}>Integrations</div>
               <div style={{ fontSize: "15px", color: T.textMuted, fontFamily: FF }}>Connect external tools to enhance your workflow.</div>
             </div>
-            <div style={{ background: T.card, border: "1px solid " + T.cardBorder, borderRadius: "12px", marginBottom: "16px", overflow: "hidden" }}>
-              <div style={{ padding: "20px 24px", borderBottom: "1px solid " + T.cardBorder, display: "flex", alignItems: "center", gap: "12px" }}>
-                <span style={{ fontSize: "22px" }}>🎬</span>
-                <div>
-                  <div style={{ fontSize: "15px", fontWeight: "700", color: T.text }}>Descript</div>
-                  <div style={{ fontSize: "13px", color: T.textMuted, fontStyle: "italic" }}>Automatically highlight clip timestamps in your Descript projects from the Editor Brief.</div>
-                </div>
-              </div>
-              <div style={{ padding: "20px 24px" }}>
-                <label style={{ fontSize: "12px", letterSpacing: "2px", textTransform: "uppercase", color: T.textMuted, marginBottom: "8px", display: "block" }}>API Key</label>
-                <input type="password" value={globalSettings.descriptApiKey || ""} onChange={e => setGlobalSettings(s => ({ ...s, descriptApiKey: e.target.value }))} placeholder="Paste your Descript API key..." style={{ ...inp, marginBottom: "8px", fontFamily: "monospace" }} />
-                <div style={{ fontSize: "12px", color: T.textMuted, marginBottom: "16px", fontStyle: "italic" }}>Descript → Settings → API Tokens → Create Token. One key covers your entire workspace.</div>
-                <SaveBtn />
-              </div>
-            </div>
             <div style={{ background: T.card, border: "1px solid " + (gConnected ? "#52B78844" : T.cardBorder), borderRadius: "12px", marginBottom: "16px", overflow: "hidden" }}>
               <div style={{ padding: "20px 24px", borderBottom: "1px solid " + T.cardBorder, display: "flex", alignItems: "center", gap: "12px" }}>
                 <span style={{ fontSize: "22px" }}>📁</span>
