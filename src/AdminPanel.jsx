@@ -496,12 +496,14 @@ function SettingsView({ globalSettings, setGlobalSettings, saveGlobalSettings, g
             <div style={{ background: T.card, border: "1px solid " + T.cardBorder, borderRadius: "12px", padding: "24px", marginBottom: "16px" }}>
               <div style={{ marginBottom: "14px" }}>
                 <label style={{ fontSize: "12px", letterSpacing: "2px", textTransform: "uppercase", color: T.textMuted, marginBottom: "6px", display: "block" }}>Workspace Name</label>
-                <input value={globalSettings.workspaceName || ""} onChange={e => setGlobalSettings(s => ({ ...s, workspaceName: e.target.value }))} placeholder="Your business or podcast name" style={{ ...inp, marginBottom: "14px" }} />
+                <input value={orgData.name} onChange={e => setOrgData(d => ({ ...d, name: e.target.value }))} placeholder="Your business or podcast name" style={{ ...inp, marginBottom: "14px" }} />
                 <label style={{ fontSize: "12px", letterSpacing: "2px", textTransform: "uppercase", color: T.textMuted, marginBottom: "6px", display: "block" }}>Website</label>
-                <input value={globalSettings.workspaceUrl || ""} onChange={e => setGlobalSettings(s => ({ ...s, workspaceUrl: e.target.value }))} placeholder="https://yourwebsite.com" style={{ ...inp, marginBottom: "14px" }} />
+                <input value={orgData.website} onChange={e => setOrgData(d => ({ ...d, website: e.target.value }))} placeholder="https://yourwebsite.com" style={{ ...inp, marginBottom: "14px" }} />
                 <label style={{ fontSize: "12px", letterSpacing: "2px", textTransform: "uppercase", color: T.textMuted, marginBottom: "6px", display: "block" }}>Account Email</label>
-                <div style={{ ...inp, marginBottom: "20px", background: T.bg, color: T.textMuted, cursor: "default" }}>{userEmail || "—"}</div>
-                <SaveBtn />
+                <div style={{ ...inp, marginBottom: "20px", background: T.bg, color: T.textMuted, cursor: "default", display: "flex", alignItems: "center" }}>{userEmail || "—"}</div>
+                <button onClick={saveOrgData} style={{ padding: "10px 24px", background: T.coral, border: "none", borderRadius: "8px", color: "#fff", fontSize: "13px", fontWeight: "700", cursor: "pointer", fontFamily: FF }}>
+                  {orgDataSaved ? "✓ Saved" : "Save"}
+                </button>
               </div>
             </div>
 
@@ -804,6 +806,8 @@ export function AdminPanel({ shows, orgId, onClose, onSaved, accountType = "agen
   const [globalSettings, setGlobalSettings] = useState({});
   const [globalSettingsSaved, setGlobalSettingsSaved] = useState(false);
   const [globalSettingsLoading, setGlobalSettingsLoading] = useState(false);
+  const [orgData, setOrgData] = useState({ name: "", website: "" });
+  const [orgDataSaved, setOrgDataSaved] = useState(false);
   const [transcriptFiles, setTranscriptFiles] = useState([]);
   const [transcriptDragging, setTranscriptDragging] = useState(false);
   const [transcriptParsing, setTranscriptParsing] = useState(false);
@@ -818,6 +822,26 @@ export function AdminPanel({ shows, orgId, onClose, onSaved, accountType = "agen
     }
     loadGlobalSettings();
   }, []);
+
+  useEffect(() => {
+    async function loadOrgData() {
+      if (!orgId) return;
+      try {
+        const { data } = await supabase.from("organizations").select("name, website").eq("id", orgId).single();
+        if (data) setOrgData({ name: data.name || "", website: data.website || "" });
+      } catch {}
+    }
+    loadOrgData();
+  }, [orgId]);
+
+  async function saveOrgData() {
+    setOrgDataSaved(false);
+    try {
+      await supabase.from("organizations").update({ name: orgData.name, website: orgData.website }).eq("id", orgId);
+      setOrgDataSaved(true);
+      setTimeout(() => setOrgDataSaved(false), 2000);
+    } catch {}
+  }
 
   async function saveGlobalSettings(newSettings) {
     setGlobalSettingsLoading(true);
