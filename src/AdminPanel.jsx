@@ -304,7 +304,7 @@ function getStoredGDrive() {
   } catch { return null; }
 }
 
-function SettingsView({ globalSettings, setGlobalSettings, saveGlobalSettings, globalSettingsSaved, globalSettingsLoading, orgId, accountType }) {
+function SettingsView({ globalSettings, setGlobalSettings, saveGlobalSettings, globalSettingsSaved, globalSettingsLoading, orgId, accountType, userEmail }) {
   const [activeSection, setActiveSection] = useState("integrations");
   const [team, setTeam] = useState([]);
   const [teamLoading, setTeamLoading] = useState(true);
@@ -491,42 +491,55 @@ function SettingsView({ globalSettings, setGlobalSettings, saveGlobalSettings, g
               <div style={{ fontSize: "28px", fontWeight: "600", color: T.text, marginBottom: "6px", fontFamily: PF }}>Workspace</div>
               <div style={{ fontSize: "15px", color: T.textMuted, fontStyle: "italic" }}>Configure your production workspace.</div>
             </div>
-            <div style={{ background: T.card, border: "1px solid " + T.cardBorder, borderRadius: "12px", padding: "24px" }}>
+
+            {/* Workspace details */}
+            <div style={{ background: T.card, border: "1px solid " + T.cardBorder, borderRadius: "12px", padding: "24px", marginBottom: "16px" }}>
               <div style={{ marginBottom: "14px" }}>
                 <label style={{ fontSize: "12px", letterSpacing: "2px", textTransform: "uppercase", color: T.textMuted, marginBottom: "6px", display: "block" }}>Workspace Name</label>
-                <input value={globalSettings.workspaceName || ""} onChange={e => setGlobalSettings(s => ({ ...s, workspaceName: e.target.value }))} placeholder="Podcast Impact Studio" style={{ ...inp, marginBottom: "14px" }} />
+                <input value={globalSettings.workspaceName || ""} onChange={e => setGlobalSettings(s => ({ ...s, workspaceName: e.target.value }))} placeholder="Your business or podcast name" style={{ ...inp, marginBottom: "14px" }} />
                 <label style={{ fontSize: "12px", letterSpacing: "2px", textTransform: "uppercase", color: T.textMuted, marginBottom: "6px", display: "block" }}>Website</label>
-                <input value={globalSettings.workspaceUrl || ""} onChange={e => setGlobalSettings(s => ({ ...s, workspaceUrl: e.target.value }))} placeholder="https://podcastimpactstudio.com" style={{ ...inp, marginBottom: "20px" }} />
-                <label style={{ fontSize: "12px", letterSpacing: "2px", textTransform: "uppercase", color: T.textMuted, marginBottom: "6px", display: "block" }}>Admin Emails</label>
-                <div style={{ fontSize: "12px", color: T.textMuted, marginBottom: "8px", fontStyle: "italic" }}>One email per line. Only these addresses can access admin settings.</div>
-                <textarea value={(globalSettings.adminEmails || ["tamar@podcastimpactstudio.com", "tamarroutly@gmail.com"]).join("\n")} onChange={e => setGlobalSettings(s => ({ ...s, adminEmails: e.target.value.split("\n").map(x => x.trim()).filter(Boolean) }))} placeholder="admin@yourdomain.com" style={{ ...inp, minHeight: "100px", resize: "vertical", marginBottom: "20px", fontFamily: "monospace" }} />
+                <input value={globalSettings.workspaceUrl || ""} onChange={e => setGlobalSettings(s => ({ ...s, workspaceUrl: e.target.value }))} placeholder="https://yourwebsite.com" style={{ ...inp, marginBottom: "14px" }} />
+                <label style={{ fontSize: "12px", letterSpacing: "2px", textTransform: "uppercase", color: T.textMuted, marginBottom: "6px", display: "block" }}>Account Email</label>
+                <div style={{ ...inp, marginBottom: "20px", background: T.bg, color: T.textMuted, cursor: "default" }}>{userEmail || "—"}</div>
                 <SaveBtn />
               </div>
             </div>
 
-            {/* Account Type */}
-            <div style={{ background: T.card, border: "1px solid " + T.cardBorder, borderRadius: "12px", padding: "24px", marginTop: "16px" }}>
-              <div style={{ fontSize: "15px", fontWeight: "700", color: T.text, marginBottom: "4px", fontFamily: PF }}>Account Type</div>
-              <div style={{ fontSize: "13px", color: T.textMuted, marginBottom: "16px", fontStyle: "italic" }}>Switch between Solo and Agency mode. Agency unlocks team management and access codes.</div>
-              <div style={{ display: "flex", gap: "10px" }}>
-                {[{ id: "solo", icon: "🎙️", label: "Solo Podcaster" }, { id: "agency", icon: "🏢", label: "Production Company" }].map(opt => {
-                  const selected = (globalSettings.accountType || accountType) === opt.id;
-                  return (
-                    <button key={opt.id} onClick={async () => {
-                      const updated = { ...globalSettings, accountType: opt.id };
-                      setGlobalSettings(updated);
-                      await supabase.from("organizations").update({ account_type: opt.id }).eq("id", orgId);
-                      await saveGlobalSettings(updated);
-                    }}
-                      style={{ flex: 1, padding: "14px 10px", background: selected ? T.coralSoft : T.surface, border: "2px solid " + (selected ? T.coral : T.cardBorder), borderRadius: "10px", cursor: "pointer", textAlign: "center", transition: "all .15s", fontFamily: FF }}>
-                      <div style={{ fontSize: "22px", marginBottom: "6px" }}>{opt.icon}</div>
-                      <div style={{ fontSize: "13px", fontWeight: "700", color: selected ? T.coral : T.text, fontFamily: PF }}>{opt.label}</div>
-                      {selected && <div style={{ fontSize: "11px", color: T.coral, marginTop: "4px" }}>✓ Current</div>}
-                    </button>
-                  );
-                })}
+            {/* Your Plan */}
+            <div style={{ background: T.card, border: "1px solid " + T.cardBorder, borderRadius: "12px", padding: "24px" }}>
+              <div style={{ fontSize: "15px", fontWeight: "700", color: T.text, marginBottom: "4px", fontFamily: PF }}>Your Plan</div>
+              <div style={{ fontSize: "13px", color: T.textMuted, marginBottom: "20px" }}>
+                {accountType === "solo" ? "Solo Podcaster — up to 3 shows, 1 seat" : "Production Company — up to 10 shows, 5 seats"}
               </div>
-              <div style={{ fontSize: "12px", color: T.textMuted, marginTop: "10px", fontStyle: "italic", fontFamily: FF }}>Changes take effect after you close and reopen this panel.</div>
+              <div style={{ display: "flex", alignItems: "center", gap: "16px", padding: "16px 20px", background: T.coralSoft, border: "1px solid " + T.coralMid, borderRadius: "10px", marginBottom: "16px" }}>
+                <div style={{ fontSize: "28px" }}>{accountType === "solo" ? "🎙️" : "🏢"}</div>
+                <div>
+                  <div style={{ fontSize: "15px", fontWeight: "700", color: T.coral, fontFamily: PF }}>{accountType === "solo" ? "Solo Podcaster" : "Production Company"}</div>
+                  <div style={{ fontSize: "13px", color: T.textSecondary, marginTop: "2px" }}>
+                    {accountType === "solo" ? "$19.99/month · 3 shows · 1 seat" : "$69/month · 10 shows · 5 seats"}
+                  </div>
+                </div>
+                <div style={{ marginLeft: "auto", background: T.coral, color: "#fff", fontSize: "11px", fontWeight: "700", letterSpacing: "1px", padding: "4px 10px", borderRadius: "20px" }}>CURRENT</div>
+              </div>
+              {accountType === "solo" ? (
+                <div>
+                  <div style={{ fontSize: "13px", color: T.textMuted, marginBottom: "12px" }}>
+                    Need more shows or team seats? Upgrade to Production Company for $69/month.
+                  </div>
+                  <a href="mailto:info@podcastimpactstudio.com?subject=Upgrade to Production Company" style={{ display: "inline-block", padding: "10px 20px", background: T.coral, color: "#fff", borderRadius: "8px", fontSize: "13px", fontWeight: "700", textDecoration: "none", fontFamily: FF }}>
+                    Upgrade to Production Company →
+                  </a>
+                </div>
+              ) : (
+                <div>
+                  <div style={{ fontSize: "13px", color: T.textMuted, marginBottom: "12px" }}>
+                    Want to switch to the Solo plan? Email us and we'll sort it out.
+                  </div>
+                  <a href="mailto:info@podcastimpactstudio.com?subject=Switch to Solo Plan" style={{ display: "inline-block", padding: "10px 20px", background: "transparent", border: "1px solid " + T.cardBorder, color: T.textSecondary, borderRadius: "8px", fontSize: "13px", fontWeight: "700", textDecoration: "none", fontFamily: FF }}>
+                    Contact us to downgrade
+                  </a>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -776,7 +789,7 @@ export function AdminGate({ onSuccess, onClose }) {
   );
 }
 
-export function AdminPanel({ shows, orgId, onClose, onSaved, accountType = "agency" }) {
+export function AdminPanel({ shows, orgId, onClose, onSaved, accountType = "agency", userEmail = "" }) {
   const [adminView, setAdminView] = useState("shows");
   const [selKey, setSelKey] = useState(null);
   const [form, setForm] = useState(null);
@@ -1102,7 +1115,7 @@ ${combined}`;
       </div>
 
       {adminView === "settings" ? (
-        <SettingsView globalSettings={globalSettings} setGlobalSettings={setGlobalSettings} saveGlobalSettings={saveGlobalSettings} globalSettingsSaved={globalSettingsSaved} globalSettingsLoading={globalSettingsLoading} orgId={orgId} accountType={accountType} />
+        <SettingsView globalSettings={globalSettings} setGlobalSettings={setGlobalSettings} saveGlobalSettings={saveGlobalSettings} globalSettingsSaved={globalSettingsSaved} globalSettingsLoading={globalSettingsLoading} orgId={orgId} accountType={accountType} userEmail={userEmail} />
       ) : (
       <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
         <div style={{ width: "220px", background: T.surface, borderRight: "1px solid " + T.cardBorder, display: "flex", flexDirection: "column", flexShrink: 0 }}>
