@@ -28,6 +28,17 @@ export default async function handler(req, res) {
   const admin = createClient(VITE_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
   try {
+    // Step 1: Create the profile first (owner_id FK references profiles)
+    const { error: profErr } = await admin.from("profiles").upsert({
+      id: userId,
+      name: userName,
+      timezone: timezone || "America/Vancouver",
+      role: "admin",
+      org_id: null,
+    });
+    if (profErr) throw profErr;
+
+    // Step 2: Create the organization (owner_id now has a valid profile to reference)
     const slug = orgName
       .toLowerCase()
       .replace(/[^a-z0-9\s-]/g, "")
@@ -51,14 +62,11 @@ export default async function handler(req, res) {
       .single();
     if (orgErr) throw orgErr;
 
-    const { error: profErr } = await admin.from("profiles").upsert({
-      id: userId,
-      name: userName,
-      timezone: timezone || "America/Vancouver",
-      role: "admin",
+    // Step 3: Update profile with the org_id now that org exists
+    const { error: profUpdateErr } = await admin.from("profiles").update({
       org_id: org.id,
-    });
-    if (profErr) throw profErr;
+    }).eq("id", userId);
+    if (profUpdateErr) throw profUpdateErr;
 
     // Redeem the access code
     if (accessCode) {
