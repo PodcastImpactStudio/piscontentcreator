@@ -292,6 +292,18 @@ function BoilerplateEditor({ value, onChange }) {
 }
 
 
+const GDRIVE_KEY = "pis_gdrive_connection";
+const GDRIVE_CLIENT_ID = "309593338972-c8beqv97mqtea8l34oiricdugsi26krh.apps.googleusercontent.com";
+function getStoredGDrive() {
+  try {
+    const s = localStorage.getItem(GDRIVE_KEY);
+    if (!s) return null;
+    const p = JSON.parse(s);
+    if (Date.now() > p.expires_at) { localStorage.removeItem(GDRIVE_KEY); return null; }
+    return p;
+  } catch { return null; }
+}
+
 function SettingsView({ globalSettings, setGlobalSettings, saveGlobalSettings, globalSettingsSaved, globalSettingsLoading, orgId, accountType }) {
   const [activeSection, setActiveSection] = useState("integrations");
   const [team, setTeam] = useState([]);
@@ -302,6 +314,36 @@ function SettingsView({ globalSettings, setGlobalSettings, saveGlobalSettings, g
   const [editForm, setEditForm] = useState({});
   const [inviting, setInviting] = useState(false);
   const [inviteMsg, setInviteMsg] = useState("");
+  const [gConnected, setGConnected] = useState(false);
+  const [gConnecting, setGConnecting] = useState(false);
+  const gTokenClientRef = useRef(null);
+
+  useEffect(() => {
+    setGConnected(!!getStoredGDrive());
+  }, []);
+
+  function connectGoogleDrive() {
+    setGConnecting(true);
+    if (!gTokenClientRef.current) {
+      gTokenClientRef.current = window.google.accounts.oauth2.initTokenClient({
+        client_id: GDRIVE_CLIENT_ID,
+        scope: "https://www.googleapis.com/auth/drive.file",
+        callback: (resp) => {
+          setGConnecting(false);
+          if (resp.error) return;
+          const stored = { access_token: resp.access_token, expires_at: Date.now() + ((resp.expires_in || 3600) * 1000) };
+          localStorage.setItem(GDRIVE_KEY, JSON.stringify(stored));
+          setGConnected(true);
+        },
+      });
+    }
+    gTokenClientRef.current.requestAccessToken();
+  }
+
+  function disconnectGoogleDrive() {
+    localStorage.removeItem(GDRIVE_KEY);
+    setGConnected(false);
+  }
 
   useEffect(() => {
     async function loadTeam() {
@@ -406,6 +448,40 @@ function SettingsView({ globalSettings, setGlobalSettings, saveGlobalSettings, g
                 <input type="password" value={globalSettings.descriptApiKey || ""} onChange={e => setGlobalSettings(s => ({ ...s, descriptApiKey: e.target.value }))} placeholder="Paste your Descript API key..." style={{ ...inp, marginBottom: "8px", fontFamily: "monospace" }} />
                 <div style={{ fontSize: "12px", color: T.textMuted, marginBottom: "16px", fontStyle: "italic" }}>Descript → Settings → API Tokens → Create Token. One key covers your entire workspace.</div>
                 <SaveBtn />
+              </div>
+            </div>
+            <div style={{ background: T.card, border: "1px solid " + (gConnected ? "#52B78844" : T.cardBorder), borderRadius: "12px", marginBottom: "16px", overflow: "hidden" }}>
+              <div style={{ padding: "20px 24px", borderBottom: "1px solid " + T.cardBorder, display: "flex", alignItems: "center", gap: "12px" }}>
+                <span style={{ fontSize: "22px" }}>📁</span>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: "15px", fontWeight: "700", color: T.text }}>Google Drive</div>
+                  <div style={{ fontSize: "13px", color: T.textMuted, fontStyle: "italic" }}>Export content packages directly to Google Drive as formatted Google Docs.</div>
+                </div>
+                {gConnected && (
+                  <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+                    <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#52B788" }} />
+                    <span style={{ fontSize: "12px", color: "#52B788", fontWeight: "600" }}>Connected</span>
+                  </div>
+                )}
+              </div>
+              <div style={{ padding: "20px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px" }}>
+                {gConnected ? (
+                  <>
+                    <div style={{ fontSize: "14px", color: T.textSecondary, fontFamily: FF }}>
+                      Your Google account is connected. Click <strong>Export to Google Drive</strong> on any content package to save it directly as a Google Doc.
+                    </div>
+                    <button onClick={disconnectGoogleDrive} style={{ padding: "8px 16px", background: "transparent", border: "1px solid " + T.cardBorder, borderRadius: "6px", color: T.textMuted, fontSize: "13px", cursor: "pointer", fontFamily: FF, whiteSpace: "nowrap" }}>Disconnect</button>
+                  </>
+                ) : (
+                  <>
+                    <div style={{ fontSize: "14px", color: T.textSecondary, fontFamily: FF }}>
+                      Connect your Google account once — then export any content package straight to Google Drive with one click.
+                    </div>
+                    <button onClick={connectGoogleDrive} disabled={gConnecting} style={{ padding: "10px 20px", background: T.coral, border: "none", borderRadius: "6px", color: "#fff", fontSize: "13px", fontWeight: "700", cursor: "pointer", fontFamily: FF, whiteSpace: "nowrap", opacity: gConnecting ? 0.6 : 1 }}>
+                      {gConnecting ? "Connecting…" : "Connect Google Account"}
+                    </button>
+                  </>
+                )}
               </div>
             </div>
             <div style={{ background: T.card, border: "1px solid " + T.cardBorder, borderRadius: "12px", marginBottom: "16px" }}>
