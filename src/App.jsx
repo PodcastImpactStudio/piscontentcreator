@@ -385,23 +385,23 @@ ${content.split("\n").map(l=>{
   document.body.removeChild(a);URL.revokeObjectURL(u);
 }
 
-function dlHtml(content,filename){
-  const h=`<!DOCTYPE html>
+function buildHtml(content,filename){
+  return`<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><title>${filename}</title>
 <style>
 body{font-family:Arial,sans-serif;font-size:12pt;line-height:1.7;color:#111;max-width:820px;margin:40px auto;padding:0 24px}
-h1{font-size:18pt;font-weight:bold;color:#FF3131;border-bottom:2px solid #FF3131;padding-bottom:8px;margin-bottom:4px}
+h1{font-size:18pt;font-weight:bold;color:#C41230;border-bottom:2px solid #C41230;padding-bottom:8px;margin-bottom:4px}
 .meta{font-size:10pt;color:#888;margin-bottom:24px}
-.sec{font-size:13pt;font-weight:bold;color:#FF3131;margin-top:28px;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px}
+.sec{font-size:13pt;font-weight:bold;color:#C41230;margin-top:28px;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px}
 .sub{font-size:11pt;font-weight:bold;color:#333;margin-top:14px;margin-bottom:4px}
 p{margin:3pt 0}
 hr{border:none;border-top:1px solid #ddd;margin:18px 0}
-a{color:#FF3131}
+a{color:#C41230}
 </style></head>
 <body>
 <h1>${filename}</h1>
-<div class="meta">Podcast Impact Studio · Content Creator · Generated ${new Date().toLocaleDateString("en-US",{year:"numeric",month:"long",day:"numeric"})}</div>
+<div class="meta">Podcast Impact Studio · Content Planner · Generated ${new Date().toLocaleDateString("en-US",{year:"numeric",month:"long",day:"numeric"})}</div>
 ${content.split("\n").map(l=>{
   const t=l.trim();
   if(!t)return"<p>&nbsp;</p>";
@@ -412,6 +412,9 @@ ${content.split("\n").map(l=>{
   return`<p>${linkifyLine(l)}</p>`;
 }).join("\n")}
 </body></html>`;
+}
+function dlHtml(content,filename){
+  const h=buildHtml(content,filename);
   const b=new Blob([h],{type:"text/html"});
   const u=URL.createObjectURL(b);
   const a=document.createElement("a");
@@ -722,6 +725,9 @@ export default function App(){
   const[onboardingStep,setOnboardingStep]=useState(null);
   const[accountType,setAccountType]=useState("agency");
   const fileRef=useRef(null);
+  const gTokenClientRef=useRef(null);
+  const[gToken,setGToken]=useState(null);
+  const[gDriveStatus,setGDriveStatus]=useState(""); // "" | "uploading" | "ok" | "error"
 
   const d=show?shows[show]:null;
   const clr=d?.clr||T.coral;
@@ -878,6 +884,47 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
     }
     setOnboardingComplete(true);
     setOnboardingStep(null);
+  }
+
+  async function uploadToGDrive(){
+    const filename=`${d?.name||"Content Package"}${ep?` — Ep ${ep}`:""}`;
+    const html=buildHtml(raw,filename);
+    async function doUpload(token){
+      setGDriveStatus("uploading");
+      try{
+        const meta={name:filename,mimeType:"application/vnd.google-apps.document"};
+        const form=new FormData();
+        form.append("metadata",new Blob([JSON.stringify(meta)],{type:"application/json"}));
+        form.append("file",new Blob([html],{type:"text/html"}));
+        const r=await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart",{
+          method:"POST",headers:{Authorization:`Bearer ${token}`},body:form
+        });
+        const j=await r.json();
+        if(!r.ok)throw new Error(j.error?.message||"Upload failed");
+        setGDriveStatus("ok");
+        setTimeout(()=>setGDriveStatus(""),3500);
+        window.open(`https://docs.google.com/document/d/${j.id}/edit`,"_blank");
+      }catch(e){
+        console.error("Drive upload error:",e);
+        setGDriveStatus("error");
+        setTimeout(()=>setGDriveStatus(""),3500);
+      }
+    }
+    function getTokenAndUpload(){
+      if(!gTokenClientRef.current){
+        gTokenClientRef.current=window.google.accounts.oauth2.initTokenClient({
+          client_id:"309593338972-c8beqv97mqtea8l34oiricdugsi26krh.apps.googleusercontent.com",
+          scope:"https://www.googleapis.com/auth/drive.file",
+          callback:(resp)=>{
+            if(resp.error){setGDriveStatus("error");setTimeout(()=>setGDriveStatus(""),3500);return;}
+            setGToken(resp.access_token);
+            doUpload(resp.access_token);
+          }
+        });
+      }
+      gTokenClientRef.current.requestAccessToken();
+    }
+    if(gToken){doUpload(gToken);}else{getTokenAndUpload();}
   }
 
   function reset(){setStep("select");setShow(null);setMode(null);setGuest(null);setEp("");setTx("");setRaw("");setSecs([]);setErr("");setEditing(false);setESec(null);setETxt("");setExtraPlatforms([]);setClipCount(3);setClipTexts(Array(10).fill(""));setClipResults([]);setClipPlatforms(["YouTube"]);}
@@ -1185,7 +1232,7 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
                 <div style={{display:"flex",gap:"8px"}}>
                   {mode!=="clips"&&<button onClick={()=>{copyText(raw);setCpAll(true);setTimeout(()=>setCpAll(false),2000);}} style={{...ghost,background:cpAll?T.coralSoft:"transparent",borderColor:cpAll?T.coralMid:T.cardBorder,color:cpAll?T.coral:T.textMuted}}>{cpAll?"✓ COPIED":"COPY ALL"}</button>}
                   {mode!=="clips"&&<button onClick={()=>{dlDoc(raw,`${d?.name}${ep?` — Ep ${ep}`:""} Content Package`);setDlOk(true);setTimeout(()=>setDlOk(false),2500);}} style={{...ghost,background:dlOk?T.coralSoft:"transparent",borderColor:dlOk?T.coralMid:T.cardBorder,color:dlOk?T.coral:T.textMuted}}>{dlOk?"✓ DOWNLOADED":"📄 WORD DOC"}</button>}
-                  {mode!=="clips"&&<button onClick={()=>{dlHtml(raw,`${d?.name}${ep?` — Ep ${ep}`:""} Content Package`);setDlHtmlOk(true);setTimeout(()=>setDlHtmlOk(false),2500);}} title="Download as HTML — upload to Google Drive to auto-convert to Google Doc" style={{...ghost,background:dlHtmlOk?T.coralSoft:"transparent",borderColor:dlHtmlOk?T.coralMid:T.cardBorder,color:dlHtmlOk?T.coral:T.textMuted}}>{dlHtmlOk?"✓ DOWNLOADED":"📁 GOOGLE DOCS"}</button>}
+                  {mode!=="clips"&&<button onClick={uploadToGDrive} disabled={gDriveStatus==="uploading"} title="Upload directly to Google Drive as a Google Doc" style={{...ghost,background:gDriveStatus==="ok"?T.coralSoft:gDriveStatus==="error"?"#D94F4F18":"transparent",borderColor:gDriveStatus==="ok"?T.coralMid:gDriveStatus==="error"?"#D94F4F44":T.cardBorder,color:gDriveStatus==="ok"?T.coral:gDriveStatus==="error"?"#D94F4F":T.textMuted,opacity:gDriveStatus==="uploading"?.6:1}}>{gDriveStatus==="uploading"?"UPLOADING…":gDriveStatus==="ok"?"✓ SAVED TO DRIVE":gDriveStatus==="error"?"✕ UPLOAD FAILED":"📁 GOOGLE DOCS"}</button>}
                   <button onClick={()=>{setStep(mode==="clips"?"clips-setup":"input");setRaw("");setSecs([]);setClipResults([]);}} style={ghost}>{mode==="clips"?"NEW CLIPS":"NEW EPISODE"}</button>
                 </div>
               </div>
@@ -1208,7 +1255,7 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
                   <div style={{display:"flex",gap:"10px",marginTop:"16px",flexWrap:"wrap"}}>
                     <button onClick={()=>setEditing(!editing)} style={{flex:1,padding:"13px",background:editing?T.coralSoft:T.card,border:`1px solid ${editing?T.coralMid:T.cardBorder}`,borderRadius:"8px",color:editing?T.coral:T.textSecondary,fontSize:"14px",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1.5px",textTransform:"uppercase",transition:"all .2s"}}>{editing?"CLOSE EDITOR":"✏️  REVISE A SECTION"}</button>
                     {mode!=="editor"&&<button onClick={()=>{dlDoc(raw,`${d?.name}${ep?` — Ep ${ep}`:""} Content Package`);setDlOk(true);setTimeout(()=>setDlOk(false),2500);}} style={{flex:1,padding:"13px",background:dlOk?T.coralSoft:T.card,border:`1px solid ${dlOk?T.coralMid:T.cardBorder}`,borderRadius:"8px",color:dlOk?T.coral:T.textSecondary,fontSize:"14px",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1.5px",textTransform:"uppercase",transition:"all .2s"}}>{dlOk?"✓ DOWNLOADED":"📄  WORD DOC"}</button>}
-                    {mode!=="editor"&&<button onClick={()=>{dlHtml(raw,`${d?.name}${ep?` — Ep ${ep}`:""} Content Package`);setDlHtmlOk(true);setTimeout(()=>setDlHtmlOk(false),2500);}} title="Download HTML — upload to Google Drive to auto-convert to Google Doc" style={{flex:1,padding:"13px",background:dlHtmlOk?T.coralSoft:T.card,border:`1px solid ${dlHtmlOk?T.coralMid:T.cardBorder}`,borderRadius:"8px",color:dlHtmlOk?T.coral:T.textSecondary,fontSize:"14px",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1.5px",textTransform:"uppercase",transition:"all .2s"}}>{dlHtmlOk?"✓ DOWNLOADED":"📁  GOOGLE DOCS"}</button>}
+                    {mode!=="editor"&&<button onClick={uploadToGDrive} disabled={gDriveStatus==="uploading"} title="Upload directly to Google Drive as a Google Doc" style={{flex:1,padding:"13px",background:gDriveStatus==="ok"?T.coralSoft:gDriveStatus==="error"?"#D94F4F18":T.card,border:`1px solid ${gDriveStatus==="ok"?T.coralMid:gDriveStatus==="error"?"#D94F4F44":T.cardBorder}`,borderRadius:"8px",color:gDriveStatus==="ok"?T.coral:gDriveStatus==="error"?"#D94F4F":T.textSecondary,fontSize:"14px",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1.5px",textTransform:"uppercase",transition:"all .2s",opacity:gDriveStatus==="uploading"?.6:1}}>{gDriveStatus==="uploading"?"UPLOADING…":gDriveStatus==="ok"?"✓ SAVED TO DRIVE":gDriveStatus==="error"?"✕ UPLOAD FAILED":"📁 GOOGLE DOCS"}</button>}
                   </div>
                   {mode==="editor"&&<div style={{background:T.card,border:"1px solid "+T.cardBorder,borderRadius:"10px",padding:"18px 20px",marginTop:"14px"}}>
                     <div style={{fontSize:"13px",color:T.coral,letterSpacing:"2px",fontFamily:"'DM Sans', system-ui, sans-serif",marginBottom:"12px",fontWeight:"700"}}>🎬 SEND CLIPS TO DESCRIPT</div>
