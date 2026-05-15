@@ -639,6 +639,42 @@ function OnboardingScreen({ step, user, orgId, orgName, userProfile, onProfileDo
           </div>
         )}
 
+        {step === "guide" && (
+          <div style={{ animation:"fadeUp .4s ease", maxWidth:"600px" }}>
+            <div style={{ textAlign:"center", marginBottom:"40px" }}>
+              <div style={{ fontSize:"48px", marginBottom:"16px" }}>🎉</div>
+              <h1 style={{ fontSize:"36px", fontWeight:"700", color:T.text, margin:"0 0 12px", fontFamily:PF, lineHeight:"1.2" }}>You're all set up!</h1>
+              <p style={{ fontSize:"16px", color:T.textMuted, margin:0, lineHeight:"1.7", fontFamily:"'DM Sans', system-ui, sans-serif" }}>
+                Here's how Podcast Impact Content Studio works:
+              </p>
+            </div>
+            <div style={{ display:"flex", flexDirection:"column", gap:"16px", marginBottom:"40px" }}>
+              {[
+                { n:"01", icon:"🧬", title:"Set up your Show DNA", desc:"Add your show's voice, audience, platforms, and boilerplate once. The AI uses this to write in your exact style every time." },
+                { n:"02", icon:"📋", title:"Paste a transcript", desc:"Copy and paste any episode transcript — or upload a .txt or .docx file. No formatting needed." },
+                { n:"03", icon:"✨", title:"Get your full content package", desc:"Show notes, YouTube description, social posts, newsletter, blog post — all generated in your show's voice, ready to use." },
+              ].map(s=>(
+                <div key={s.n} style={{ background:T.card, border:`1px solid ${T.cardBorder}`, borderRadius:"12px", padding:"20px 24px", display:"flex", gap:"16px", alignItems:"flex-start" }}>
+                  <div style={{ fontSize:"28px", flexShrink:0 }}>{s.icon}</div>
+                  <div>
+                    <div style={{ fontSize:"11px", color:T.coral, fontWeight:"700", letterSpacing:"2px", marginBottom:"4px" }}>{s.n}</div>
+                    <div style={{ fontSize:"16px", fontWeight:"700", color:T.text, marginBottom:"6px", fontFamily:PF }}>{s.title}</div>
+                    <div style={{ fontSize:"14px", color:T.textSecondary, lineHeight:"1.6", fontFamily:"'DM Sans', system-ui, sans-serif" }}>{s.desc}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div style={{ textAlign:"center" }}>
+              <button onClick={onAddShow} style={{ padding:"16px 40px", background:T.coral, border:"none", borderRadius:"8px", color:"#fff", fontSize:"16px", fontWeight:"700", cursor:"pointer", letterSpacing:"1px", fontFamily:"'DM Sans', system-ui, sans-serif" }}>
+                Set Up My First Show →
+              </button>
+              <p style={{ fontSize:"13px", color:T.textMuted, marginTop:"12px", fontFamily:"'DM Sans', system-ui, sans-serif" }}>
+                You can always update your show DNA later from the Admin panel.
+              </p>
+            </div>
+          </div>
+        )}
+
         {step === "show" && (
           <div style={{ animation:"fadeUp .4s ease" }}>
             <div style={{ marginBottom:"32px" }}>
@@ -995,7 +1031,7 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
           onProfileDone={(newName, newCompany, newTz)=>{
             setOrgName(newCompany||orgName);
             setUserProfile(p=>({...p,name:newName,timezone:newTz}));
-            setOnboardingStep("show");
+            setOnboardingStep("guide");
           }}
           onAddShow={()=>setShowAdmin(true)}
         />

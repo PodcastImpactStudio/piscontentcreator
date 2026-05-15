@@ -105,6 +105,111 @@ const TIMEZONES = [
 
 
 // ── LOGIN SCREEN ──────────────────────────────────────────────────────────────
+function LandingScreen({ onSignup, onLogin }) {
+  const { T } = useTheme();
+  const FF = "'DM Sans', system-ui, sans-serif";
+
+  const plans = [
+    {
+      name: "Solo",
+      price: "$19.99",
+      period: "/month",
+      desc: "Perfect for independent podcasters who want professional-grade content without the complexity.",
+      features: ["Up to 3 shows", "1 seat", "All content types", "Google Drive export", "Add-ons at $4.99/show or seat"],
+      cta: "Join the Beta",
+      highlight: false,
+    },
+    {
+      name: "Studio",
+      price: "$69",
+      period: "/month",
+      desc: "Built for podcast production companies managing multiple shows and teams.",
+      features: ["Up to 15 shows", "5 team seats", "All content types", "Google Drive export", "Add-ons at $4.99/show or seat"],
+      cta: "Join the Beta",
+      highlight: true,
+    },
+  ];
+
+  return (
+    <div style={{ minHeight: "100vh", background: T.bg, fontFamily: FF }}>
+      {/* Header */}
+      <div style={{ padding: "20px 40px", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid " + T.cardBorder, background: T.surface }}>
+        <img src="/logo-nav.png" alt="Podcast Impact Content Studio" style={{ height: "56px", objectFit: "contain" }} />
+        <button onClick={onLogin} style={{ padding: "9px 20px", background: "transparent", border: "1px solid " + T.cardBorder, borderRadius: "6px", color: T.textSecondary, fontSize: "14px", cursor: "pointer", fontFamily: FF, fontWeight: "600" }}>Sign In</button>
+      </div>
+
+      {/* Hero */}
+      <div style={{ textAlign: "center", padding: "72px 24px 56px" }}>
+        <div style={{ display: "inline-block", background: T.coralSoft, border: "1px solid " + T.coralMid, borderRadius: "20px", padding: "5px 16px", fontSize: "12px", color: T.coral, fontWeight: "700", letterSpacing: "2px", textTransform: "uppercase", marginBottom: "24px" }}>Beta — Limited Spots Available</div>
+        <h1 style={{ fontSize: "clamp(36px, 6vw, 64px)", fontWeight: "800", color: T.text, margin: "0 0 16px", lineHeight: "1.1", letterSpacing: "-1px" }}>
+          Your show's DNA.<br />
+          <span style={{ color: T.coral }}>Your content. Automatically.</span>
+        </h1>
+        <p style={{ fontSize: "18px", color: T.textSecondary, maxWidth: "580px", margin: "0 auto 40px", lineHeight: "1.7" }}>
+          Podcast Impact Content Studio uses the unique DNA of your show — your voice, your audience, your platforms — to generate a full content package from every episode. No complex prompts. No starting from scratch. Just paste a transcript and go.
+        </p>
+        <button onClick={onSignup} style={{ padding: "16px 40px", background: T.coral, border: "none", borderRadius: "8px", color: "#fff", fontSize: "17px", fontWeight: "700", cursor: "pointer", fontFamily: FF, letterSpacing: "0.5px" }}>
+          Create Your Account →
+        </button>
+        <div style={{ marginTop: "14px", fontSize: "14px", color: T.textMuted }}>Access code required · No credit card during beta</div>
+      </div>
+
+      {/* How it works */}
+      <div style={{ maxWidth: "860px", margin: "0 auto", padding: "0 24px 64px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px" }}>
+          {[
+            { n: "01", title: "Set Up Your Show DNA", desc: "Tell us about your show once — voice, audience, platforms, boilerplate. We remember everything." },
+            { n: "02", title: "Paste Your Transcript", desc: "Drop in any episode transcript. We handle the rest — no formatting needed." },
+            { n: "03", title: "Get Your Content Package", desc: "Show notes, YouTube description, social posts, newsletter, blog post — all in your show's voice." },
+          ].map(s => (
+            <div key={s.n} style={{ background: T.card, border: "1px solid " + T.cardBorder, borderRadius: "12px", padding: "28px 24px" }}>
+              <div style={{ fontSize: "13px", color: T.coral, fontWeight: "700", letterSpacing: "2px", marginBottom: "12px" }}>{s.n}</div>
+              <div style={{ fontSize: "17px", fontWeight: "700", color: T.text, marginBottom: "10px", lineHeight: "1.3" }}>{s.title}</div>
+              <div style={{ fontSize: "14px", color: T.textSecondary, lineHeight: "1.7" }}>{s.desc}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Pricing */}
+      <div style={{ background: T.surface, borderTop: "1px solid " + T.cardBorder, padding: "64px 24px" }}>
+        <div style={{ textAlign: "center", marginBottom: "48px" }}>
+          <h2 style={{ fontSize: "36px", fontWeight: "700", color: T.text, margin: "0 0 12px" }}>Simple, transparent pricing</h2>
+          <p style={{ fontSize: "16px", color: T.textSecondary, margin: 0 }}>Free during beta — pricing takes effect when we launch publicly.</p>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "24px", maxWidth: "760px", margin: "0 auto" }}>
+          {plans.map(p => (
+            <div key={p.name} style={{ background: T.card, border: "2px solid " + (p.highlight ? T.coral : T.cardBorder), borderRadius: "16px", padding: "36px 32px", position: "relative" }}>
+              {p.highlight && <div style={{ position: "absolute", top: "-14px", left: "50%", transform: "translateX(-50%)", background: T.coral, color: "#fff", fontSize: "11px", fontWeight: "700", letterSpacing: "2px", padding: "4px 16px", borderRadius: "20px", textTransform: "uppercase", whiteSpace: "nowrap" }}>Most Popular</div>}
+              <div style={{ fontSize: "13px", color: T.coral, fontWeight: "700", letterSpacing: "2px", textTransform: "uppercase", marginBottom: "8px" }}>{p.name}</div>
+              <div style={{ display: "flex", alignItems: "baseline", gap: "4px", marginBottom: "12px" }}>
+                <span style={{ fontSize: "42px", fontWeight: "800", color: T.text }}>{p.price}</span>
+                <span style={{ fontSize: "15px", color: T.textMuted }}>{p.period}</span>
+              </div>
+              <div style={{ fontSize: "14px", color: T.textSecondary, marginBottom: "24px", lineHeight: "1.6" }}>{p.desc}</div>
+              <div style={{ borderTop: "1px solid " + T.cardBorder, paddingTop: "20px", marginBottom: "28px" }}>
+                {p.features.map(f => (
+                  <div key={f} style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px", fontSize: "14px", color: T.text }}>
+                    <span style={{ color: T.coral, fontWeight: "700", fontSize: "16px" }}>✓</span>{f}
+                  </div>
+                ))}
+              </div>
+              <button onClick={onSignup} style={{ width: "100%", padding: "14px", background: p.highlight ? T.coral : "transparent", border: "2px solid " + T.coral, borderRadius: "8px", color: p.highlight ? "#fff" : T.coral, fontSize: "15px", fontWeight: "700", cursor: "pointer", fontFamily: FF }}>
+                {p.cta}
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div style={{ padding: "24px", textAlign: "center", borderTop: "1px solid " + T.cardBorder, fontSize: "13px", color: T.textMuted }}>
+        © {new Date().getFullYear()} Podcast Impact Studio · <span style={{ cursor: "pointer", textDecoration: "underline" }} onClick={onLogin}>Sign in to existing account</span>
+      </div>
+    </div>
+  );
+}
+
 function LoginScreen({ onLogin, onSignup }) {
   const { T } = useTheme();
   const [email, setEmail] = useState("");
@@ -588,7 +693,7 @@ export default function Auth({ onAuthenticated }) {
         if (session?.user) {
           onAuthenticated(session.user);
         } else {
-          setMode("login");
+          setMode("landing");
         }
       });
     }
@@ -623,5 +728,9 @@ export default function Auth({ onAuthenticated }) {
     return <SignupScreen onSwitch={() => setMode("login")} onAuthenticated={onAuthenticated} />;
   }
 
-  return <LoginScreen onLogin={onAuthenticated} onSignup={() => setMode("signup")} />;
+  if (mode === "login") {
+    return <LoginScreen onLogin={onAuthenticated} onSignup={() => setMode("signup")} />;
+  }
+
+  return <LandingScreen onSignup={() => setMode("signup")} onLogin={() => setMode("login")} />;
 }
