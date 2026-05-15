@@ -124,7 +124,7 @@ function LandingScreen({ onSignup, onLogin }) {
       price: "$69",
       period: "/month",
       desc: "Built for podcast production companies managing multiple shows and teams.",
-      features: ["Up to 15 shows", "5 team seats", "All content types", "Google Drive export", "Add-ons at $4.99/show or seat"],
+      features: ["Up to 10 shows", "5 team seats", "All content types", "Google Drive export", "Add-ons at $4.99/show or seat"],
       cta: "Join the Beta",
       highlight: true,
     },
@@ -204,7 +204,10 @@ function LandingScreen({ onSignup, onLogin }) {
 
       {/* Footer */}
       <div style={{ padding: "24px", textAlign: "center", borderTop: "1px solid " + T.cardBorder, fontSize: "13px", color: T.textMuted }}>
-        © {new Date().getFullYear()} Podcast Impact Studio · <span style={{ cursor: "pointer", textDecoration: "underline" }} onClick={onLogin}>Sign in to existing account</span>
+        © {new Date().getFullYear()} Podcast Impact Studio ·{" "}
+        <span style={{ cursor: "pointer", textDecoration: "underline" }} onClick={onLogin}>Sign in</span>
+        {" · "}
+        <a href="/privacy.html" target="_blank" rel="noopener" style={{ color: T.textMuted, textDecoration: "underline" }}>Privacy Policy</a>
       </div>
     </div>
   );

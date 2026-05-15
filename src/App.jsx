@@ -1322,8 +1322,8 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
 
       {/* FOOTER */}
       <div style={{padding:"14px 40px",background:T.surface,borderTop:`1px solid ${T.cardBorder}`,display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0}}>
-        <span style={{fontSize:"15px",color:T.textSecondary,fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1.5px"}}>© {new Date().getFullYear()} PODCAST IMPACT STUDIO</span>
-        <span style={{fontSize:"15px",color:T.textSecondary,fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1px"}}>CONTENT CREATOR</span>
+        <span style={{fontSize:"13px",color:T.textSecondary,fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1px"}}>© {new Date().getFullYear()} PODCAST IMPACT STUDIO</span>
+        <a href="/privacy.html" target="_blank" rel="noopener" style={{fontSize:"13px",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1px",textDecoration:"underline"}}>PRIVACY POLICY</a>
       </div>
     </div>
   );
