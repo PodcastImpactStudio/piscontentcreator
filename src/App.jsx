@@ -599,7 +599,7 @@ function OnboardingScreen({ step, user, orgId, orgName, userProfile, onProfileDo
       <div style={{ width:"100%", maxWidth:"520px" }}>
         {/* Logo */}
         <div style={{ display:"flex", justifyContent:"center", marginBottom:"48px" }}>
-          <img src="/logo-nav.png" alt="Podcast Impact Content Studio" style={{ height:"80px", objectFit:"contain" }} />
+          <img src="/logo-nav.png" alt="Podcast Impact Content Studio" style={{ height:"240px", objectFit:"contain" }} />
         </div>
 
         {step === "profile" && (
