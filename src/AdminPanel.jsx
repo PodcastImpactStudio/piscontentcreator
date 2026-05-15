@@ -256,7 +256,7 @@ function BoilerplateEditor({ value, onChange }) {
 
   function insertLink() {
     restoreSelection();
-    if (linkUrl && linkText) document.execCommand("insertHTML", false, '<a href="' + linkUrl + '" style="color:#FF3131">' + linkText + '</a>');
+    if (linkUrl && linkText) document.execCommand("insertHTML", false, '<a href="' + linkUrl + '" style="color:#C41230">' + linkText + '</a>');
     else if (linkUrl) document.execCommand("createLink", false, linkUrl);
     setShowLink(false); setLinkUrl(""); setLinkText(""); handleChange();
   }
@@ -286,7 +286,7 @@ function BoilerplateEditor({ value, onChange }) {
         style={{ minHeight: "280px", padding: "16px 18px", color: T.text, fontSize: "15px", lineHeight: "1.8", outline: "none", ...GA, background: T.card, whiteSpace: "pre-wrap", wordBreak: "break-word", caretColor: T.text, border: "1px solid " + T.cardBorder, borderRadius: "8px" }}
         data-placeholder="Paste your boilerplate here..."
       />
-      <style>{`[contenteditable]:empty:before{content:attr(data-placeholder);color:#666;pointer-events:none}[contenteditable]{color:#FFFFFF!important}[contenteditable] a{color:#FF3131!important;text-decoration:underline}`}</style>
+      <style>{`[contenteditable]:empty:before{content:attr(data-placeholder);color:#999;pointer-events:none}[contenteditable]{color:#1A1A1A!important}[contenteditable] a{color:#C41230!important;text-decoration:underline}`}</style>
     </div>
   );
 }
