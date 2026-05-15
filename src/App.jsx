@@ -597,10 +597,9 @@ function OnboardingScreen({ step, user, orgId, orgName, userProfile, onProfileDo
   return (
     <div style={{ minHeight:"100vh", background:T.bg, display:"flex", alignItems:"center", justifyContent:"center", padding:"24px" }}>
       <div style={{ width:"100%", maxWidth:"520px" }}>
-        {/* Logo bar */}
-        <div style={{ display:"flex", alignItems:"center", gap:"12px", marginBottom:"48px", justifyContent:"center" }}>
-          <div style={{ width:"3px", height:"24px", background:T.coral, borderRadius:"2px" }} />
-          <span style={{ fontSize:"18px", letterSpacing:"4px", textTransform:"uppercase", color:T.text, fontFamily:"'DM Sans', system-ui, sans-serif", fontWeight:"800" }}>Content Creator</span>
+        {/* Logo */}
+        <div style={{ display:"flex", justifyContent:"center", marginBottom:"48px" }}>
+          <img src="/logo-nav.png" alt="Podcast Impact Content Studio" style={{ height:"80px", objectFit:"contain" }} />
         </div>
 
         {step === "profile" && (
