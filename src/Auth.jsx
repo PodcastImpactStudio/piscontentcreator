@@ -446,6 +446,21 @@ function SignupScreen({ onSwitch, onAuthenticated }) {
     }
   }
 
+  const inp = {
+    width: "100%", background: T.card, border: "1px solid " + T.cardBorder,
+    borderRadius: "8px", padding: "14px 18px", color: T.text,
+    fontSize: "17px", outline: "none", boxSizing: "border-box",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
+    marginBottom: "14px",
+  };
+  const btn = (primary) => ({
+    width: "100%", padding: "16px", border: "none", borderRadius: "8px",
+    fontSize: "17px", fontWeight: "700", cursor: "pointer",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
+    background: primary ? T.coral : T.card,
+    color: primary ? "#fff" : T.textMuted,
+    marginTop: primary ? "8px" : "0",
+  });
   const lbl = { fontSize: "12px", letterSpacing: "2px", textTransform: "uppercase", color: T.text, display: "block", marginBottom: "6px", fontFamily: "'DM Sans', system-ui, sans-serif" };
 
   // ── CONFIRMATION SCREEN ────────────────────────────────────────────────────
