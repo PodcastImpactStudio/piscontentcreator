@@ -283,7 +283,7 @@ function BoilerplateEditor({ value, onChange }) {
       )}
       <div ref={editorRef} contentEditable suppressContentEditableWarning
         onInput={handleChange} onPaste={handlePaste} onMouseUp={saveSelection} onKeyUp={saveSelection}
-        style={{ minHeight: "280px", padding: "16px 18px", color: "#FFFFFF", fontSize: "15px", lineHeight: "1.8", outline: "none", ...GA, background: "#2C2C2C", whiteSpace: "pre-wrap", wordBreak: "break-word", caretColor: "#FFFFFF" }}
+        style={{ minHeight: "280px", padding: "16px 18px", color: T.text, fontSize: "15px", lineHeight: "1.8", outline: "none", ...GA, background: T.card, whiteSpace: "pre-wrap", wordBreak: "break-word", caretColor: T.text, border: "1px solid " + T.cardBorder, borderRadius: "8px" }}
         data-placeholder="Paste your boilerplate here..."
       />
       <style>{`[contenteditable]:empty:before{content:attr(data-placeholder);color:#666;pointer-events:none}[contenteditable]{color:#FFFFFF!important}[contenteditable] a{color:#FF3131!important;text-decoration:underline}`}</style>
@@ -1020,7 +1020,7 @@ ${combined}`;
   ];
 
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.95)", zIndex: 1000, display: "flex", flexDirection: "column" }}>
+    <div style={{ position: "fixed", inset: 0, background: T.bg, zIndex: 1000, display: "flex", flexDirection: "column" }}>
       <div style={{ background: T.surface, borderBottom: "1px solid " + T.cardBorder, flexShrink: 0 }}>
         <div style={{ padding: "0 32px", display: "flex", justifyContent: "space-between", alignItems: "center", height: "56px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
