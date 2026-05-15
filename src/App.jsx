@@ -606,7 +606,7 @@ function OnboardingScreen({ step, user, orgId, orgName, userProfile, onProfileDo
           <div style={{ animation:"fadeUp .4s ease" }}>
             <div style={{ marginBottom:"32px" }}>
               <h1 style={{ fontSize:"40px", fontWeight:"700", color:T.text, margin:"0 0 12px", fontFamily:PF, lineHeight:"1.2" }}>
-                Welcome{company ? ` to ${company}` : ""}! 👋
+                Welcome, {name || "friend"}! 👋
               </h1>
               <p style={{ fontSize:"15px", color:T.textMuted, margin:0, lineHeight:"1.6", fontFamily:"'DM Sans', system-ui, sans-serif" }}>
                 Before you dive in, let's make sure we have your details right.
