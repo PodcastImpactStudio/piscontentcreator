@@ -604,7 +604,7 @@ function OnboardingScreen({ step, user, orgId, orgName, userProfile, onProfileDo
 
         {step === "profile" && (
           <div style={{ animation:"fadeUp .4s ease" }}>
-            <div style={{ marginBottom:"32px" }}>
+            <div style={{ marginBottom:"32px", textAlign:"center" }}>
               <h1 style={{ fontSize:"40px", fontWeight:"700", color:T.text, margin:"0 0 12px", fontFamily:PF, lineHeight:"1.2" }}>
                 Welcome, {name || "friend"}! 👋
               </h1>
