@@ -705,6 +705,145 @@ function OnboardingScreen({ step, user, orgId, orgName, userProfile, onProfileDo
   );
 }
 
+// ── BETA DISCLAIMER MODAL ─────────────────────────────────────────────────────
+function BetaDisclaimerModal({ onAcknowledge }) {
+  const [checked, setChecked] = useState(false);
+  const FF = "'DM Sans', system-ui, sans-serif";
+  const points = [
+    { icon: "🔄", title: "Regular Updates", text: "We're actively building and improving the app. You may notice new features and occasional changes." },
+    { icon: "🐛", title: "Found a Bug? Tell Us.", text: "Email info@podcastimpactstudio.com — your feedback directly shapes what we build next." },
+    { icon: "🎁", title: "Free During Beta", text: "As a beta tester you have full access at no cost. Pricing takes effect at public launch." },
+  ];
+  return (
+    <div style={{ position:"fixed", inset:0, background:"rgba(26,26,26,0.55)", backdropFilter:"blur(4px)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:9999, padding:"20px" }}>
+      <div style={{ background:T.card, border:"1px solid "+T.cardBorder, borderRadius:"20px", padding:"44px 40px", maxWidth:"520px", width:"100%", boxShadow:"0 24px 64px rgba(0,0,0,0.18)" }}>
+        <div style={{ textAlign:"center", marginBottom:"28px" }}>
+          <img src="/logo-nav.png" alt="Podcast Impact Content Studio" style={{ height:"80px", objectFit:"contain", marginBottom:"16px" }} />
+          <div style={{ display:"inline-block", background:T.coralSoft, border:"1px solid "+T.coralMid, borderRadius:"20px", padding:"4px 14px", fontSize:"11px", fontWeight:"700", letterSpacing:"2px", textTransform:"uppercase", color:T.coral, marginBottom:"16px" }}>Beta</div>
+          <h2 style={{ fontSize:"22px", fontWeight:"700", color:T.text, margin:"0 0 10px", fontFamily:FF, lineHeight:"1.3" }}>Welcome to Podcast Impact Content Studio</h2>
+          <p style={{ fontSize:"14px", color:T.textMuted, margin:0, lineHeight:"1.6", fontFamily:FF }}>Thanks for being an early tester! A few things to know:</p>
+        </div>
+        <div style={{ marginBottom:"24px" }}>
+          {points.map((p, i) => (
+            <div key={i} style={{ display:"flex", gap:"14px", marginBottom:"16px", alignItems:"flex-start" }}>
+              <div style={{ width:"36px", height:"36px", borderRadius:"10px", background:T.coralSoft, border:"1px solid "+T.coralMid, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"16px", flexShrink:0 }}>{p.icon}</div>
+              <div>
+                <div style={{ fontSize:"14px", fontWeight:"700", color:T.text, fontFamily:FF, marginBottom:"3px" }}>{p.title}</div>
+                <div style={{ fontSize:"13px", color:T.textSecondary, fontFamily:FF, lineHeight:"1.6" }}>{p.text}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <label style={{ display:"flex", alignItems:"flex-start", gap:"10px", cursor:"pointer", padding:"14px 16px", background:checked?T.coralSoft:T.bg, border:"1px solid "+(checked?T.coralMid:T.cardBorder), borderRadius:"10px", marginBottom:"20px", transition:"all 0.2s" }}>
+          <input type="checkbox" checked={checked} onChange={e=>setChecked(e.target.checked)} style={{ marginTop:"2px", accentColor:T.coral, width:"16px", height:"16px", flexShrink:0 }} />
+          <span style={{ fontSize:"13px", color:T.text, fontFamily:FF, lineHeight:"1.5" }}>
+            I understand this is a beta version and I'm happy to share feedback to help improve the product.
+          </span>
+        </label>
+        <button onClick={()=>{ if(checked) onAcknowledge(); }} disabled={!checked}
+          style={{ width:"100%", padding:"15px", background:checked?T.coral:T.cardBorder, border:"none", borderRadius:"10px", color:"#fff", fontSize:"16px", fontWeight:"700", cursor:checked?"pointer":"not-allowed", fontFamily:FF, transition:"background 0.2s" }}>
+          Let's Go! →
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── FIRST SHOW WIZARD ──────────────────────────────────────────────────────────
+function FirstShowWizard({ onOpenAdmin, onSkip }) {
+  const [step, setStep] = useState(1); // 1 = name, 2 = method
+  const [showName, setShowName] = useState("");
+  const FF = "'DM Sans', system-ui, sans-serif";
+
+  const steps = ["Name Your Show", "Set Up Show DNA"];
+
+  return (
+    <div style={{ background:T.card, border:"1px solid "+T.cardBorder, borderRadius:"16px", padding:"48px 40px", maxWidth:"600px", margin:"0 auto", animation:"fadeUp .4s ease" }}>
+      {/* Step indicator */}
+      <div style={{ display:"flex", alignItems:"center", gap:"0", marginBottom:"40px" }}>
+        {steps.map((s, i) => (
+          <div key={i} style={{ display:"flex", alignItems:"center", flex: i < steps.length - 1 ? 1 : "none" }}>
+            <div style={{ display:"flex", alignItems:"center", gap:"8px", flexShrink:0 }}>
+              <div style={{ width:"28px", height:"28px", borderRadius:"50%", background: step > i ? T.coral : (step === i+1 ? T.coral : T.bg), border:"2px solid "+(step >= i+1 ? T.coral : T.cardBorder), display:"flex", alignItems:"center", justifyContent:"center", fontSize:"12px", fontWeight:"700", color: step >= i+1 ? "#fff" : T.textMuted, transition:"all 0.2s" }}>
+                {step > i+1 ? "✓" : i+1}
+              </div>
+              <span style={{ fontSize:"12px", fontWeight: step === i+1 ? "700" : "400", color: step === i+1 ? T.text : T.textMuted, fontFamily:FF, whiteSpace:"nowrap" }}>{s}</span>
+            </div>
+            {i < steps.length - 1 && <div style={{ flex:1, height:"1px", background: step > i+1 ? T.coral : T.cardBorder, margin:"0 12px", transition:"background 0.2s" }} />}
+          </div>
+        ))}
+      </div>
+
+      {/* Step 1 — Name */}
+      {step === 1 && (
+        <div>
+          <div style={{ fontSize:"28px", fontWeight:"700", color:T.text, marginBottom:"8px", fontFamily:FF }}>Let's name your show 🎙️</div>
+          <p style={{ fontSize:"15px", color:T.textMuted, marginBottom:"32px", lineHeight:"1.6", fontFamily:FF }}>
+            What's the podcast you're setting up content for? You can always edit this later.
+          </p>
+          <label style={{ fontSize:"12px", letterSpacing:"2px", textTransform:"uppercase", color:T.textMuted, display:"block", marginBottom:"8px", fontFamily:FF }}>Show Name *</label>
+          <input
+            type="text"
+            placeholder="e.g. The Daily Wellness Podcast"
+            value={showName}
+            onChange={e => setShowName(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && showName.trim() && setStep(2)}
+            autoFocus
+            style={{ width:"100%", background:T.surface, border:"1px solid "+T.cardBorder, borderRadius:"8px", padding:"14px 16px", color:T.text, fontSize:"16px", outline:"none", boxSizing:"border-box", fontFamily:FF, marginBottom:"24px" }}
+          />
+          <div style={{ display:"flex", gap:"12px", alignItems:"center" }}>
+            <button onClick={() => showName.trim() && setStep(2)} disabled={!showName.trim()}
+              style={{ padding:"14px 32px", background:showName.trim()?T.coral:"#ccc", border:"none", borderRadius:"8px", color:"#fff", fontSize:"15px", fontWeight:"700", cursor:showName.trim()?"pointer":"not-allowed", fontFamily:FF }}>
+              Next →
+            </button>
+            <button onClick={onSkip} style={{ background:"none", border:"none", color:T.textMuted, fontSize:"14px", cursor:"pointer", fontFamily:FF, padding:"14px 8px" }}>
+              Skip for now
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Step 2 — DNA method */}
+      {step === 2 && (
+        <div>
+          <div style={{ fontSize:"28px", fontWeight:"700", color:T.text, marginBottom:"8px", fontFamily:FF }}>Set up your Show DNA ✨</div>
+          <p style={{ fontSize:"15px", color:T.textMuted, marginBottom:"32px", lineHeight:"1.6", fontFamily:FF }}>
+            Show DNA is what makes your content sound like <em>you</em> — your voice, audience, platforms, and style. How would you like to set it up?
+          </p>
+          <div style={{ display:"flex", flexDirection:"column", gap:"14px", marginBottom:"32px" }}>
+            {[
+              {
+                icon: "🤖",
+                title: "Generate from transcripts (recommended)",
+                desc: "Upload 2–5 episode transcripts and we'll automatically extract your show's voice, audience, and content style using AI.",
+                action: () => onOpenAdmin("transcript"),
+              },
+              {
+                icon: "✍️",
+                title: "Fill it in myself",
+                desc: "Walk through each section of your Show DNA — voice, audience, platforms, show notes style, and boilerplate — at your own pace.",
+                action: () => onOpenAdmin("manual"),
+              },
+            ].map((opt, i) => (
+              <button key={i} onClick={opt.action}
+                style={{ display:"flex", gap:"16px", alignItems:"flex-start", padding:"20px 22px", background:T.surface, border:"1px solid "+T.cardBorder, borderRadius:"12px", cursor:"pointer", textAlign:"left", transition:"all 0.15s", fontFamily:FF }}>
+                <div style={{ fontSize:"28px", flexShrink:0 }}>{opt.icon}</div>
+                <div>
+                  <div style={{ fontSize:"15px", fontWeight:"700", color:T.text, marginBottom:"5px" }}>{opt.title}</div>
+                  <div style={{ fontSize:"13px", color:T.textSecondary, lineHeight:"1.6" }}>{opt.desc}</div>
+                </div>
+              </button>
+            ))}
+          </div>
+          <button onClick={() => setStep(1)} style={{ background:"none", border:"none", color:T.textMuted, fontSize:"14px", cursor:"pointer", fontFamily:FF, padding:0 }}>
+            ← Back
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function App(){
   const[shows,setShows]=useState({});
   const[loadingShows,setLoadingShows]=useState(true);
@@ -761,6 +900,8 @@ export default function App(){
   const[accountType,setAccountType]=useState("agency");
   const fileRef=useRef(null);
   const[gDriveStatus,setGDriveStatus]=useState(""); // "" | "uploading" | "ok" | "error" | "disconnected"
+  const[betaAcknowledged,setBetaAcknowledged]=useState(()=>!!localStorage.getItem("pis_beta_ack_v1"));
+  const[showFirstShowWizard,setShowFirstShowWizard]=useState(false);
 
   const d=show?shows[show]:null;
   const clr=d?.clr||T.coral;
@@ -1045,6 +1186,9 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
       {showProfile&&currentUser&&<Profile user={currentUser} onClose={()=>setShowProfile(false)} onSignOut={handleSignOut}/>}
       {showAdmin&&<AdminPanel shows={shows} orgId={orgId} accountType={accountType} userEmail={currentUser?.email} onClose={()=>setShowAdmin(false)} onSaved={async()=>{await refreshShows();if(!onboardingComplete)await markOnboardingComplete();}}/>}
 
+      {/* BETA DISCLAIMER — shown once per device */}
+      {!betaAcknowledged&&<BetaDisclaimerModal onAcknowledge={()=>{localStorage.setItem("pis_beta_ack_v1","1");setBetaAcknowledged(true);}}/>}
+
       {/* HEADER */}
       <div style={{padding:"0 40px",background:T.surface,borderBottom:`1px solid ${T.cardBorder}`,display:"flex",justifyContent:"space-between",alignItems:"center",height:"110px",flexShrink:0}}>
         <div style={{display:"flex",alignItems:"center"}}>
@@ -1082,14 +1226,38 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
               {loadingShows?(
                 <div style={{textAlign:"center",padding:"60px",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"2px",fontSize:"12px"}}>LOADING SHOWS...</div>
               ):Object.keys(shows).length===0?(
-                <div style={{background:T.card,border:`1px solid ${T.cardBorder}`,borderRadius:"12px",padding:"48px",textAlign:"center",animation:"fadeUp .4s ease"}}>
-                  <div style={{fontSize:"48px",marginBottom:"20px"}}>🎙️</div>
-                  <h2 style={{fontSize:"32px",fontWeight:"600",color:T.text,margin:"0 0 12px",fontFamily:PF}}>Let's add your first podcast</h2>
-                  <p style={{fontSize:"16px",color:T.textMuted,margin:"0 0 8px",lineHeight:"1.6",maxWidth:"440px",marginLeft:"auto",marginRight:"auto"}}>Alright, let's get you set up! Head to the Admin panel to enter your podcast details — the more you fill in, the better your content will be.</p>
-                  <p style={{fontSize:"14px",color:T.textMuted,margin:"0 0 32px",fontStyle:"italic"}}>Once your first show is added, it'll appear right here.</p>
-                  {isAdmin&&<button onClick={()=>setShowAdmin(true)} style={{...primary(T.coral),width:"auto",padding:"16px 40px",fontSize:"16px",letterSpacing:"2px"}}>Add My First Podcast →</button>}
-                  {!isAdmin&&<p style={{fontSize:"14px",color:T.textMuted}}>Your admin hasn't added any shows yet. Check back soon!</p>}
-                </div>
+                isAdmin ? (
+                  showFirstShowWizard ? (
+                    <FirstShowWizard
+                      onOpenAdmin={(method) => {
+                        setShowFirstShowWizard(false);
+                        setShowAdmin(true);
+                      }}
+                      onSkip={() => { setShowFirstShowWizard(false); setShowAdmin(true); }}
+                    />
+                  ) : (
+                    <div style={{background:T.card,border:`1px solid ${T.cardBorder}`,borderRadius:"16px",padding:"56px 48px",textAlign:"center",animation:"fadeUp .4s ease",maxWidth:"580px",margin:"0 auto"}}>
+                      <div style={{fontSize:"52px",marginBottom:"20px"}}>🎙️</div>
+                      <h2 style={{fontSize:"30px",fontWeight:"700",color:T.text,margin:"0 0 12px",fontFamily:PF}}>Let's set up your first show</h2>
+                      <p style={{fontSize:"15px",color:T.textMuted,margin:"0 0 32px",lineHeight:"1.7",maxWidth:"420px",marginLeft:"auto",marginRight:"auto"}}>
+                        We'll walk you through adding your show's DNA — the voice, audience, and platforms that make your content sound uniquely yours.
+                      </p>
+                      <button onClick={()=>setShowFirstShowWizard(true)} style={{...primary(T.coral),width:"auto",padding:"16px 40px",fontSize:"15px",letterSpacing:"1.5px"}}>
+                        Get Started →
+                      </button>
+                      <div style={{marginTop:"16px"}}>
+                        <button onClick={()=>setShowAdmin(true)} style={{background:"none",border:"none",color:T.textMuted,fontSize:"13px",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",padding:0,textDecoration:"underline"}}>
+                          Skip to admin panel
+                        </button>
+                      </div>
+                    </div>
+                  )
+                ) : (
+                  <div style={{background:T.card,border:`1px solid ${T.cardBorder}`,borderRadius:"12px",padding:"48px",textAlign:"center"}}>
+                    <div style={{fontSize:"48px",marginBottom:"20px"}}>🎙️</div>
+                    <p style={{fontSize:"16px",color:T.textMuted}}>Your admin hasn't added any shows yet. Check back soon!</p>
+                  </div>
+                )
               ):(
                 <div style={{display:"flex",flexDirection:"column",gap:"8px"}}>
                   {Object.entries(shows).sort(([,a],[,b])=>a.name.localeCompare(b.name)).map(([k,s])=>(
