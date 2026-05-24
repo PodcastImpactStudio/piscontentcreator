@@ -5,7 +5,17 @@ import Profile from "./Profile";
 import { supabase } from "./lib/supabase";
 import { AdminPanel, AdminGate } from "./AdminPanel";
 
-const ANTHROPIC_KEY = import.meta.env.VITE_ANTHROPIC_API_KEY;
+// API calls go through /api/generate (server-side) — key is never in the browser
+async function claudeAPI(body) {
+  const r = await fetch("/api/generate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const data = await r.json();
+  if (!r.ok) throw new Error(JSON.stringify(data.error || data));
+  return data;
+}
 
 const T = {
   bg: "#F5F0E8", surface: "#FDFAF5", card: "#FFFFFF", cardBorder: "#E2D9CC",
@@ -956,14 +966,8 @@ ${clipPlatforms.includes("Spotify")?`SPOTIFY CLIP ${i+1}
 Write ONLY the sections above. No labels, no commentary, no extra text.`;
         // Add delay between clips to avoid rate limiting
         if(i>0) await new Promise(res=>setTimeout(res,2000));
-        let r, clipAttempt=0;
-        while(clipAttempt<3){
-          r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":ANTHROPIC_KEY,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:2000,system:clipSys,messages:[{role:"user",content:`CLIP ${i+1} TRANSCRIPT:\n${clipTx.substring(0,8000)}`}]})});
-          if((r.status===529||r.status===503)&&clipAttempt<2){clipAttempt++;await new Promise(res=>setTimeout(res,4000*clipAttempt));continue;}
-          break;
-        }
-        if(!r.ok){const et=await r.text();throw new Error(`API error (${r.status}): ${et.substring(0,100)}`);}
-        const j=await r.json();const t=j.content?.filter(b=>b.type==="text").map(b=>b.text).join("\n")||"";
+        const j=await claudeAPI({model:"claude-sonnet-4-20250514",max_tokens:2000,system:clipSys,messages:[{role:"user",content:`CLIP ${i+1} TRANSCRIPT:\n${clipTx.substring(0,8000)}`}]});
+        const t=j.content?.filter(b=>b.type==="text").map(b=>b.text).join("\n")||"";
         results.push({index:i+1,skipped:false,content:t});
       }catch(e){results.push({index:i+1,skipped:false,content:`Error: ${e.message}`});}
     }
@@ -974,15 +978,7 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
     if(!tx.trim()){setErr("Paste the transcript.");return;}
     setErr("");setBusy(true);setRaw("");setSecs([]);setStep("generating");
     try{
-      let r,attempt=0;
-      while(attempt<3){
-        r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":ANTHROPIC_KEY,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:mode==="editor"?4000:8000,system:sys(d,show,guest,ep,mode,extraPlatforms,editorClipCount),messages:[{role:"user",content:mode==="editor"?`Analyze this transcript carefully and generate the Editor Brief as instructed.\n\nTRANSCRIPT:\n${tx.substring(0,90000)}`:`Generate the COMPLETE content package in plain text.\n\nTRANSCRIPT:\n${tx.substring(0,90000)}`}]})});
-        if((r.status===529||r.status===503)&&attempt<2){attempt++;await new Promise(res=>setTimeout(res,4000*attempt));continue;}
-        if(r.status===529||r.status===503){setErr("⏳ Anthropic is overloaded right now. Wait 30 seconds and try again.");setStep("input");setBusy(false);return;}
-        break;
-      }
-      if(!r.ok){const et=await r.text();setErr(`API error (${r.status}): ${et.substring(0,200)}`);setStep("input");return;}
-      const j=await r.json();
+      const j=await claudeAPI({model:"claude-sonnet-4-20250514",max_tokens:mode==="editor"?4000:8000,system:sys(d,show,guest,ep,mode,extraPlatforms,editorClipCount),messages:[{role:"user",content:mode==="editor"?`Analyze this transcript carefully and generate the Editor Brief as instructed.\n\nTRANSCRIPT:\n${tx.substring(0,90000)}`:`Generate the COMPLETE content package in plain text.\n\nTRANSCRIPT:\n${tx.substring(0,90000)}`}]});
       if(j.error){setErr(j.error.message);setStep("input");}
       else{const t=j.content?.filter(i=>i.type==="text").map(i=>i.text).join("\n")||"";if(!t.trim()){setErr("No content generated. Please try again.");setStep("input");return;}setRaw(strip(t));const parsed=parse(t);setSecs(parsed.length?parsed:[{id:"full",title:"Content Package",content:strip(t)}]);setStep("result");}
     }catch(e){setErr(e.message||"Network error.");setStep("input");}
@@ -993,8 +989,7 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
     if(!eSec||!eTxt.trim())return;setRev(true);setErr("");
     const label=ED.find(s=>s.id===eSec)?.l||eSec;
     try{
-      const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":ANTHROPIC_KEY,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:4000,system:revSys(d),messages:[{role:"user",content:`Current:\n\n${raw}\n\n---\n\nRevise "${label}":\n${eTxt}\n\nPlain text only. Only the revised section.`}]})});
-      const j=await r.json();
+      const j=await claudeAPI({model:"claude-sonnet-4-20250514",max_tokens:4000,system:revSys(d),messages:[{role:"user",content:`Current:\n\n${raw}\n\n---\n\nRevise "${label}":\n${eTxt}\n\nPlain text only. Only the revised section.`}]});
       if(j.error)setErr(j.error.message);
       else{const v=strip(j.content.filter(i=>i.type==="text").map(i=>i.text).join("\n"));setRaw(p=>p+`\n\n${"═".repeat(40)}\nREVISION — ${label.toUpperCase()}\n${"═".repeat(40)}\n\n${v}`);setSecs(p=>[...p,{id:eSec+"-rev",title:`Revision — ${label}`,content:v}]);}
     }catch(e){setErr(e.message);}

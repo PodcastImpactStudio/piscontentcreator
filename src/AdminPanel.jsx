@@ -3,7 +3,16 @@ import { saveShow } from "./lib/shows";
 import { supabase } from "./lib/supabase";
 import mammoth from "mammoth";
 
-const ANTHROPIC_KEY = import.meta.env.VITE_ANTHROPIC_API_KEY;
+async function claudeAPI(body) {
+  const r = await fetch("/api/generate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const data = await r.json();
+  if (!r.ok) throw new Error(JSON.stringify(data.error || data));
+  return data;
+}
 
 const T = {
   bg: "#F5F0E8", surface: "#FDFAF5", card: "#FFFFFF", cardBorder: "#E2D9CC",
@@ -909,15 +918,7 @@ export function AdminPanel({ shows, orgId, onClose, onSaved, accountType = "agen
         "BOILERPLATE: full boilerplate text including all links and disclaimers\n\n" +
         "SHOW DNA:\n" + rawDna.substring(0, 8000);
 
-      const r = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
-        body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 4000, messages: [{ role: "user", content: prompt }] })
-      });
-
-      if (!r.ok) { const e = await r.text(); setMsg("API error " + r.status + ": " + e.substring(0, 150)); setParsing(false); return; }
-
-      const j = await r.json();
+      const j = await claudeAPI({ model: "claude-sonnet-4-20250514", max_tokens: 4000, messages: [{ role: "user", content: prompt }] });
       const text = j.content?.filter(b => b.type === "text").map(b => b.text).join("") || "";
 
       function getField(label) {
@@ -1031,13 +1032,7 @@ RULES: 2-3 content rules that emerge from the transcripts (e.g. Always cite sour
 TRANSCRIPTS:
 ${combined}`;
 
-      const r = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
-        body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 2000, messages: [{ role: "user", content: prompt }] })
-      });
-      if (!r.ok) throw new Error("API error " + r.status);
-      const j = await r.json();
+      const j = await claudeAPI({ model: "claude-sonnet-4-20250514", max_tokens: 2000, messages: [{ role: "user", content: prompt }] });
       const text = j.content?.filter(b => b.type === "text").map(b => b.text).join("") || "";
 
       function getField(label) {
