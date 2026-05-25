@@ -717,7 +717,6 @@ function OnboardingScreen({ step, user, orgId, orgName, userProfile, onProfileDo
 
 // ── BETA DISCLAIMER MODAL ─────────────────────────────────────────────────────
 function BetaDisclaimerModal({ onAcknowledge }) {
-  const [checked, setChecked] = useState(false);
   const FF = "'DM Sans', system-ui, sans-serif";
   const points = [
     { icon: "🔄", title: "Regular Updates", text: "We're actively building and improving the app. You may notice new features and occasional changes." },
@@ -728,8 +727,10 @@ function BetaDisclaimerModal({ onAcknowledge }) {
     <div style={{ position:"fixed", inset:0, background:"rgba(26,26,26,0.55)", backdropFilter:"blur(4px)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:9999, padding:"20px" }}>
       <div style={{ background:T.card, border:"1px solid "+T.cardBorder, borderRadius:"20px", padding:"44px 40px", maxWidth:"520px", width:"100%", boxShadow:"0 24px 64px rgba(0,0,0,0.18)" }}>
         <div style={{ textAlign:"center", marginBottom:"28px" }}>
-          <img src="/logo-nav.png" alt="Podcast Impact Content Studio" style={{ height:"80px", objectFit:"contain", marginBottom:"16px" }} />
-          <div style={{ display:"inline-block", background:T.coralSoft, border:"1px solid "+T.coralMid, borderRadius:"20px", padding:"4px 14px", fontSize:"11px", fontWeight:"700", letterSpacing:"2px", textTransform:"uppercase", color:T.coral, marginBottom:"16px" }}>Beta</div>
+          <div style={{ display:"inline-flex", flexDirection:"column", alignItems:"center", marginBottom:"16px" }}>
+            <img src="/logo-nav.png" alt="Podcast Impact Content Studio" style={{ height:"80px", objectFit:"contain", marginBottom:"10px" }} />
+            <div style={{ display:"inline-block", background:T.coralSoft, border:"1px solid "+T.coralMid, borderRadius:"20px", padding:"4px 14px", fontSize:"11px", fontWeight:"700", letterSpacing:"2px", textTransform:"uppercase", color:T.coral }}>Beta</div>
+          </div>
           <h2 style={{ fontSize:"22px", fontWeight:"700", color:T.text, margin:"0 0 10px", fontFamily:FF, lineHeight:"1.3" }}>Welcome to Podcast Impact Content Studio</h2>
           <p style={{ fontSize:"14px", color:T.textMuted, margin:0, lineHeight:"1.6", fontFamily:FF }}>Thanks for being an early tester! A few things to know:</p>
         </div>
@@ -744,14 +745,8 @@ function BetaDisclaimerModal({ onAcknowledge }) {
             </div>
           ))}
         </div>
-        <label style={{ display:"flex", alignItems:"flex-start", gap:"10px", cursor:"pointer", padding:"14px 16px", background:checked?T.coralSoft:T.bg, border:"1px solid "+(checked?T.coralMid:T.cardBorder), borderRadius:"10px", marginBottom:"20px", transition:"all 0.2s" }}>
-          <input type="checkbox" checked={checked} onChange={e=>setChecked(e.target.checked)} style={{ marginTop:"2px", accentColor:T.coral, width:"16px", height:"16px", flexShrink:0 }} />
-          <span style={{ fontSize:"13px", color:T.text, fontFamily:FF, lineHeight:"1.5" }}>
-            I understand this is a beta version and I'm happy to share feedback to help improve the product.
-          </span>
-        </label>
-        <button onClick={()=>{ if(checked) onAcknowledge(); }} disabled={!checked}
-          style={{ width:"100%", padding:"15px", background:checked?T.coral:T.cardBorder, border:"none", borderRadius:"10px", color:"#fff", fontSize:"16px", fontWeight:"700", cursor:checked?"pointer":"not-allowed", fontFamily:FF, transition:"background 0.2s" }}>
+        <button onClick={onAcknowledge}
+          style={{ width:"100%", padding:"15px", background:T.coral, border:"none", borderRadius:"10px", color:"#fff", fontSize:"16px", fontWeight:"700", cursor:"pointer", fontFamily:FF, transition:"background 0.2s" }}>
           Let's Go! →
         </button>
       </div>
