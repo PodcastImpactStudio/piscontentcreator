@@ -824,6 +824,10 @@ export function AdminPanel({ shows, orgId, onClose, onSaved, accountType = "agen
   const [epfForm, setEpfForm] = useState({ name: "", type: "Guest Interview", targetLength: "", structure: "", signOffLine: "", ratingSystem: "" });
   const [epfEditing, setEpfEditing] = useState(null);
   const [epfShowForm, setEpfShowForm] = useState(false);
+  const [epfPasteText, setEpfPasteText] = useState("");
+  const [epfPasteOpen, setEpfPasteOpen] = useState(false);
+  const [epfParsing, setEpfParsing] = useState(false);
+  const [epfMsg, setEpfMsg] = useState("");
 
   useEffect(() => {
     async function loadGlobalSettings() {
@@ -1140,6 +1144,61 @@ ${combined}`;
     } finally {
       setTranscriptParsing(false);
     }
+  }
+
+  async function parseFormatWithAI() {
+    if (!epfPasteText.trim()) return;
+    setEpfParsing(true); setEpfMsg("");
+    try {
+      const prompt = `Read this episode format document and extract the key fields.
+Return ONLY these labeled fields, one per line, label in ALL CAPS followed by colon and space, then the value. No other text.
+
+NAME: the format name (e.g. Guest Interview, Solo Deep Dive, Mailbag)
+TYPE: one of: Guest Interview, Review & Reaction Panel, Hot Take & Breaking News, Solo Monologue, Custom
+TARGET_LENGTH: target episode length (e.g. 30–45 min)
+SIGN_OFF: the exact closing/sign-off line used every episode
+RATING_SYSTEM: rating or scoring system if any (leave blank if none)
+STRUCTURE: paste the FULL segment structure exactly as described — all segments, timecodes, standing questions, and notes
+
+FORMAT DOCUMENT:
+${epfPasteText.substring(0, 8000)}`;
+
+      const j = await claudeAPI({ model: "claude-sonnet-4-5", max_tokens: 3000, messages: [{ role: "user", content: prompt }] });
+      const text = j.content?.filter(b => b.type === "text").map(b => b.text).join("") || "";
+
+      function getField(label) {
+        for (const line of text.split("\n")) {
+          const t = line.trim();
+          if (t.toUpperCase().startsWith(label + ":")) return t.slice(label.length + 1).trim();
+        }
+        return "";
+      }
+      function getMultiline(label) {
+        const lines = text.split("\n");
+        let found = false; const collected = [];
+        for (const line of lines) {
+          if (!found) { if (line.trim().toUpperCase().startsWith(label + ":")) { found = true; const rest = line.slice(line.indexOf(":") + 1).trim(); if (rest) collected.push(rest); } }
+          else { if (/^[A-Z_]+:/.test(line.trim())) break; collected.push(line); }
+        }
+        return collected.join("\n").trim();
+      }
+
+      const VALID_TYPES = ["Guest Interview", "Review & Reaction Panel", "Hot Take & Breaking News", "Solo Monologue", "Custom"];
+      const parsedType = getField("TYPE");
+      const matchedType = VALID_TYPES.find(t => t.toLowerCase() === parsedType.toLowerCase()) || "Custom";
+
+      setEpfForm(prev => ({
+        name: getField("NAME") || prev.name,
+        type: matchedType,
+        targetLength: getField("TARGET_LENGTH") || prev.targetLength,
+        structure: getMultiline("STRUCTURE") || prev.structure,
+        signOffLine: getField("SIGN_OFF") || prev.signOffLine,
+        ratingSystem: getField("RATING_SYSTEM") || prev.ratingSystem,
+      }));
+      setEpfMsg("✓ Fields filled — review and save.");
+      setEpfPasteOpen(false);
+    } catch (e) { setEpfMsg("Parse error: " + e.message); }
+    finally { setEpfParsing(false); }
   }
 
   async function handleSave() {
@@ -1541,7 +1600,36 @@ ${combined}`;
                     )}
                     {epfShowForm && (
                       <div style={{ border: "1px solid " + T.coral + "40", borderRadius: "12px", padding: "24px", background: T.coral + "08", marginTop: "12px" }}>
-                        <div style={{ fontSize: "14px", fontWeight: "700", color: T.coral, marginBottom: "20px", fontFamily: "'DM Sans', system-ui, sans-serif", textTransform: "uppercase", letterSpacing: "1px" }}>{epfEditing !== null ? "Edit Format" : "New Format"}</div>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
+                          <div style={{ fontSize: "14px", fontWeight: "700", color: T.coral, fontFamily: "'DM Sans', system-ui, sans-serif", textTransform: "uppercase", letterSpacing: "1px" }}>{epfEditing !== null ? "Edit Format" : "New Format"}</div>
+                          <button onClick={() => { setEpfPasteOpen(v => !v); setEpfMsg(""); setEpfPasteText(""); }}
+                            style={{ padding: "6px 14px", background: epfPasteOpen ? T.coral : "transparent", border: "1px solid " + (epfPasteOpen ? T.coral : T.cardBorder), borderRadius: "20px", color: epfPasteOpen ? "#fff" : T.coral, fontSize: "12px", fontWeight: "700", cursor: "pointer", fontFamily: "'DM Sans', system-ui, sans-serif", letterSpacing: "0.5px", transition: "all .15s" }}>
+                            ✨ AI Fill from Paste
+                          </button>
+                        </div>
+
+                        {epfPasteOpen && (
+                          <div style={{ marginBottom: "20px", padding: "16px", background: T.bg, border: "1px solid " + T.cardBorder, borderRadius: "10px" }}>
+                            <div style={{ fontSize: "13px", color: T.textSecondary, fontFamily: "'DM Sans', system-ui, sans-serif", marginBottom: "10px", lineHeight: "1.5" }}>
+                              Paste your format document — Claude will extract the name, type, structure, sign-off, and more.
+                            </div>
+                            <textarea
+                              value={epfPasteText}
+                              onChange={e => setEpfPasteText(e.target.value)}
+                              placeholder={"Paste your episode format doc here...\n\nSEGMENT 1 — HOOK (0:00–1:30)\n...\nSEGMENT 2 — INTRO (1:30–4:00)\n..."}
+                              rows={7}
+                              style={{ width: "100%", padding: "12px 14px", border: "1px solid " + T.cardBorder, borderRadius: "8px", background: T.surface, color: T.text, fontSize: "13px", fontFamily: "monospace", resize: "vertical", boxSizing: "border-box", marginBottom: "10px" }}
+                            />
+                            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                              <button onClick={parseFormatWithAI} disabled={epfParsing || !epfPasteText.trim()}
+                                style={{ padding: "9px 20px", background: epfPasteText.trim() ? T.coral : T.cardBorder, border: "none", borderRadius: "6px", color: epfPasteText.trim() ? "#fff" : T.textMuted, fontSize: "13px", fontWeight: "700", cursor: epfPasteText.trim() ? "pointer" : "not-allowed", fontFamily: "'DM Sans', system-ui, sans-serif", letterSpacing: "1px", textTransform: "uppercase" }}>
+                                {epfParsing ? "Parsing…" : "Parse with AI →"}
+                              </button>
+                              {epfMsg && <span style={{ fontSize: "13px", color: epfMsg.startsWith("✓") ? "#52B788" : "#F09090", fontFamily: "'DM Sans', system-ui, sans-serif" }}>{epfMsg}</span>}
+                            </div>
+                          </div>
+                        )}
+
                         <div style={{ display: "grid", gap: "14px" }}>
                           <div><label style={{ fontSize: "12px", fontWeight: "700", color: T.textMuted, letterSpacing: "1px", textTransform: "uppercase", fontFamily: "'DM Sans', system-ui, sans-serif", display: "block", marginBottom: "6px" }}>Format Name *</label><input value={epfForm.name} onChange={e => setEpfForm(p => ({ ...p, name: e.target.value }))} placeholder="e.g. Guest Interview, Solo Deep Dive" style={{ width: "100%", padding: "10px 14px", border: "1px solid " + T.cardBorder, borderRadius: "8px", background: T.bg, color: T.text, fontSize: "14px", fontFamily: "'DM Sans', system-ui, sans-serif", boxSizing: "border-box" }} /></div>
                           <div><label style={{ fontSize: "12px", fontWeight: "700", color: T.textMuted, letterSpacing: "1px", textTransform: "uppercase", fontFamily: "'DM Sans', system-ui, sans-serif", display: "block", marginBottom: "6px" }}>Format Type *</label><select value={epfForm.type} onChange={e => setEpfForm(p => ({ ...p, type: e.target.value }))} style={{ width: "100%", padding: "10px 14px", border: "1px solid " + T.cardBorder, borderRadius: "8px", background: T.bg, color: T.text, fontSize: "14px", fontFamily: "'DM Sans', system-ui, sans-serif", boxSizing: "border-box" }}><option>Guest Interview</option><option>Review & Reaction Panel</option><option>Hot Take & Breaking News</option><option>Solo Monologue</option><option>Custom</option></select></div>
@@ -1559,9 +1647,9 @@ ${combined}`;
                             } else {
                               setForm(p => ({ ...p, episodeFormats: [...(p.episodeFormats || []), newFmt] }));
                             }
-                            setEpfShowForm(false); setEpfEditing(null); setEpfForm({ name: "", type: "Guest Interview", targetLength: "", structure: "", signOffLine: "", ratingSystem: "" });
+                            setEpfShowForm(false); setEpfEditing(null); setEpfForm({ name: "", type: "Guest Interview", targetLength: "", structure: "", signOffLine: "", ratingSystem: "" }); setEpfPasteText(""); setEpfPasteOpen(false); setEpfMsg("");
                           }} style={{ padding: "12px 24px", background: T.coral, border: "none", borderRadius: "8px", color: "#fff", fontSize: "14px", fontWeight: "700", cursor: "pointer", fontFamily: "'DM Sans', system-ui, sans-serif" }}>Save Format</button>
-                          <button onClick={() => { setEpfShowForm(false); setEpfEditing(null); setEpfForm({ name: "", type: "Guest Interview", targetLength: "", structure: "", signOffLine: "", ratingSystem: "" }); }} style={{ padding: "12px 24px", background: "transparent", border: "1px solid " + T.cardBorder, borderRadius: "8px", color: T.textMuted, fontSize: "14px", cursor: "pointer", fontFamily: "'DM Sans', system-ui, sans-serif" }}>Cancel</button>
+                          <button onClick={() => { setEpfShowForm(false); setEpfEditing(null); setEpfForm({ name: "", type: "Guest Interview", targetLength: "", structure: "", signOffLine: "", ratingSystem: "" }); setEpfPasteText(""); setEpfPasteOpen(false); setEpfMsg(""); }} style={{ padding: "12px 24px", background: "transparent", border: "1px solid " + T.cardBorder, borderRadius: "8px", color: T.textMuted, fontSize: "14px", cursor: "pointer", fontFamily: "'DM Sans', system-ui, sans-serif" }}>Cancel</button>
                         </div>
                       </div>
                     )}
