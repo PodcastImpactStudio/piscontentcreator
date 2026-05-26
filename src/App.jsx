@@ -985,7 +985,7 @@ ${clipPlatforms.includes("Spotify")?`SPOTIFY CLIP ${i+1}
 Write ONLY the sections above. No labels, no commentary, no extra text.`;
         // Add delay between clips to avoid rate limiting
         if(i>0) await new Promise(res=>setTimeout(res,2000));
-        const j=await claudeAPI({model:"claude-3-haiku-20240307",max_tokens:2000,system:clipSys,messages:[{role:"user",content:`CLIP ${i+1} TRANSCRIPT:\n${clipTx.substring(0,8000)}`}]});
+        const j=await claudeAPI({model:"claude-3-5-haiku-20241022",max_tokens:2000,system:clipSys,messages:[{role:"user",content:`CLIP ${i+1} TRANSCRIPT:\n${clipTx.substring(0,8000)}`}]});
         const t=j.content?.filter(b=>b.type==="text").map(b=>b.text).join("\n")||"";
         results.push({index:i+1,skipped:false,content:t});
       }catch(e){results.push({index:i+1,skipped:false,content:`Error: ${e.message}`});}
@@ -997,7 +997,7 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
     if(!tx.trim()){setErr("Paste the transcript.");return;}
     setErr("");setBusy(true);setRaw("");setSecs([]);setStep("generating");
     try{
-      const j=await claudeAPI({model:"claude-3-haiku-20240307",max_tokens:mode==="editor"?4000:8000,system:sys(d,show,guest,ep,mode,extraPlatforms,editorClipCount),messages:[{role:"user",content:mode==="editor"?`Analyze this transcript carefully and generate the Editor Brief as instructed.\n\nTRANSCRIPT:\n${tx.substring(0,90000)}`:`Generate the COMPLETE content package in plain text.\n\nTRANSCRIPT:\n${tx.substring(0,90000)}`}]});
+      const j=await claudeAPI({model:"claude-3-5-haiku-20241022",max_tokens:mode==="editor"?4000:8000,system:sys(d,show,guest,ep,mode,extraPlatforms,editorClipCount),messages:[{role:"user",content:mode==="editor"?`Analyze this transcript carefully and generate the Editor Brief as instructed.\n\nTRANSCRIPT:\n${tx.substring(0,90000)}`:`Generate the COMPLETE content package in plain text.\n\nTRANSCRIPT:\n${tx.substring(0,90000)}`}]});
       if(j.error){setErr(j.error.message);setStep("input");}
       else{const t=j.content?.filter(i=>i.type==="text").map(i=>i.text).join("\n")||"";if(!t.trim()){setErr("No content generated. Please try again.");setStep("input");return;}setRaw(strip(t));const parsed=parse(t);setSecs(parsed.length?parsed:[{id:"full",title:"Content Package",content:strip(t)}]);setStep("result");}
     }catch(e){setErr(e.message||"Network error.");setStep("input");}
@@ -1008,7 +1008,7 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
     if(!eSec||!eTxt.trim())return;setRev(true);setErr("");
     const label=ED.find(s=>s.id===eSec)?.l||eSec;
     try{
-      const j=await claudeAPI({model:"claude-3-haiku-20240307",max_tokens:4000,system:revSys(d),messages:[{role:"user",content:`Current:\n\n${raw}\n\n---\n\nRevise "${label}":\n${eTxt}\n\nPlain text only. Only the revised section.`}]});
+      const j=await claudeAPI({model:"claude-3-5-haiku-20241022",max_tokens:4000,system:revSys(d),messages:[{role:"user",content:`Current:\n\n${raw}\n\n---\n\nRevise "${label}":\n${eTxt}\n\nPlain text only. Only the revised section.`}]});
       if(j.error)setErr(j.error.message);
       else{const v=strip(j.content.filter(i=>i.type==="text").map(i=>i.text).join("\n"));setRaw(p=>p+`\n\n${"═".repeat(40)}\nREVISION — ${label.toUpperCase()}\n${"═".repeat(40)}\n\n${v}`);setSecs(p=>[...p,{id:eSec+"-rev",title:`Revision — ${label}`,content:v}]);}
     }catch(e){setErr(e.message);}
