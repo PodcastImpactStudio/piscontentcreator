@@ -27,6 +27,7 @@ const MODES = [
   { id: "full", icon: "📦", label: "Full Content Package", desc: "Show notes, YouTube description, social captions, newsletter, blog post & quote cards — everything from one transcript" },
   { id: "clips", icon: "✂️", label: "Short-Form Content", desc: "SEO-optimized titles, captions & hashtags for YouTube Shorts, Instagram Reels, TikTok & Facebook Reels" },
   { id: "editor", icon: "🎬", label: "Editor Companion", desc: "A coaching brief for your editor — editing level guidance, best clip moments with timestamps, and sections to cut based on your show's standard." },
+  { id: "prep", icon: "📋", label: "Episode Prep", desc: "Generate a complete episode outline with scripted hook, wound bridge, and permission slip close — tailored to your show format and guest or topic." },
 ];
 const PF = "'DM Sans', system-ui, sans-serif";
 
@@ -931,10 +932,17 @@ export default function App(){
   const[gDriveStatus,setGDriveStatus]=useState(""); // "" | "uploading" | "ok" | "error" | "disconnected"
   const[betaAcknowledged,setBetaAcknowledged]=useState(()=>!!localStorage.getItem("pis_beta_ack_v1"));
   const[showFirstShowWizard,setShowFirstShowWizard]=useState(false);
+  const[selectedFormat,setSelectedFormat]=useState(null);
+  const[epGuest,setEpGuest]=useState("");
+  const[epGuestUrl,setEpGuestUrl]=useState("");
+  const[epTopic,setEpTopic]=useState("");
+  const[epTakeaway,setEpTakeaway]=useState("");
+  const[epMoments,setEpMoments]=useState("");
+  const[epPanelists,setEpPanelists]=useState("");
 
   const d=show?shows[show]:null;
   const clr=d?.clr||T.coral;
-  const ci={select:0,mode:1,configure:2,"clips-setup":3,input:3,generating:3,result:3}[step]||0;
+  const ci={select:0,mode:1,configure:2,"clips-setup":3,input:3,generating:3,result:3,"prep-format":2,"prep-details":3}[step]||0;
 
   useEffect(()=>{loadShows().then(s=>{setShows(s);setLoadingShows(false);});},[]);
   async function refreshShows(){const s=await loadShows();setShows(s);}
@@ -1002,6 +1010,105 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
       else{const t=j.content?.filter(i=>i.type==="text").map(i=>i.text).join("\n")||"";if(!t.trim()){setErr("No content generated. Please try again.");setStep("input");return;}setRaw(strip(t));const parsed=parse(t);setSecs(parsed.length?parsed:[{id:"full",title:"Content Package",content:strip(t)}]);setStep("result");}
     }catch(e){setErr(e.message||"Network error.");setStep("input");}
     finally{setBusy(false);}
+  }
+
+  async function genPrep() {
+    setErr(""); setBusy(true); setRaw(""); setSecs([]); setStep("generating");
+    try {
+      const fmt = selectedFormat;
+      const onePerson = d?.epPrep?.onePerson || {};
+      const permSlips = d?.epPrep?.permissionSlips || [];
+      const storyMission = d?.epPrep?.storyMission || "";
+      const systemPrompt = `You are generating a complete Episode Prep Package for ${d?.name}.
+
+SHOW VOICE: ${d?.voice?.traits || ""} | ${d?.voice?.energy || ""}
+AUDIENCE: ${d?.aud?.who || ""}
+
+THE ONE PERSON:
+Name: ${onePerson.name || "[not set]"}
+2AM Question: ${onePerson.question2AM || "[not set]"}
+Core Wound: ${onePerson.wound || "[not set]"}
+
+STORY-MISSION CONNECTION (use verbatim in Bridge — never invent):
+${storyMission || "[not set — note this in output]"}
+
+PERMISSION SLIP BANK (use only these — never invent):
+${permSlips.length ? permSlips.map((s,i) => `${i+1}. ${s}`).join("\n") : "[not set — use placeholder brackets]"}
+
+${fmt ? `EPISODE FORMAT: ${fmt.name} (${fmt.type})
+Target Length: ${fmt.targetLength || "not specified"}
+FORMAT STRUCTURE:
+${fmt.structure}
+SIGN-OFF LINE (use VERBATIM — never paraphrase): "${fmt.signOffLine || "[not set]"}"
+${fmt.ratingSystem ? `RATING SYSTEM: ${fmt.ratingSystem}` : ""}` : "No format selected — use Show DNA to guide structure."}
+
+EPISODE DETAILS:
+Guest/Topic: ${epTopic || "[not specified]"}
+${epGuest ? `Guest Name: ${epGuest}` : ""}
+${epGuestUrl ? `Guest URL/Handle: ${epGuestUrl}` : ""}
+One Takeaway: ${epTakeaway || "[not specified]"}
+${epMoments ? `Key Moments/Angles: ${epMoments}` : ""}
+${epPanelists ? `Additional Panelists: ${epPanelists}` : ""}
+
+ACCURACY RULES — NON-NEGOTIABLE:
+- Never invent guest biographical details. If you cannot verify something, write: "[Could not verify — please fill in manually]"
+- Never paraphrase the sign-off line. Use it exactly as written.
+- Never invent permission slips. Only use slips from the Permission Slip Bank above.
+- Flag anything inferred with [INFERRED — please verify]
+
+OUTPUT FORMAT — use ALL CAPS headers, plain text, --- between sections:
+
+---
+
+EPISODE PREP PACKAGE
+Show: ${d?.name}
+${epGuest ? `Guest: ${epGuest}` : `Topic: ${epTopic}`}
+Format: ${fmt?.name || "General"}
+Generated: ${new Date().toLocaleDateString()}
+
+---
+
+HOOK (~30 seconds / ~75 words)
+[Opens with ${onePerson.name || "the ONE person"}'s moment. Never starts with host name or show name. Ends with show name. Based on the ONE person's 2AM question and this episode's specific relevance.]
+
+---
+
+BRIDGE (60–90 seconds)
+[Host's personal connection to this episode topic. Extracted from Story-Mission Connection above — never invented. Flag anything inferred.]
+
+---
+
+PERMISSION SLIP CLOSE (30–45 seconds)
+[2–3 slips from the Permission Slip Bank relevant to this episode. Direct address to ${onePerson.name || "the ONE person"} by name. Ends with EXACT sign-off line — verbatim.]
+
+---
+
+EPISODE STRUCTURE
+[Table of segments with timing, adapted to this specific episode based on the format structure above]
+
+---
+
+TAILORED QUESTIONS
+[The format's standing questions rewritten specifically for ${epGuest || epTopic || "this episode"}. Labeled by segment.]
+
+---
+
+CLIP PRIORITIES
+[3–5 moments most likely to resonate with ${onePerson.name || "the ONE person"}. Include one "NEVER CLIP WITHOUT CONTEXT" note.]
+
+---
+
+PRE-RECORDING CHECKLIST
+[5–8 items specific to this episode and format]`;
+
+      const j = await claudeAPI({ model: "claude-3-5-haiku-20241022", max_tokens: 6000, system: systemPrompt, messages: [{ role: "user", content: "Generate the complete Episode Prep Package now." }] });
+      const t = j.content?.filter(i => i.type === "text").map(i => i.text).join("\n") || "";
+      if (!t.trim()) { setErr("No content generated. Please try again."); setStep("prep-details"); return; }
+      setRaw(strip(t));
+      setSecs([{ id: "full", title: "Episode Prep Package", content: strip(t) }]);
+      setStep("result");
+    } catch(e) { setErr(e.message); setStep("prep-details"); }
+    finally { setBusy(false); }
   }
 
   async function doRev(){
@@ -1108,7 +1215,7 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
     }
   }
 
-  function reset(){setStep("select");setShow(null);setMode(null);setGuest(null);setEp("");setTx("");setRaw("");setSecs([]);setErr("");setEditing(false);setESec(null);setETxt("");setExtraPlatforms([]);setClipCount(3);setClipTexts(Array(10).fill(""));setClipResults([]);setClipPlatforms(["YouTube"]);}
+  function reset(){setStep("select");setShow(null);setMode(null);setGuest(null);setEp("");setTx("");setRaw("");setSecs([]);setErr("");setEditing(false);setESec(null);setETxt("");setExtraPlatforms([]);setClipCount(3);setClipTexts(Array(10).fill(""));setClipResults([]);setClipPlatforms(["YouTube"]);setSelectedFormat(null);setEpGuest("");setEpGuestUrl("");setEpTopic("");setEpTakeaway("");setEpMoments("");setEpPanelists("");}
 
   function goBack(){
     setErr("");
@@ -1121,6 +1228,8 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
       else setStep("configure");
     }
     else if(step==="result"){setStep("input");}
+    else if(step==="prep-format"){setStep("mode");}
+    else if(step==="prep-details"){setStep("prep-format");}
   }
 
   const lbl={fontSize:"15px",letterSpacing:"2px",textTransform:"uppercase",color:T.textMuted,marginBottom:"10px",display:"block",fontFamily:"'DM Sans', system-ui, sans-serif"};
@@ -1295,7 +1404,7 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
               </div>
               <div style={{display:"flex",flexDirection:"column",gap:"10px"}}>
                 {MODES.map(m=>(
-                  <div key={m.id} onClick={()=>{setMode(m.id);setStep(m.id==="editor"?"input":"configure");}} style={{background:mode===m.id?`${T.coral}10`:T.card,border:mode===m.id?`1px solid ${T.coral}`:`1px solid ${T.cardBorder}`,borderRadius:"10px",padding:"22px 24px",cursor:"pointer",transition:"all .15s",display:"flex",alignItems:"center",gap:"20px"}}>
+                  <div key={m.id} onClick={()=>{setMode(m.id);setStep(m.id==="editor"?"input":m.id==="prep"?"prep-format":"configure");}} style={{background:mode===m.id?`${T.coral}10`:T.card,border:mode===m.id?`1px solid ${T.coral}`:`1px solid ${T.cardBorder}`,borderRadius:"10px",padding:"22px 24px",cursor:"pointer",transition:"all .15s",display:"flex",alignItems:"center",gap:"20px"}}>
                     <span style={{fontSize:"26px",flexShrink:0}}>{m.icon}</span>
                     <div>
                       <div style={{fontSize:"20px",color:mode===m.id?T.text:T.textSecondary,fontWeight:"600",marginBottom:"5px",fontFamily:PF}}>{m.label}</div>
@@ -1426,21 +1535,82 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
             {/* GENERATING */}
             {step==="generating"&&<div style={{textAlign:"center",padding:"100px 20px",animation:"fadeUp .4s ease"}}>
               <div style={{width:"40px",height:"40px",border:`2px solid ${T.cardBorder}`,borderTopColor:T.coral,borderRadius:"50%",animation:"spin 1s linear infinite",margin:"0 auto 28px"}}/>
-              <h2 style={{fontSize:"38px",fontWeight:"600",color:T.text,marginBottom:"12px",fontFamily:PF,lineHeight:"1.2"}}>{mode==="editor"?"Preparing your editor companion brief…":mode==="clips"?"Writing your short-form copy…":"Building your content package…"}</h2>
+              <h2 style={{fontSize:"38px",fontWeight:"600",color:T.text,marginBottom:"12px",fontFamily:PF,lineHeight:"1.2"}}>{mode==="editor"?"Preparing your editor companion brief…":mode==="clips"?"Writing your short-form copy…":mode==="prep"?"Building your episode prep package…":"Building your content package…"}</h2>
               <p style={{fontSize:"16px",color:T.textMuted,margin:"0 0 8px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{d?.name} · {MODES.find(m=>m.id===mode)?.label}</p>
               <p style={{fontSize:"13px",color:T.coral,animation:"pulse 2s ease-in-out infinite",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1px"}}>THIS TAKES ABOUT 30 SECONDS</p>
+            </div>}
+
+            {step==="prep-format"&&d&&<div style={{animation:"fadeUp .4s ease"}}>
+              <p style={{fontSize:"14px",color:T.coral,margin:"0 0 8px",letterSpacing:"2px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600"}}>{d.name}</p>
+              <h2 style={{fontSize:"36px",fontWeight:"700",color:T.text,margin:"0 0 8px",letterSpacing:"-0.5px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Select an episode format</h2>
+              <p style={{fontSize:"15px",color:T.textMuted,margin:"0 0 32px",fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.6"}}>Choose the format for this episode. Your episode prep will follow this structure.</p>
+              {(!d.episodeFormats || d.episodeFormats.length === 0) ? (
+                <div style={{background:T.card,border:"1px solid "+T.cardBorder,borderRadius:"12px",padding:"40px",textAlign:"center"}}>
+                  <div style={{fontSize:"32px",marginBottom:"12px"}}>📋</div>
+                  <div style={{fontSize:"16px",fontWeight:"600",color:T.text,marginBottom:"8px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>No formats set up yet</div>
+                  <div style={{fontSize:"14px",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.6",marginBottom:"20px"}}>Go to Settings → Episode Formats to add your first format, or continue without one and the AI will do its best with your Show DNA.</div>
+                  <button onClick={()=>{setSelectedFormat(null);setStep("prep-details");}} style={{padding:"12px 24px",background:T.coral,border:"none",borderRadius:"8px",color:"#fff",fontSize:"14px",fontWeight:"700",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Continue without a format →</button>
+                </div>
+              ) : (
+                <div style={{display:"flex",flexDirection:"column",gap:"12px"}}>
+                  {d.episodeFormats.map((fmt,i)=>(
+                    <div key={fmt.id||i} onClick={()=>{setSelectedFormat(fmt);setStep("prep-details");}} style={{background:T.card,border:"1px solid "+T.cardBorder,borderRadius:"12px",padding:"20px 24px",cursor:"pointer",transition:"all .15s"}}>
+                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                        <div>
+                          <div style={{fontSize:"16px",fontWeight:"700",color:T.text,marginBottom:"4px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{fmt.name}</div>
+                          <div style={{fontSize:"13px",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif"}}>{fmt.type}{fmt.targetLength?" · "+fmt.targetLength:""}</div>
+                        </div>
+                        <div style={{fontSize:"20px"}}>→</div>
+                      </div>
+                    </div>
+                  ))}
+                  <button onClick={()=>{setSelectedFormat(null);setStep("prep-details");}} style={{padding:"12px",background:"transparent",border:"1px dashed "+T.cardBorder,borderRadius:"10px",color:T.textMuted,fontSize:"13px",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Continue without a format</button>
+                </div>
+              )}
+            </div>}
+            {step==="prep-details"&&d&&<div style={{animation:"fadeUp .4s ease"}}>
+              <p style={{fontSize:"14px",color:T.coral,margin:"0 0 8px",letterSpacing:"2px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600"}}>{d.name}{selectedFormat?" · "+selectedFormat.name:""}</p>
+              <h2 style={{fontSize:"36px",fontWeight:"700",color:T.text,margin:"0 0 8px",letterSpacing:"-0.5px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Tell me about this episode</h2>
+              <p style={{fontSize:"15px",color:T.textMuted,margin:"0 0 32px",fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.6"}}>The more detail you provide, the more tailored your episode prep will be.</p>
+              <div style={{display:"flex",flexDirection:"column",gap:"20px",marginBottom:"32px"}}>
+                <div>
+                  <label style={{fontSize:"12px",fontWeight:"700",color:T.textMuted,letterSpacing:"1px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",display:"block",marginBottom:"8px"}}>Topic / Title / Content Being Covered *</label>
+                  <input value={epTopic} onChange={e=>setEpTopic(e.target.value)} placeholder="e.g. 'The Body Keeps the Score' or 'Managing anxiety at work'" style={{width:"100%",padding:"12px 16px",border:"1px solid "+T.cardBorder,borderRadius:"8px",background:T.card,color:T.text,fontSize:"15px",fontFamily:"'DM Sans', system-ui, sans-serif",boxSizing:"border-box"}} />
+                </div>
+                {(!selectedFormat || selectedFormat.type==="Guest Interview" || selectedFormat.type==="Review & Reaction Panel") && <div>
+                  <label style={{fontSize:"12px",fontWeight:"700",color:T.textMuted,letterSpacing:"1px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",display:"block",marginBottom:"8px"}}>Guest Name <span style={{fontWeight:"400",textTransform:"none"}}>(optional)</span></label>
+                  <input value={epGuest} onChange={e=>setEpGuest(e.target.value)} placeholder="Full name" style={{width:"100%",padding:"12px 16px",border:"1px solid "+T.cardBorder,borderRadius:"8px",background:T.card,color:T.text,fontSize:"15px",fontFamily:"'DM Sans', system-ui, sans-serif",boxSizing:"border-box"}} />
+                </div>}
+                {(!selectedFormat || selectedFormat.type==="Guest Interview" || selectedFormat.type==="Review & Reaction Panel") && <div>
+                  <label style={{fontSize:"12px",fontWeight:"700",color:T.textMuted,letterSpacing:"1px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",display:"block",marginBottom:"8px"}}>Guest URL or Social Handle <span style={{fontWeight:"400",textTransform:"none"}}>(optional — helps with accuracy)</span></label>
+                  <input value={epGuestUrl} onChange={e=>setEpGuestUrl(e.target.value)} placeholder="https://guestwebsite.com or @handle" style={{width:"100%",padding:"12px 16px",border:"1px solid "+T.cardBorder,borderRadius:"8px",background:T.card,color:T.text,fontSize:"15px",fontFamily:"'DM Sans', system-ui, sans-serif",boxSizing:"border-box"}} />
+                </div>}
+                <div>
+                  <label style={{fontSize:"12px",fontWeight:"700",color:T.textMuted,letterSpacing:"1px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",display:"block",marginBottom:"8px"}}>The ONE Takeaway *</label>
+                  <input value={epTakeaway} onChange={e=>setEpTakeaway(e.target.value)} placeholder="What should the ONE person walk away with? (one sentence)" style={{width:"100%",padding:"12px 16px",border:"1px solid "+T.cardBorder,borderRadius:"8px",background:T.card,color:T.text,fontSize:"15px",fontFamily:"'DM Sans', system-ui, sans-serif",boxSizing:"border-box"}} />
+                </div>
+                <div>
+                  <label style={{fontSize:"12px",fontWeight:"700",color:T.textMuted,letterSpacing:"1px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",display:"block",marginBottom:"8px"}}>Specific Moments, Quotes, or Angles You Want to Include <span style={{fontWeight:"400",textTransform:"none"}}>(optional)</span></label>
+                  <textarea value={epMoments} onChange={e=>setEpMoments(e.target.value)} placeholder="Any moments, quotes, or angles you already know you want to hit..." rows={4} style={{width:"100%",padding:"12px 16px",border:"1px solid "+T.cardBorder,borderRadius:"8px",background:T.card,color:T.text,fontSize:"15px",fontFamily:"'DM Sans', system-ui, sans-serif",resize:"vertical",boxSizing:"border-box"}} />
+                </div>
+                {selectedFormat?.type==="Review & Reaction Panel" && <div>
+                  <label style={{fontSize:"12px",fontWeight:"700",color:T.textMuted,letterSpacing:"1px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",display:"block",marginBottom:"8px"}}>Additional Panelists or Contributors <span style={{fontWeight:"400",textTransform:"none"}}>(optional)</span></label>
+                  <input value={epPanelists} onChange={e=>setEpPanelists(e.target.value)} placeholder="Names of other panelists" style={{width:"100%",padding:"12px 16px",border:"1px solid "+T.cardBorder,borderRadius:"8px",background:T.card,color:T.text,fontSize:"15px",fontFamily:"'DM Sans', system-ui, sans-serif",boxSizing:"border-box"}} />
+                </div>}
+              </div>
+              <button onClick={genPrep} disabled={!epTopic.trim()} style={{padding:"16px 32px",background:epTopic.trim()?T.coral:T.cardBorder,border:"none",borderRadius:"10px",color:"#fff",fontSize:"16px",fontWeight:"700",cursor:epTopic.trim()?"pointer":"not-allowed",fontFamily:"'DM Sans', system-ui, sans-serif",transition:"background 0.2s"}}>Generate Episode Prep →</button>
             </div>}
 
             {/* RESULT */}
             {step==="result"&&<div style={{animation:"fadeUp .4s ease"}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"28px",flexWrap:"wrap",gap:"12px"}}>
                 <div>
-                  <h2 style={{fontSize:"36px",fontWeight:"700",color:T.text,margin:"0 0 4px",letterSpacing:"-0.5px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{mode==="clips"?"Clips Ready":"Content Package Ready"}</h2>
+                  <h2 style={{fontSize:"36px",fontWeight:"700",color:T.text,margin:"0 0 4px",letterSpacing:"-0.5px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{mode==="clips"?"Clips Ready":mode==="prep"?"Episode Prep Ready":"Content Package Ready"}</h2>
                   <p style={{fontSize:"16px",color:T.textMuted,margin:0,fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1px"}}>{d?.name.toUpperCase()}{ep?` · EP ${ep}`:""}{mode==="clips"?` · ${clipResults.filter(r=>!r.skipped).length} CLIPS`:` · ${secs.length} SECTIONS`}</p>
                 </div>
                 <div style={{display:"flex",gap:"8px"}}>
                   {mode!=="clips"&&<button onClick={()=>{copyText(raw);setCpAll(true);setTimeout(()=>setCpAll(false),2000);}} style={{...ghost,background:cpAll?T.coralSoft:"transparent",borderColor:cpAll?T.coralMid:T.cardBorder,color:cpAll?T.coral:T.textMuted}}>{cpAll?"✓ COPIED":"COPY ALL"}</button>}
-                  {mode!=="clips"&&<button onClick={()=>{dlDoc(raw,`${d?.name}${ep?` — Ep ${ep}`:""} Content Package`);setDlOk(true);setTimeout(()=>setDlOk(false),2500);}} style={{...ghost,background:dlOk?T.coralSoft:"transparent",borderColor:dlOk?T.coralMid:T.cardBorder,color:dlOk?T.coral:T.textMuted}}>{dlOk?"✓ DOWNLOADED":"📄 WORD DOC"}</button>}
+                  {mode!=="clips"&&<button onClick={()=>{dlDoc(raw,`${d?.name}${mode==="prep"?` — Episode Prep${epTopic?` — ${epTopic}`:""}`:ep?` — Ep ${ep}`:""} Content Package`);setDlOk(true);setTimeout(()=>setDlOk(false),2500);}} style={{...ghost,background:dlOk?T.coralSoft:"transparent",borderColor:dlOk?T.coralMid:T.cardBorder,color:dlOk?T.coral:T.textMuted}}>{dlOk?"✓ DOWNLOADED":"📄 WORD DOC"}</button>}
                   {mode!=="clips"&&<button onClick={uploadToGDrive} disabled={gDriveStatus==="uploading"} title="Export to Google Drive as a Google Doc" style={{...ghost,background:gDriveStatus==="ok"?T.coralSoft:gDriveStatus==="error"||gDriveStatus==="disconnected"?"#D94F4F18":"transparent",borderColor:gDriveStatus==="ok"?T.coralMid:gDriveStatus==="error"||gDriveStatus==="disconnected"?"#D94F4F44":T.cardBorder,color:gDriveStatus==="ok"?T.coral:gDriveStatus==="error"||gDriveStatus==="disconnected"?"#D94F4F":T.textMuted,opacity:gDriveStatus==="uploading"?.6:1}}>{gDriveStatus==="uploading"?"UPLOADING…":gDriveStatus==="ok"?"✓ EXPORTED TO DRIVE":gDriveStatus==="error"?"✕ EXPORT FAILED":gDriveStatus==="disconnected"?"⚙ CONNECT IN SETTINGS":"📁 EXPORT TO GOOGLE DRIVE"}</button>}
                   <button onClick={()=>{setStep(mode==="clips"?"clips-setup":"input");setRaw("");setSecs([]);setClipResults([]);}} style={ghost}>{mode==="clips"?"NEW CLIPS":"NEW EPISODE"}</button>
                 </div>
@@ -1464,7 +1634,7 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
                   <div>{secs.map((s,i)=><Sec key={s.id+i} s={s} clr={clr}/>)}</div>
                   <div style={{display:"flex",gap:"10px",marginTop:"16px",flexWrap:"wrap"}}>
                     <button onClick={()=>setEditing(!editing)} style={{flex:1,padding:"13px",background:editing?T.coralSoft:T.card,border:`1px solid ${editing?T.coralMid:T.cardBorder}`,borderRadius:"8px",color:editing?T.coral:T.textSecondary,fontSize:"14px",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1.5px",textTransform:"uppercase",transition:"all .2s"}}>{editing?"CLOSE EDITOR":"✏️  REVISE A SECTION"}</button>
-                    {mode!=="editor"&&<button onClick={()=>{dlDoc(raw,`${d?.name}${ep?` — Ep ${ep}`:""} Content Package`);setDlOk(true);setTimeout(()=>setDlOk(false),2500);}} style={{flex:1,padding:"13px",background:dlOk?T.coralSoft:T.card,border:`1px solid ${dlOk?T.coralMid:T.cardBorder}`,borderRadius:"8px",color:dlOk?T.coral:T.textSecondary,fontSize:"14px",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1.5px",textTransform:"uppercase",transition:"all .2s"}}>{dlOk?"✓ DOWNLOADED":"📄  WORD DOC"}</button>}
+                    {mode!=="editor"&&<button onClick={()=>{dlDoc(raw,`${d?.name}${mode==="prep"?` — Episode Prep${epTopic?` — ${epTopic}`:""}`:ep?` — Ep ${ep}`:""} Content Package`);setDlOk(true);setTimeout(()=>setDlOk(false),2500);}} style={{flex:1,padding:"13px",background:dlOk?T.coralSoft:T.card,border:`1px solid ${dlOk?T.coralMid:T.cardBorder}`,borderRadius:"8px",color:dlOk?T.coral:T.textSecondary,fontSize:"14px",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1.5px",textTransform:"uppercase",transition:"all .2s"}}>{dlOk?"✓ DOWNLOADED":"📄  WORD DOC"}</button>}
                     {mode!=="editor"&&<button onClick={uploadToGDrive} disabled={gDriveStatus==="uploading"} title="Export to Google Drive as a Google Doc" style={{flex:1,padding:"13px",background:gDriveStatus==="ok"?T.coralSoft:gDriveStatus==="error"||gDriveStatus==="disconnected"?"#D94F4F18":T.card,border:`1px solid ${gDriveStatus==="ok"?T.coralMid:gDriveStatus==="error"||gDriveStatus==="disconnected"?"#D94F4F44":T.cardBorder}`,borderRadius:"8px",color:gDriveStatus==="ok"?T.coral:gDriveStatus==="error"||gDriveStatus==="disconnected"?"#D94F4F":T.textSecondary,fontSize:"14px",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1.5px",textTransform:"uppercase",transition:"all .2s",opacity:gDriveStatus==="uploading"?.6:1}}>{gDriveStatus==="uploading"?"UPLOADING…":gDriveStatus==="ok"?"✓ EXPORTED TO DRIVE":gDriveStatus==="error"?"✕ EXPORT FAILED":gDriveStatus==="disconnected"?"⚙ CONNECT IN SETTINGS":"📁 EXPORT TO GOOGLE DRIVE"}</button>}
                   </div>
                   {mode==="editor"&&<div style={{background:T.card,border:"1px solid "+T.cardBorder,borderRadius:"10px",padding:"18px 20px",marginTop:"14px"}}>

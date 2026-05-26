@@ -821,6 +821,9 @@ export function AdminPanel({ shows, orgId, onClose, onSaved, accountType = "agen
   const [transcriptDragging, setTranscriptDragging] = useState(false);
   const [transcriptParsing, setTranscriptParsing] = useState(false);
   const [transcriptMsg, setTranscriptMsg] = useState("");
+  const [epfForm, setEpfForm] = useState({ name: "", type: "Guest Interview", targetLength: "", structure: "", signOffLine: "", ratingSystem: "" });
+  const [epfEditing, setEpfEditing] = useState(null);
+  const [epfShowForm, setEpfShowForm] = useState(false);
 
   useEffect(() => {
     async function loadGlobalSettings() {
@@ -885,6 +888,12 @@ export function AdminPanel({ shows, orgId, onClose, onSaved, accountType = "agen
       }),
       descriptApiKey: s.descriptApiKey || "",
       editingLevel: s.editingLevel || "1",
+      epPrep: {
+        onePerson: { name: s.epPrep?.onePerson?.name || "", question2AM: s.epPrep?.onePerson?.question2AM || "", wound: s.epPrep?.onePerson?.wound || "" },
+        storyMission: s.epPrep?.storyMission || "",
+        permissionSlips: (s.epPrep?.permissionSlips || []).join("\n"),
+      },
+      episodeFormats: s.episodeFormats || [],
     });
     setRawDna(""); setMsg(""); setTab("basic"); setNewShowPath("manual");
   }
@@ -900,6 +909,8 @@ export function AdminPanel({ shows, orgId, onClose, onSaved, accountType = "agen
       snElements: DEFAULT_SN_ELEMENTS,
       descriptApiKey: "",
       editingLevel: "1",
+      epPrep: { onePerson: { name: "", question2AM: "", wound: "" }, storyMission: "", permissionSlips: "" },
+      episodeFormats: [],
     });
     setNewId(""); setRawDna(""); setMsg(""); setAddingNew(true); setTab("basic"); setNewShowPath(null);
   }
@@ -1094,6 +1105,12 @@ ${combined}`;
         snElements: form.snElements,
         descriptApiKey: form.descriptApiKey || "",
         editingLevel: form.editingLevel || "1",
+        epPrep: {
+          onePerson: form.epPrep.onePerson,
+          storyMission: form.epPrep.storyMission,
+          permissionSlips: form.epPrep.permissionSlips.split("\n").map(s => s.trim()).filter(Boolean),
+        },
+        episodeFormats: form.episodeFormats || [],
         tpl: { sn: "", yt: "", sm: "", gk: "", em: "", bl: "" },
       };
       await saveShow(id, dna, orgId);
@@ -1113,6 +1130,8 @@ ${combined}`;
     { id: "snnotes", label: "Show Notes Builder" },
     { id: "boilerplate", label: "Boilerplate" },
     { id: "editing", label: "Editor Companion" },
+    { id: "formats", label: "Episode Formats" },
+    { id: "epprep", label: "Episode Prep DNA" },
     { id: "transcript", label: "✨ AI Fill from Transcripts" },
   ];
 
@@ -1369,6 +1388,82 @@ ${combined}`;
                         </div>
                       ))}
                     </div>
+                  </div>
+                )}
+
+                {tab === "epprep" && (
+                  <div>
+                    <div style={{ fontSize: "13px", fontWeight: "700", color: T.coral, marginBottom: "4px", letterSpacing: "1px", textTransform: "uppercase", fontFamily: "'DM Sans', system-ui, sans-serif" }}>The ONE Person</div>
+                    <div style={{ fontSize: "13px", color: T.textMuted, marginBottom: "16px", fontFamily: "'DM Sans', system-ui, sans-serif", lineHeight: "1.6" }}>The single listener this show is made for. Used to write hooks, permission slip closes, and episode structure.</div>
+                    <div style={{ display: "grid", gap: "14px", marginBottom: "28px" }}>
+                      <div><label style={{ fontSize: "12px", fontWeight: "700", color: T.textMuted, letterSpacing: "1px", textTransform: "uppercase", fontFamily: "'DM Sans', system-ui, sans-serif", display: "block", marginBottom: "6px" }}>Name</label><input value={form.epPrep?.onePerson?.name || ""} onChange={e => setForm(p => ({ ...p, epPrep: { ...p.epPrep, onePerson: { ...p.epPrep.onePerson, name: e.target.value } } }))} placeholder="e.g. Sarah" style={{ width: "100%", padding: "10px 14px", border: "1px solid " + T.cardBorder, borderRadius: "8px", background: T.bg, color: T.text, fontSize: "14px", fontFamily: "'DM Sans', system-ui, sans-serif", boxSizing: "border-box" }} /></div>
+                      <div><label style={{ fontSize: "12px", fontWeight: "700", color: T.textMuted, letterSpacing: "1px", textTransform: "uppercase", fontFamily: "'DM Sans', system-ui, sans-serif", display: "block", marginBottom: "6px" }}>2AM Question</label><input value={form.epPrep?.onePerson?.question2AM || ""} onChange={e => setForm(p => ({ ...p, epPrep: { ...p.epPrep, onePerson: { ...p.epPrep.onePerson, question2AM: e.target.value } } }))} placeholder="The question keeping them up at 2AM" style={{ width: "100%", padding: "10px 14px", border: "1px solid " + T.cardBorder, borderRadius: "8px", background: T.bg, color: T.text, fontSize: "14px", fontFamily: "'DM Sans', system-ui, sans-serif", boxSizing: "border-box" }} /></div>
+                      <div><label style={{ fontSize: "12px", fontWeight: "700", color: T.textMuted, letterSpacing: "1px", textTransform: "uppercase", fontFamily: "'DM Sans', system-ui, sans-serif", display: "block", marginBottom: "6px" }}>Core Wound</label><input value={form.epPrep?.onePerson?.wound || ""} onChange={e => setForm(p => ({ ...p, epPrep: { ...p.epPrep, onePerson: { ...p.epPrep.onePerson, wound: e.target.value } } }))} placeholder="The deeper fear or wound underneath the question" style={{ width: "100%", padding: "10px 14px", border: "1px solid " + T.cardBorder, borderRadius: "8px", background: T.bg, color: T.text, fontSize: "14px", fontFamily: "'DM Sans', system-ui, sans-serif", boxSizing: "border-box" }} /></div>
+                    </div>
+                    <div style={{ fontSize: "13px", fontWeight: "700", color: T.coral, marginBottom: "4px", letterSpacing: "1px", textTransform: "uppercase", fontFamily: "'DM Sans', system-ui, sans-serif" }}>Story-Mission Connection</div>
+                    <div style={{ fontSize: "13px", color: T.textMuted, marginBottom: "10px", fontFamily: "'DM Sans', system-ui, sans-serif", lineHeight: "1.6" }}>The host's personal connection to this show's mission. Used verbatim in the Bridge section of every episode.</div>
+                    <textarea value={form.epPrep?.storyMission || ""} onChange={e => setForm(p => ({ ...p, epPrep: { ...p.epPrep, storyMission: e.target.value } }))} placeholder="Write the host's personal story connection here — this will be used verbatim in the Bridge." rows={5} style={{ width: "100%", padding: "12px 14px", border: "1px solid " + T.cardBorder, borderRadius: "8px", background: T.bg, color: T.text, fontSize: "14px", fontFamily: "'DM Sans', system-ui, sans-serif", resize: "vertical", boxSizing: "border-box", marginBottom: "24px" }} />
+                    <div style={{ fontSize: "13px", fontWeight: "700", color: T.coral, marginBottom: "4px", letterSpacing: "1px", textTransform: "uppercase", fontFamily: "'DM Sans', system-ui, sans-serif" }}>Permission Slip Bank</div>
+                    <div style={{ fontSize: "13px", color: T.textMuted, marginBottom: "10px", fontFamily: "'DM Sans', system-ui, sans-serif", lineHeight: "1.6" }}>One permission slip per line. These are used verbatim in the Permission Slip Close at the end of each episode.</div>
+                    <textarea value={form.epPrep?.permissionSlips || ""} onChange={e => setForm(p => ({ ...p, epPrep: { ...p.epPrep, permissionSlips: e.target.value } }))} placeholder={"You have permission to feel all of it.\nYou have permission to not have it figured out.\nYou have permission to begin again."} rows={8} style={{ width: "100%", padding: "12px 14px", border: "1px solid " + T.cardBorder, borderRadius: "8px", background: T.bg, color: T.text, fontSize: "14px", fontFamily: "'DM Sans', system-ui, sans-serif", resize: "vertical", boxSizing: "border-box" }} />
+                  </div>
+                )}
+
+                {tab === "formats" && (
+                  <div>
+                    {(!form.episodeFormats || form.episodeFormats.length === 0) && !epfShowForm && (
+                      <div style={{ textAlign: "center", padding: "40px 20px", color: T.textMuted, fontFamily: "'DM Sans', system-ui, sans-serif" }}>
+                        <div style={{ fontSize: "32px", marginBottom: "12px" }}>📋</div>
+                        <div style={{ fontSize: "15px", fontWeight: "600", color: T.text, marginBottom: "6px" }}>No formats yet</div>
+                        <div style={{ fontSize: "13px", marginBottom: "20px" }}>Add your first episode format to use Episode Prep.</div>
+                      </div>
+                    )}
+                    {(form.episodeFormats || []).map((fmt, idx) => (
+                      <div key={fmt.id || idx} style={{ border: "1px solid " + T.cardBorder, borderRadius: "10px", padding: "16px 20px", marginBottom: "10px", background: T.bg }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                          <div>
+                            <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
+                              <div style={{ fontSize: "15px", fontWeight: "700", color: T.text, fontFamily: "'DM Sans', system-ui, sans-serif" }}>{fmt.name}</div>
+                              {fmt.status === "imported" && <span style={{ fontSize: "10px", background: "#FFF3CD", color: "#856404", border: "1px solid #FFEAA7", borderRadius: "20px", padding: "2px 8px", fontWeight: "700", letterSpacing: "0.5px" }}>IMPORTED — PLEASE REVIEW</span>}
+                            </div>
+                            <div style={{ fontSize: "13px", color: T.textMuted, fontFamily: "'DM Sans', system-ui, sans-serif" }}>{fmt.type}{fmt.targetLength ? " · " + fmt.targetLength : ""}</div>
+                          </div>
+                          <div style={{ display: "flex", gap: "8px" }}>
+                            <button onClick={() => { setEpfForm({ name: fmt.name, type: fmt.type, targetLength: fmt.targetLength || "", structure: fmt.structure || "", signOffLine: fmt.signOffLine || "", ratingSystem: fmt.ratingSystem || "" }); setEpfEditing(fmt.id || idx); setEpfShowForm(true); }} style={{ padding: "6px 14px", border: "1px solid " + T.cardBorder, borderRadius: "6px", background: "transparent", color: T.text, fontSize: "12px", cursor: "pointer", fontFamily: "'DM Sans', system-ui, sans-serif" }}>Edit</button>
+                            <button onClick={() => setForm(p => ({ ...p, episodeFormats: p.episodeFormats.filter((_, i) => i !== idx) }))} style={{ padding: "6px 14px", border: "1px solid #D94F4F44", borderRadius: "6px", background: "transparent", color: "#D94F4F", fontSize: "12px", cursor: "pointer", fontFamily: "'DM Sans', system-ui, sans-serif" }}>Delete</button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    {!epfShowForm && (
+                      <button onClick={() => { setEpfForm({ name: "", type: "Guest Interview", targetLength: "", structure: "", signOffLine: "", ratingSystem: "" }); setEpfEditing(null); setEpfShowForm(true); }} style={{ width: "100%", padding: "12px", border: "2px dashed " + T.cardBorder, borderRadius: "10px", background: "transparent", color: T.coral, fontSize: "14px", fontWeight: "700", cursor: "pointer", fontFamily: "'DM Sans', system-ui, sans-serif", marginTop: "8px" }}>+ Add Format</button>
+                    )}
+                    {epfShowForm && (
+                      <div style={{ border: "1px solid " + T.coral + "40", borderRadius: "12px", padding: "24px", background: T.coral + "08", marginTop: "12px" }}>
+                        <div style={{ fontSize: "14px", fontWeight: "700", color: T.coral, marginBottom: "20px", fontFamily: "'DM Sans', system-ui, sans-serif", textTransform: "uppercase", letterSpacing: "1px" }}>{epfEditing !== null ? "Edit Format" : "New Format"}</div>
+                        <div style={{ display: "grid", gap: "14px" }}>
+                          <div><label style={{ fontSize: "12px", fontWeight: "700", color: T.textMuted, letterSpacing: "1px", textTransform: "uppercase", fontFamily: "'DM Sans', system-ui, sans-serif", display: "block", marginBottom: "6px" }}>Format Name *</label><input value={epfForm.name} onChange={e => setEpfForm(p => ({ ...p, name: e.target.value }))} placeholder="e.g. Guest Interview, Solo Deep Dive" style={{ width: "100%", padding: "10px 14px", border: "1px solid " + T.cardBorder, borderRadius: "8px", background: T.bg, color: T.text, fontSize: "14px", fontFamily: "'DM Sans', system-ui, sans-serif", boxSizing: "border-box" }} /></div>
+                          <div><label style={{ fontSize: "12px", fontWeight: "700", color: T.textMuted, letterSpacing: "1px", textTransform: "uppercase", fontFamily: "'DM Sans', system-ui, sans-serif", display: "block", marginBottom: "6px" }}>Format Type *</label><select value={epfForm.type} onChange={e => setEpfForm(p => ({ ...p, type: e.target.value }))} style={{ width: "100%", padding: "10px 14px", border: "1px solid " + T.cardBorder, borderRadius: "8px", background: T.bg, color: T.text, fontSize: "14px", fontFamily: "'DM Sans', system-ui, sans-serif", boxSizing: "border-box" }}><option>Guest Interview</option><option>Review & Reaction Panel</option><option>Hot Take & Breaking News</option><option>Solo Monologue</option><option>Custom</option></select></div>
+                          <div><label style={{ fontSize: "12px", fontWeight: "700", color: T.textMuted, letterSpacing: "1px", textTransform: "uppercase", fontFamily: "'DM Sans', system-ui, sans-serif", display: "block", marginBottom: "6px" }}>Target Length</label><input value={epfForm.targetLength} onChange={e => setEpfForm(p => ({ ...p, targetLength: e.target.value }))} placeholder="e.g. 30–45 min" style={{ width: "100%", padding: "10px 14px", border: "1px solid " + T.cardBorder, borderRadius: "8px", background: T.bg, color: T.text, fontSize: "14px", fontFamily: "'DM Sans', system-ui, sans-serif", boxSizing: "border-box" }} /></div>
+                          <div><label style={{ fontSize: "12px", fontWeight: "700", color: T.textMuted, letterSpacing: "1px", textTransform: "uppercase", fontFamily: "'DM Sans', system-ui, sans-serif", display: "block", marginBottom: "6px" }}>Format Structure *</label><textarea value={epfForm.structure} onChange={e => setEpfForm(p => ({ ...p, structure: e.target.value }))} placeholder={"Paste the full segment structure here:\n\nSEGMENT 1 — HOOK (0:00–1:30)\n...\nSEGMENT 2 — INTRO (1:30–4:00)\nStanding questions: ...\n..."} rows={10} style={{ width: "100%", padding: "12px 14px", border: "1px solid " + T.cardBorder, borderRadius: "8px", background: T.bg, color: T.text, fontSize: "13px", fontFamily: "monospace", resize: "vertical", boxSizing: "border-box" }} /></div>
+                          <div><label style={{ fontSize: "12px", fontWeight: "700", color: T.textMuted, letterSpacing: "1px", textTransform: "uppercase", fontFamily: "'DM Sans', system-ui, sans-serif", display: "block", marginBottom: "6px" }}>Sign-off Line *</label><input value={epfForm.signOffLine} onChange={e => setEpfForm(p => ({ ...p, signOffLine: e.target.value }))} placeholder="The exact closing line — used verbatim every episode" style={{ width: "100%", padding: "10px 14px", border: "1px solid " + T.cardBorder, borderRadius: "8px", background: T.bg, color: T.text, fontSize: "14px", fontFamily: "'DM Sans', system-ui, sans-serif", boxSizing: "border-box" }} /></div>
+                          <div><label style={{ fontSize: "12px", fontWeight: "700", color: T.textMuted, letterSpacing: "1px", textTransform: "uppercase", fontFamily: "'DM Sans', system-ui, sans-serif", display: "block", marginBottom: "6px" }}>Rating/Scoring System <span style={{ fontWeight: "400", textTransform: "none" }}>(optional — for review formats)</span></label><input value={epfForm.ratingSystem} onChange={e => setEpfForm(p => ({ ...p, ratingSystem: e.target.value }))} placeholder="e.g. Sobees Score 1–5" style={{ width: "100%", padding: "10px 14px", border: "1px solid " + T.cardBorder, borderRadius: "8px", background: T.bg, color: T.text, fontSize: "14px", fontFamily: "'DM Sans', system-ui, sans-serif", boxSizing: "border-box" }} /></div>
+                        </div>
+                        <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
+                          <button onClick={() => {
+                            if (!epfForm.name.trim() || !epfForm.structure.trim()) return;
+                            const newFmt = { id: Date.now().toString(), ...epfForm, status: "confirmed" };
+                            if (epfEditing !== null) {
+                              setForm(p => ({ ...p, episodeFormats: p.episodeFormats.map((f, i) => (f.id === epfEditing || i === epfEditing) ? { ...f, ...epfForm, status: "confirmed" } : f) }));
+                            } else {
+                              setForm(p => ({ ...p, episodeFormats: [...(p.episodeFormats || []), newFmt] }));
+                            }
+                            setEpfShowForm(false); setEpfEditing(null); setEpfForm({ name: "", type: "Guest Interview", targetLength: "", structure: "", signOffLine: "", ratingSystem: "" });
+                          }} style={{ padding: "12px 24px", background: T.coral, border: "none", borderRadius: "8px", color: "#fff", fontSize: "14px", fontWeight: "700", cursor: "pointer", fontFamily: "'DM Sans', system-ui, sans-serif" }}>Save Format</button>
+                          <button onClick={() => { setEpfShowForm(false); setEpfEditing(null); setEpfForm({ name: "", type: "Guest Interview", targetLength: "", structure: "", signOffLine: "", ratingSystem: "" }); }} style={{ padding: "12px 24px", background: "transparent", border: "1px solid " + T.cardBorder, borderRadius: "8px", color: T.textMuted, fontSize: "14px", cursor: "pointer", fontFamily: "'DM Sans', system-ui, sans-serif" }}>Cancel</button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 
