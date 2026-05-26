@@ -779,6 +779,188 @@ function BetaDisclaimerModal({ onAcknowledge }) {
   );
 }
 
+// ── ONBOARDING TOUR ────────────────────────────────────────────────────────────
+const TOUR_STEPS = [
+  { icon: "🎙️", title: "Welcome to Your Content Studio", body: "Podcast Impact Content Studio turns your episode transcripts into complete, publish-ready content packages — show notes, social captions, YouTube descriptions, newsletters, and more. All written in your show's voice." },
+  { icon: "📋", title: "Start by Selecting a Show", body: "Your show library lives on the home screen. Each card represents a show with its own DNA — voice, audience, platforms, and style. Click a show to start creating content for it. Admins can manage shows in the Show DNA Manager (⚙️ icon)." },
+  { icon: "🎬", title: "Four Powerful Modes", body: "Full Content Package — everything from one transcript.\nClips & Shorts — content written around specific clip timestamps.\nEditor Companion — hook recs, pacing notes, and a brief for your editor.\nEpisode Prep — AI-generated research docs, guest prep, and run-of-show." },
+  { icon: "📝", title: "Add Your Transcript", body: "Paste your full episode transcript directly into the text area, or upload a .txt file. The AI reads the whole thing — the longer and more complete it is, the better the output. Show notes, social, email, blog — all generated at once." },
+  { icon: "✨", title: "Your Content Package is Ready", body: "Generated content appears in organized sections you can copy individually or download as a formatted Word doc. You can also revise any section with a custom instruction — just click 'Edit' next to any section and type what you want changed." },
+];
+
+function TourModal({ onDone }) {
+  const [step, setStep] = useState(0);
+  const FF = "'DM Sans', system-ui, sans-serif";
+  const s = TOUR_STEPS[step];
+  const isLast = step === TOUR_STEPS.length - 1;
+  return (
+    <div style={{ position:"fixed", inset:0, background:"rgba(26,26,26,0.6)", backdropFilter:"blur(4px)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:9998, padding:"20px" }}>
+      <div style={{ background:T.card, border:"1px solid "+T.cardBorder, borderRadius:"20px", padding:"44px 40px", maxWidth:"540px", width:"100%", boxShadow:"0 24px 64px rgba(0,0,0,0.22)" }}>
+        {/* Step dots */}
+        <div style={{ display:"flex", justifyContent:"center", gap:"6px", marginBottom:"32px" }}>
+          {TOUR_STEPS.map((_, i) => (
+            <div key={i} onClick={() => setStep(i)} style={{ width: i === step ? "20px" : "6px", height:"6px", borderRadius:"3px", background: i === step ? T.coral : T.cardBorder, transition:"all .25s", cursor:"pointer" }} />
+          ))}
+        </div>
+        <div style={{ textAlign:"center", marginBottom:"28px" }}>
+          <div style={{ fontSize:"48px", marginBottom:"16px" }}>{s.icon}</div>
+          <div style={{ fontSize:"22px", fontWeight:"700", color:T.text, fontFamily:FF, marginBottom:"14px", lineHeight:"1.3" }}>{s.title}</div>
+          <div style={{ fontSize:"14px", color:T.textSecondary, fontFamily:FF, lineHeight:"1.8", whiteSpace:"pre-line" }}>{s.body}</div>
+        </div>
+        <div style={{ display:"flex", gap:"10px" }}>
+          {step > 0 && <button onClick={() => setStep(s => s - 1)} style={{ flex:1, padding:"13px", background:"transparent", border:"1px solid "+T.cardBorder, borderRadius:"10px", color:T.textSecondary, fontSize:"14px", fontWeight:"600", cursor:"pointer", fontFamily:FF }}>← Back</button>}
+          <button onClick={() => isLast ? onDone() : setStep(s => s + 1)} style={{ flex:1, padding:"13px", background:T.coral, border:"none", borderRadius:"10px", color:"#fff", fontSize:"14px", fontWeight:"700", cursor:"pointer", fontFamily:FF }}>
+            {isLast ? "Let's Create! 🚀" : "Next →"}
+          </button>
+        </div>
+        <div style={{ textAlign:"center", marginTop:"14px" }}>
+          <button onClick={onDone} style={{ background:"none", border:"none", color:T.textMuted, fontSize:"12px", cursor:"pointer", fontFamily:FF }}>Skip tour</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── WHAT'S NEW ─────────────────────────────────────────────────────────────────
+const CHANGELOG = [
+  {
+    version: "1.0", date: "May 2026", label: "Initial Beta Release",
+    items: [
+      "🎙️ Show DNA Manager — Build detailed show profiles with voice, audience, platforms, boilerplate, and editing levels. Paste any existing DNA doc or transcript and AI fills all fields automatically.",
+      "📦 Full Content Package — Paste a transcript and generate show notes, YouTube description, social captions for every platform, email newsletter, and blog post in one click.",
+      "✂️ Clips & Shorts — Add individual clip transcripts with timestamps and get platform-optimized content written around each clip.",
+      "🎬 Editor Companion — Generates hook recommendations, pacing notes, clip timestamps, and a structured editing brief for your video editor.",
+      "📋 Episode Prep — AI-powered pre-episode research doc. Includes guest profiles, discussion questions, run-of-show, and coaching notes — written for your show's specific format.",
+      "🎨 Multi-platform Hub — Select your platforms per show and content is generated and optimized for each one (Instagram, LinkedIn, Facebook, X, TikTok, YouTube, Podcast, and more).",
+      "📄 Word Doc Export — Download any content package as a formatted .docx file, ready to hand off.",
+      "✏️ In-line Revisions — Not happy with a section? Click Edit, type your instruction, and Claude rewrites just that section.",
+      "👥 Team Workspace — Invite editors, manage roles, and each team member has their own profile and timezone settings.",
+      "🔒 Secure by design — All AI calls go through server-side proxies. No API keys in the browser.",
+    ]
+  }
+];
+
+function WhatsNewModal({ onClose }) {
+  const FF = "'DM Sans', system-ui, sans-serif";
+  return (
+    <div style={{ position:"fixed", inset:0, background:"rgba(26,26,26,0.55)", backdropFilter:"blur(4px)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:9997, padding:"20px" }}>
+      <div style={{ background:T.card, border:"1px solid "+T.cardBorder, borderRadius:"20px", padding:"0", maxWidth:"600px", width:"100%", maxHeight:"85vh", display:"flex", flexDirection:"column", boxShadow:"0 24px 64px rgba(0,0,0,0.22)", overflow:"hidden" }}>
+        <div style={{ padding:"28px 32px 20px", borderBottom:"1px solid "+T.cardBorder, display:"flex", justifyContent:"space-between", alignItems:"center", flexShrink:0 }}>
+          <div>
+            <div style={{ fontSize:"20px", fontWeight:"700", color:T.text, fontFamily:FF }}>What's New</div>
+            <div style={{ fontSize:"13px", color:T.textMuted, fontFamily:FF, marginTop:"2px" }}>Latest updates to Podcast Impact Content Studio</div>
+          </div>
+          <button onClick={onClose} style={{ background:"transparent", border:"1px solid "+T.cardBorder, borderRadius:"8px", color:T.textMuted, fontSize:"13px", cursor:"pointer", padding:"6px 14px", fontFamily:FF }}>✕ Close</button>
+        </div>
+        <div style={{ overflowY:"auto", padding:"24px 32px" }}>
+          {CHANGELOG.map((v, vi) => (
+            <div key={vi} style={{ marginBottom:"32px" }}>
+              <div style={{ display:"flex", alignItems:"center", gap:"12px", marginBottom:"16px" }}>
+                <div style={{ padding:"4px 12px", background:T.coralSoft, border:"1px solid "+T.coralMid, borderRadius:"20px", fontSize:"12px", fontWeight:"700", color:T.coral, fontFamily:FF, letterSpacing:"0.5px" }}>v{v.version}</div>
+                <div style={{ fontSize:"13px", fontWeight:"600", color:T.text, fontFamily:FF }}>{v.label}</div>
+                <div style={{ fontSize:"12px", color:T.textMuted, fontFamily:FF }}>{v.date}</div>
+              </div>
+              <div style={{ display:"flex", flexDirection:"column", gap:"10px" }}>
+                {v.items.map((item, i) => (
+                  <div key={i} style={{ display:"flex", gap:"12px", alignItems:"flex-start", padding:"12px 14px", background:T.surface, borderRadius:"10px", border:"1px solid "+T.cardBorder }}>
+                    <div style={{ fontSize:"18px", flexShrink:0, marginTop:"1px" }}>{item.charAt(0)}</div>
+                    <div style={{ fontSize:"13px", color:T.textSecondary, fontFamily:FF, lineHeight:"1.6" }}>{item.slice(2)}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── HELP & GUIDE ───────────────────────────────────────────────────────────────
+const GUIDE_SECTIONS = [
+  { icon:"📋", title:"Show DNA Manager", body:"Go to Admin → Show DNA Manager. Each show has tabs for Basic Info, Voice DNA, Audience (including The ONE Person), Episode Prep, Platforms, Show Notes Builder, Boilerplate, Editor Companion, and Episode Formats.\n\nPaste any existing Show DNA document or episode transcript into the left sidebar — AI auto-detects the content type and fills all fields. You can also upload a .txt or .docx file.\n\nSave your show and it appears in your show library on the home screen." },
+  { icon:"📦", title:"Full Content Package", body:"Select a show → Full Content Package mode → configure your episode (number, guest name, platforms) → paste or upload your transcript → click Generate.\n\nYou'll get: Show notes with your custom structure, YouTube description, social captions for every active platform, email newsletter, and blog post — all written in your show's voice.\n\nCopy individual sections, download the whole package as a Word doc, or revise any section with a custom instruction." },
+  { icon:"✂️", title:"Clips & Shorts", body:"Select a show → Clips & Shorts mode → add your clips one by one. Each clip gets a transcript snippet and timestamps.\n\nFor each clip, Claude generates platform-specific hooks, captions, and CTAs — formatted for Instagram Reels, TikTok, YouTube Shorts, LinkedIn, and wherever your show lives.\n\nPerfect for repurposing your best moments across platforms." },
+  { icon:"🎬", title:"Editor Companion", body:"Select a show → Editor Companion mode → paste your full transcript.\n\nYou get: hook moment recommendations with timestamps, clip selection suggestions, pacing notes, and a structured editing brief your video editor can follow.\n\nThe editing level (1, 2, or 3) is set per show in the Show DNA Manager → Editor Companion tab, and determines how aggressively the brief recommends cuts." },
+  { icon:"📋", title:"Episode Prep", body:"Select a show → Episode Prep mode → choose your episode format (set up formats in Admin → Episode Formats tab) → fill in episode details.\n\nYou get a full pre-episode research package: guest profile, discussion questions, run-of-show, segment notes, and coaching reminders — all written for your show's specific format and audience.\n\nRequires Episode Formats to be set up in Show DNA first." },
+  { icon:"✏️", title:"Revising Content", body:"On the results page, click the pencil icon (✏️) next to any section. Type your revision instruction — e.g. 'Make the hook more urgent' or 'Shorten this to 3 bullet points' — and click Revise.\n\nClaude rewrites just that section without touching the rest of your package." },
+  { icon:"👥", title:"Team & Profiles", body:"Admins can invite team members from Admin → Settings → Team. Team members get an email invite and set up their own profile.\n\nEach user has a profile with their name and timezone. Publish schedules set per show automatically convert to each editor's local time." },
+];
+
+function HelpGuideModal({ onClose }) {
+  const FF = "'DM Sans', system-ui, sans-serif";
+  const [open, setOpen] = useState(null);
+  return (
+    <div style={{ position:"fixed", inset:0, background:"rgba(26,26,26,0.55)", backdropFilter:"blur(4px)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:9997, padding:"20px" }}>
+      <div style={{ background:T.card, border:"1px solid "+T.cardBorder, borderRadius:"20px", padding:"0", maxWidth:"620px", width:"100%", maxHeight:"85vh", display:"flex", flexDirection:"column", boxShadow:"0 24px 64px rgba(0,0,0,0.22)", overflow:"hidden" }}>
+        <div style={{ padding:"28px 32px 20px", borderBottom:"1px solid "+T.cardBorder, display:"flex", justifyContent:"space-between", alignItems:"center", flexShrink:0 }}>
+          <div>
+            <div style={{ fontSize:"20px", fontWeight:"700", color:T.text, fontFamily:FF }}>Help & Guide</div>
+            <div style={{ fontSize:"13px", color:T.textMuted, fontFamily:FF, marginTop:"2px" }}>How to use every feature</div>
+          </div>
+          <button onClick={onClose} style={{ background:"transparent", border:"1px solid "+T.cardBorder, borderRadius:"8px", color:T.textMuted, fontSize:"13px", cursor:"pointer", padding:"6px 14px", fontFamily:FF }}>✕ Close</button>
+        </div>
+        <div style={{ overflowY:"auto", padding:"16px 24px" }}>
+          {GUIDE_SECTIONS.map((s, i) => (
+            <div key={i} style={{ border:"1px solid "+T.cardBorder, borderRadius:"12px", marginBottom:"8px", overflow:"hidden" }}>
+              <button onClick={() => setOpen(open === i ? null : i)} style={{ width:"100%", padding:"16px 20px", background: open === i ? T.coralSoft : "transparent", border:"none", display:"flex", alignItems:"center", gap:"12px", cursor:"pointer", textAlign:"left" }}>
+                <span style={{ fontSize:"20px" }}>{s.icon}</span>
+                <span style={{ flex:1, fontSize:"14px", fontWeight:"700", color: open === i ? T.coral : T.text, fontFamily:FF }}>{s.title}</span>
+                <span style={{ fontSize:"12px", color:T.textMuted, transition:"transform .2s", display:"inline-block", transform: open === i ? "rotate(90deg)" : "rotate(0deg)" }}>›</span>
+              </button>
+              {open === i && (
+                <div style={{ padding:"16px 20px 20px", borderTop:"1px solid "+T.cardBorder, background:T.surface }}>
+                  <div style={{ fontSize:"13px", color:T.textSecondary, fontFamily:FF, lineHeight:"1.8", whiteSpace:"pre-line" }}>{s.body}</div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── HELP WIDGET ────────────────────────────────────────────────────────────────
+function HelpWidget({ onWhatsNew, onHelpGuide }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  const FF = "'DM Sans', system-ui, sans-serif";
+  useEffect(() => {
+    if (!open) return;
+    function h(e) { if (ref.current && !ref.current.contains(e.target)) setOpen(false); }
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, [open]);
+  const items = [
+    { icon:"💬", label:"Share Feedback", action: () => { window.location.href = "mailto:info@podimpactstudio.com?subject=PIS Content Creator Feedback"; setOpen(false); } },
+    { icon:"🚀", label:"What's New", action: () => { onWhatsNew(); setOpen(false); } },
+    { icon:"📖", label:"Help & Guide", action: () => { onHelpGuide(); setOpen(false); } },
+  ];
+  return (
+    <div ref={ref} style={{ position:"fixed", bottom:"24px", left:"24px", zIndex:9000 }}>
+      {open && (
+        <div style={{ position:"absolute", bottom:"52px", left:0, background:T.surface, border:"1px solid "+T.cardBorder, borderRadius:"12px", boxShadow:"0 8px 32px rgba(0,0,0,0.3)", overflow:"hidden", minWidth:"190px", animation:"fadeUp .15s ease" }}>
+          {items.map((item, i) => (
+            <button key={i} onClick={item.action}
+              style={{ width:"100%", padding:"11px 16px", background:"transparent", border:"none", display:"flex", alignItems:"center", gap:"10px", color:T.text, fontSize:"13px", fontFamily:FF, cursor:"pointer", textAlign:"left", borderBottom: i < items.length - 1 ? "1px solid "+T.cardBorder : "none" }}
+              onMouseEnter={e => e.currentTarget.style.background = T.card}
+              onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+              <span style={{ fontSize:"16px" }}>{item.icon}</span>
+              <span style={{ fontWeight:"500" }}>{item.label}</span>
+            </button>
+          ))}
+        </div>
+      )}
+      <button onClick={() => setOpen(v => !v)}
+        style={{ width:"40px", height:"40px", borderRadius:"50%", background: open ? T.coral : T.surface, border:"1px solid "+(open ? T.coral : T.cardBorder), color: open ? "#fff" : T.textSecondary, fontSize:"18px", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", boxShadow:"0 2px 12px rgba(0,0,0,0.2)", transition:"all .15s", fontFamily:FF }}
+        title="Help & Feedback">
+        {open ? "✕" : "?"}
+      </button>
+    </div>
+  );
+}
+
 // ── FIRST SHOW WIZARD ──────────────────────────────────────────────────────────
 function FirstShowWizard({ onOpenAdmin, onSkip }) {
   const [step, setStep] = useState(1); // 1 = name, 2 = method
@@ -932,7 +1114,10 @@ export default function App(){
   const[showUserMenu,setShowUserMenu]=useState(false);
   const userMenuRef=useRef(null);
   const[gDriveStatus,setGDriveStatus]=useState(""); // "" | "uploading" | "ok" | "error" | "disconnected"
-  const[betaAcknowledged,setBetaAcknowledged]=useState(()=>!!localStorage.getItem("pis_beta_ack_v1"));
+  const[betaAcknowledged,setBetaAcknowledged]=useState(false);
+  const[showTour,setShowTour]=useState(false);
+  const[showWhatsNew,setShowWhatsNew]=useState(false);
+  const[showHelpGuide,setShowHelpGuide]=useState(false);
   const[showFirstShowWizard,setShowFirstShowWizard]=useState(false);
   const[selectedFormat,setSelectedFormat]=useState(null);
   const[epGuest,setEpGuest]=useState("");
@@ -1133,6 +1318,7 @@ PRE-RECORDING CHECKLIST
   async function handleAuthenticated(user) {
     setCurrentUser(user);
     setAuthReady(true);
+    setBetaAcknowledged(!!localStorage.getItem("pis_beta_ack_" + user.id));
     // Load user profile + org
     try {
       const { data } = await supabase
@@ -1317,8 +1503,20 @@ PRE-RECORDING CHECKLIST
       {showProfile&&currentUser&&<Profile user={currentUser} onClose={()=>setShowProfile(false)} onSignOut={handleSignOut}/>}
       {showAdmin&&<AdminPanel shows={shows} orgId={orgId} accountType={accountType} userEmail={currentUser?.email} onClose={()=>setShowAdmin(false)} onSaved={async()=>{await refreshShows();if(!onboardingComplete)await markOnboardingComplete();}}/>}
 
-      {/* BETA DISCLAIMER — shown once per device */}
-      {!betaAcknowledged&&<BetaDisclaimerModal onAcknowledge={()=>{localStorage.setItem("pis_beta_ack_v1","1");setBetaAcknowledged(true);}}/>}
+      {/* BETA DISCLAIMER — shown once per user account */}
+      {!betaAcknowledged&&<BetaDisclaimerModal onAcknowledge={()=>{const key="pis_beta_ack_"+(currentUser?.id||"anon");localStorage.setItem(key,"1");setBetaAcknowledged(true);setShowTour(true);}}/>}
+
+      {/* ONBOARDING TOUR — shown after first beta acknowledgment */}
+      {showTour&&<TourModal onDone={()=>setShowTour(false)}/>}
+
+      {/* WHAT'S NEW */}
+      {showWhatsNew&&<WhatsNewModal onClose={()=>setShowWhatsNew(false)}/>}
+
+      {/* HELP & GUIDE */}
+      {showHelpGuide&&<HelpGuideModal onClose={()=>setShowHelpGuide(false)}/>}
+
+      {/* HELP WIDGET — fixed bottom left */}
+      <HelpWidget onWhatsNew={()=>setShowWhatsNew(true)} onHelpGuide={()=>setShowHelpGuide(true)}/>
 
       {/* HEADER */}
       <div style={{padding:"0 40px",background:T.surface,borderBottom:`1px solid ${T.cardBorder}`,display:"flex",justifyContent:"space-between",alignItems:"center",height:"110px",flexShrink:0}}>
