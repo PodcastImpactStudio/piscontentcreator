@@ -920,7 +920,7 @@ export function AdminPanel({ shows, orgId, onClose, onSaved, accountType = "agen
         "BOILERPLATE: full boilerplate text including all links and disclaimers\n\n" +
         "SHOW DNA:\n" + rawDna.substring(0, 8000);
 
-      const j = await claudeAPI({ model: "claude-3-5-sonnet-20241022", max_tokens: 4000, messages: [{ role: "user", content: prompt }] });
+      const j = await claudeAPI({ model: "claude-3-haiku-20240307", max_tokens: 4000, messages: [{ role: "user", content: prompt }] });
       const text = j.content?.filter(b => b.type === "text").map(b => b.text).join("") || "";
 
       function getField(label) {
@@ -1034,7 +1034,7 @@ RULES: 2-3 content rules that emerge from the transcripts (e.g. Always cite sour
 TRANSCRIPTS:
 ${combined}`;
 
-      const j = await claudeAPI({ model: "claude-3-5-sonnet-20241022", max_tokens: 2000, messages: [{ role: "user", content: prompt }] });
+      const j = await claudeAPI({ model: "claude-3-haiku-20240307", max_tokens: 2000, messages: [{ role: "user", content: prompt }] });
       const text = j.content?.filter(b => b.type === "text").map(b => b.text).join("") || "";
 
       function getField(label) {
