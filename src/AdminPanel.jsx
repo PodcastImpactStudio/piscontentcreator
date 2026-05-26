@@ -956,7 +956,7 @@ export function AdminPanel({ shows, orgId, onClose, onSaved, accountType = "agen
       function splitBy(str, sep) { return str ? str.split(sep).map(s => s.trim()).filter(Boolean) : []; }
 
       if (isTranscript) {
-        const prompt = `You are a podcast content strategist. Analyze this podcast transcript and extract the show's DNA — voice, audience, and content patterns.
+        const prompt = `You are a podcast content strategist. Analyze this podcast transcript and extract the show's DNA — voice, audience, and content patterns. Also identify the ONE ideal listener persona and any recurring permission-giving or story-mission language.
 
 Return ONLY these labeled fields, one per line, label in ALL CAPS followed by colon and space, then the value. No other text, no explanations.
 
@@ -973,13 +973,18 @@ VOICE_AVOID: language, tone, or topics that seem absent or contrary to this show
 AUD_WHO: describe the ideal listener in 2-3 sentences — who they are, what stage of life/career
 AUD_PAINS: 3-5 core struggles or questions the audience has, separated by |
 AUD_LANG: exact phrases or words the audience would use to describe their problem
+ONE_NAME: a first name for the single ideal listener (e.g. Sarah, Marcus)
+ONE_2AM: the specific question or fear keeping that person up at 2AM
+ONE_WOUND: the deeper fear or wound underneath that question (1-2 sentences)
+STORY_MISSION: the host's personal connection to this show's mission — infer from how they speak about why they do this work
+PERMISSION_SLIPS: 2-3 permission-giving statements this show implicitly offers listeners, separated by |
 HASHTAGS: 5-8 relevant hashtags for this show
 RULES: 2-3 content rules that emerge from the transcript (e.g. Always cite sources. Never give medical advice.)
 
 TRANSCRIPT:
 ${rawDna.substring(0, 10000)}`;
 
-        const j = await claudeAPI({ model: "claude-sonnet-4-5", max_tokens: 2000, messages: [{ role: "user", content: prompt }] });
+        const j = await claudeAPI({ model: "claude-sonnet-4-5", max_tokens: 3000, messages: [{ role: "user", content: prompt }] });
         const text = j.content?.filter(b => b.type === "text").map(b => b.text).join("") || "";
 
         setForm(prev => ({
@@ -992,6 +997,11 @@ ${rawDna.substring(0, 10000)}`;
           tags: getField("HASHTAGS", text) || prev?.tags || "",
           rules: getField("RULES", text) || prev?.rules || "",
           snElements: prev?.snElements || DEFAULT_SN_ELEMENTS,
+          epPrep: {
+            onePerson: { name: getField("ONE_NAME", text) || prev?.epPrep?.onePerson?.name || "", question2AM: getField("ONE_2AM", text) || prev?.epPrep?.onePerson?.question2AM || "", wound: getField("ONE_WOUND", text) || prev?.epPrep?.onePerson?.wound || "" },
+            storyMission: getField("STORY_MISSION", text) || prev?.epPrep?.storyMission || "",
+            permissionSlips: splitBy(getField("PERMISSION_SLIPS", text), "|").join("\n") || prev?.epPrep?.permissionSlips || "",
+          },
         }));
         setMsg("✓ Transcript analyzed — review each tab and save.");
       } else {
@@ -1003,6 +1013,9 @@ ${rawDna.substring(0, 10000)}`;
           "VOICE_ARC: emotional arc\nVOICE_PHRASES: signature phrases separated by |\n" +
           "VOICE_USE: language to use\nVOICE_AVOID: language to avoid\n" +
           "AUD_WHO: audience persona\nAUD_PAINS: pain points separated by |\nAUD_LANG: language they use\n" +
+          "ONE_NAME: single ideal listener first name\nONE_2AM: question keeping them up at 2AM\nONE_WOUND: deeper fear or wound underneath that question\n" +
+          "STORY_MISSION: host's personal story connection to this show's mission\n" +
+          "PERMISSION_SLIPS: 2-3 permission-giving statements this show offers, separated by |\n" +
           "HASHTAGS: default hashtags\nRULES: content rules\n" +
           "BOILERPLATE: full boilerplate text including all links and disclaimers\n\n" +
           "SHOW DNA:\n" + rawDna.substring(0, 8000);
@@ -1030,6 +1043,11 @@ ${rawDna.substring(0, 10000)}`;
           bp: getMultiline("BOILERPLATE", text),
           rules: getField("RULES", text),
           snElements: prev?.snElements || DEFAULT_SN_ELEMENTS,
+          epPrep: {
+            onePerson: { name: getField("ONE_NAME", text) || prev?.epPrep?.onePerson?.name || "", question2AM: getField("ONE_2AM", text) || prev?.epPrep?.onePerson?.question2AM || "", wound: getField("ONE_WOUND", text) || prev?.epPrep?.onePerson?.wound || "" },
+            storyMission: getField("STORY_MISSION", text) || prev?.epPrep?.storyMission || "",
+            permissionSlips: splitBy(getField("PERMISSION_SLIPS", text), "|").join("\n") || prev?.epPrep?.permissionSlips || "",
+          },
         }));
         setMsg("✓ DNA parsed — review fields and save.");
       }
@@ -1239,12 +1257,12 @@ ${epfPasteText.substring(0, 8000)}`;
     { id: "basic", label: "Basic Info" },
     { id: "voice", label: "Voice DNA" },
     { id: "audience", label: "Audience" },
+    { id: "epprep", label: "Episode Prep" },
     { id: "platforms", label: "Platforms" },
     { id: "snnotes", label: "Show Notes Builder" },
     { id: "boilerplate", label: "Boilerplate" },
     { id: "editing", label: "Editor Companion" },
     { id: "formats", label: "Episode Formats" },
-    { id: "epprep", label: "Episode Prep DNA" },
   ];
 
   return (
@@ -1498,11 +1516,33 @@ ${epfPasteText.substring(0, 8000)}`;
                 )}
 
                 {tab === "audience" && (
-                  <Section title="Audience DNA">
-                    <Fld label="Listener Persona"><textarea style={{ ...fld(), minHeight: "90px", resize: "vertical" }} value={form.aud.who} onChange={e => setForm(p => ({ ...p, aud: { ...p.aud, who: e.target.value } }))} placeholder="Who is your ideal listener?" /></Fld>
-                    <Fld label="Pain Points (one per line)"><textarea style={{ ...fld(), minHeight: "100px", resize: "vertical" }} value={form.aud.pains} onChange={e => setForm(p => ({ ...p, aud: { ...p.aud, pains: e.target.value } }))} placeholder="I've tried everything and nothing works." /></Fld>
-                    <Fld label="Language They Use"><textarea style={{ ...fld(), minHeight: "80px", resize: "vertical" }} value={form.aud.lang} onChange={e => setForm(p => ({ ...p, aud: { ...p.aud, lang: e.target.value } }))} placeholder="how to stop / why can't I" /></Fld>
-                  </Section>
+                  <div>
+                    {/* The ONE Person — merged into Audience */}
+                    <div style={{ marginBottom: "28px" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
+                        <div style={{ fontSize: "13px", fontWeight: "700", color: T.coral, letterSpacing: "1px", textTransform: "uppercase", fontFamily: "'DM Sans', system-ui, sans-serif" }}>The ONE Person</div>
+                        <div style={{ height: "1px", flex: 1, background: T.cardBorder }} />
+                      </div>
+                      <div style={{ fontSize: "13px", color: T.textMuted, marginBottom: "14px", fontFamily: "'DM Sans', system-ui, sans-serif", lineHeight: "1.6" }}>The single listener this show is made for. Used to write hooks, permission slip closes, and episode structure.</div>
+                      <div style={{ display: "grid", gap: "12px" }}>
+                        <Fld label="First Name"><input style={fld()} value={form.epPrep?.onePerson?.name || ""} onChange={e => setForm(p => ({ ...p, epPrep: { ...p.epPrep, onePerson: { ...p.epPrep.onePerson, name: e.target.value } } }))} placeholder="e.g. Sarah" /></Fld>
+                        <Fld label="2AM Question"><input style={fld()} value={form.epPrep?.onePerson?.question2AM || ""} onChange={e => setForm(p => ({ ...p, epPrep: { ...p.epPrep, onePerson: { ...p.epPrep.onePerson, question2AM: e.target.value } } }))} placeholder="The question keeping them up at 2AM" /></Fld>
+                        <Fld label="Core Wound"><input style={fld()} value={form.epPrep?.onePerson?.wound || ""} onChange={e => setForm(p => ({ ...p, epPrep: { ...p.epPrep, onePerson: { ...p.epPrep.onePerson, wound: e.target.value } } }))} placeholder="The deeper fear or wound underneath the question" /></Fld>
+                      </div>
+                    </div>
+
+                    {/* Broader Audience DNA */}
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
+                      <div style={{ fontSize: "13px", fontWeight: "700", color: T.coral, letterSpacing: "1px", textTransform: "uppercase", fontFamily: "'DM Sans', system-ui, sans-serif" }}>Audience DNA</div>
+                      <div style={{ height: "1px", flex: 1, background: T.cardBorder }} />
+                    </div>
+                    <div style={{ fontSize: "13px", color: T.textMuted, marginBottom: "14px", fontFamily: "'DM Sans', system-ui, sans-serif", lineHeight: "1.6" }}>The broader audience picture — persona, pain points, and the language they use.</div>
+                    <div style={{ display: "grid", gap: "12px" }}>
+                      <Fld label="Listener Persona"><textarea style={{ ...fld(), minHeight: "90px", resize: "vertical" }} value={form.aud.who} onChange={e => setForm(p => ({ ...p, aud: { ...p.aud, who: e.target.value } }))} placeholder="Who is your ideal listener?" /></Fld>
+                      <Fld label="Pain Points (one per line)"><textarea style={{ ...fld(), minHeight: "100px", resize: "vertical" }} value={form.aud.pains} onChange={e => setForm(p => ({ ...p, aud: { ...p.aud, pains: e.target.value } }))} placeholder="I've tried everything and nothing works." /></Fld>
+                      <Fld label="Language They Use"><textarea style={{ ...fld(), minHeight: "80px", resize: "vertical" }} value={form.aud.lang} onChange={e => setForm(p => ({ ...p, aud: { ...p.aud, lang: e.target.value } }))} placeholder="how to stop / why can't I" /></Fld>
+                    </div>
+                  </div>
                 )}
 
                 {tab === "platforms" && (
@@ -1553,17 +1593,17 @@ ${epfPasteText.substring(0, 8000)}`;
 
                 {tab === "epprep" && (
                   <div>
-                    <div style={{ fontSize: "13px", fontWeight: "700", color: T.coral, marginBottom: "4px", letterSpacing: "1px", textTransform: "uppercase", fontFamily: "'DM Sans', system-ui, sans-serif" }}>The ONE Person</div>
-                    <div style={{ fontSize: "13px", color: T.textMuted, marginBottom: "16px", fontFamily: "'DM Sans', system-ui, sans-serif", lineHeight: "1.6" }}>The single listener this show is made for. Used to write hooks, permission slip closes, and episode structure.</div>
-                    <div style={{ display: "grid", gap: "14px", marginBottom: "28px" }}>
-                      <div><label style={{ fontSize: "12px", fontWeight: "700", color: T.textMuted, letterSpacing: "1px", textTransform: "uppercase", fontFamily: "'DM Sans', system-ui, sans-serif", display: "block", marginBottom: "6px" }}>Name</label><input value={form.epPrep?.onePerson?.name || ""} onChange={e => setForm(p => ({ ...p, epPrep: { ...p.epPrep, onePerson: { ...p.epPrep.onePerson, name: e.target.value } } }))} placeholder="e.g. Sarah" style={{ width: "100%", padding: "10px 14px", border: "1px solid " + T.cardBorder, borderRadius: "8px", background: T.bg, color: T.text, fontSize: "14px", fontFamily: "'DM Sans', system-ui, sans-serif", boxSizing: "border-box" }} /></div>
-                      <div><label style={{ fontSize: "12px", fontWeight: "700", color: T.textMuted, letterSpacing: "1px", textTransform: "uppercase", fontFamily: "'DM Sans', system-ui, sans-serif", display: "block", marginBottom: "6px" }}>2AM Question</label><input value={form.epPrep?.onePerson?.question2AM || ""} onChange={e => setForm(p => ({ ...p, epPrep: { ...p.epPrep, onePerson: { ...p.epPrep.onePerson, question2AM: e.target.value } } }))} placeholder="The question keeping them up at 2AM" style={{ width: "100%", padding: "10px 14px", border: "1px solid " + T.cardBorder, borderRadius: "8px", background: T.bg, color: T.text, fontSize: "14px", fontFamily: "'DM Sans', system-ui, sans-serif", boxSizing: "border-box" }} /></div>
-                      <div><label style={{ fontSize: "12px", fontWeight: "700", color: T.textMuted, letterSpacing: "1px", textTransform: "uppercase", fontFamily: "'DM Sans', system-ui, sans-serif", display: "block", marginBottom: "6px" }}>Core Wound</label><input value={form.epPrep?.onePerson?.wound || ""} onChange={e => setForm(p => ({ ...p, epPrep: { ...p.epPrep, onePerson: { ...p.epPrep.onePerson, wound: e.target.value } } }))} placeholder="The deeper fear or wound underneath the question" style={{ width: "100%", padding: "10px 14px", border: "1px solid " + T.cardBorder, borderRadius: "8px", background: T.bg, color: T.text, fontSize: "14px", fontFamily: "'DM Sans', system-ui, sans-serif", boxSizing: "border-box" }} /></div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
+                      <div style={{ fontSize: "13px", fontWeight: "700", color: T.coral, letterSpacing: "1px", textTransform: "uppercase", fontFamily: "'DM Sans', system-ui, sans-serif" }}>Story-Mission Connection</div>
+                      <div style={{ height: "1px", flex: 1, background: T.cardBorder }} />
                     </div>
-                    <div style={{ fontSize: "13px", fontWeight: "700", color: T.coral, marginBottom: "4px", letterSpacing: "1px", textTransform: "uppercase", fontFamily: "'DM Sans', system-ui, sans-serif" }}>Story-Mission Connection</div>
                     <div style={{ fontSize: "13px", color: T.textMuted, marginBottom: "10px", fontFamily: "'DM Sans', system-ui, sans-serif", lineHeight: "1.6" }}>The host's personal connection to this show's mission. Used verbatim in the Bridge section of every episode.</div>
-                    <textarea value={form.epPrep?.storyMission || ""} onChange={e => setForm(p => ({ ...p, epPrep: { ...p.epPrep, storyMission: e.target.value } }))} placeholder="Write the host's personal story connection here — this will be used verbatim in the Bridge." rows={5} style={{ width: "100%", padding: "12px 14px", border: "1px solid " + T.cardBorder, borderRadius: "8px", background: T.bg, color: T.text, fontSize: "14px", fontFamily: "'DM Sans', system-ui, sans-serif", resize: "vertical", boxSizing: "border-box", marginBottom: "24px" }} />
-                    <div style={{ fontSize: "13px", fontWeight: "700", color: T.coral, marginBottom: "4px", letterSpacing: "1px", textTransform: "uppercase", fontFamily: "'DM Sans', system-ui, sans-serif" }}>Permission Slip Bank</div>
+                    <textarea value={form.epPrep?.storyMission || ""} onChange={e => setForm(p => ({ ...p, epPrep: { ...p.epPrep, storyMission: e.target.value } }))} placeholder="Write the host's personal story connection here — this will be used verbatim in the Bridge." rows={6} style={{ width: "100%", padding: "12px 14px", border: "1px solid " + T.cardBorder, borderRadius: "8px", background: T.bg, color: T.text, fontSize: "14px", fontFamily: "'DM Sans', system-ui, sans-serif", resize: "vertical", boxSizing: "border-box", marginBottom: "28px" }} />
+
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
+                      <div style={{ fontSize: "13px", fontWeight: "700", color: T.coral, letterSpacing: "1px", textTransform: "uppercase", fontFamily: "'DM Sans', system-ui, sans-serif" }}>Permission Slip Bank</div>
+                      <div style={{ height: "1px", flex: 1, background: T.cardBorder }} />
+                    </div>
                     <div style={{ fontSize: "13px", color: T.textMuted, marginBottom: "10px", fontFamily: "'DM Sans', system-ui, sans-serif", lineHeight: "1.6" }}>One permission slip per line. These are used verbatim in the Permission Slip Close at the end of each episode.</div>
                     <textarea value={form.epPrep?.permissionSlips || ""} onChange={e => setForm(p => ({ ...p, epPrep: { ...p.epPrep, permissionSlips: e.target.value } }))} placeholder={"You have permission to feel all of it.\nYou have permission to not have it figured out.\nYou have permission to begin again."} rows={8} style={{ width: "100%", padding: "12px 14px", border: "1px solid " + T.cardBorder, borderRadius: "8px", background: T.bg, color: T.text, fontSize: "14px", fontFamily: "'DM Sans', system-ui, sans-serif", resize: "vertical", boxSizing: "border-box" }} />
                   </div>
