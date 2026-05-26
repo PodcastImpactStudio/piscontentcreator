@@ -915,35 +915,33 @@ export function AdminPanel({ shows, orgId, onClose, onSaved, accountType = "agen
     setNewId(""); setRawDna(""); setMsg(""); setAddingNew(true); setTab("basic"); setNewShowPath(null);
   }
 
+  function detectPasteType(text) {
+    if (!text || text.trim().length < 50) return null;
+    const structuredLabels = (text.match(/^[A-Z][A-Z_]{2,}:\s/gm) || []).length;
+    const hasTimestamps = /\[\d{1,2}:\d{2}\]|\b\d{1,2}:\d{2}:\d{2}\b/.test(text);
+    const hasDialogue = /^[A-Za-z][A-Za-z\s]{1,20}:\s+\S/m.test(text) && text.length > 600;
+    if (structuredLabels >= 4 && !hasTimestamps) return "dna";
+    if (hasTimestamps || (hasDialogue && structuredLabels < 4)) return "transcript";
+    if (structuredLabels >= 2) return "dna";
+    if (text.length > 800) return "transcript";
+    return null;
+  }
+
   async function parseWithAI() {
     if (!rawDna.trim()) return;
+    const contentType = detectPasteType(rawDna);
+    const isTranscript = contentType === "transcript";
     setParsing(true); setMsg("");
     try {
-      const prompt = "Read this Show DNA document and fill in each field. " +
-        "Return ONLY these labeled fields, one per line, with the label in ALL CAPS followed by a colon and a space, then the value. No other text.\n\n" +
-        "NAME: show name\nTAG: tagline\nHOSTS: host names\nCOLOR: suggest a hex color\n" +
-        "PLATFORMS_PODCAST: main podcast platforms comma separated\nPLATFORMS_SOCIAL: social platforms comma separated\n" +
-        "VOICE_TRAITS: tone and voice traits\nVOICE_ENERGY: energy level like 6/10\nVOICE_ARCH: host archetype\n" +
-        "VOICE_ARC: emotional arc\nVOICE_PHRASES: signature phrases separated by |\n" +
-        "VOICE_USE: language to use\nVOICE_AVOID: language to avoid\n" +
-        "AUD_WHO: audience persona\nAUD_PAINS: pain points separated by |\nAUD_LANG: language they use\n" +
-        "HASHTAGS: default hashtags\nRULES: content rules\n" +
-        "BOILERPLATE: full boilerplate text including all links and disclaimers\n\n" +
-        "SHOW DNA:\n" + rawDna.substring(0, 8000);
-
-      const j = await claudeAPI({ model: "claude-3-5-haiku-20241022", max_tokens: 4000, messages: [{ role: "user", content: prompt }] });
-      const text = j.content?.filter(b => b.type === "text").map(b => b.text).join("") || "";
-
-      function getField(label) {
-        const lines = text.split("\n");
-        for (const line of lines) {
+      function getField(label, responseText) {
+        for (const line of responseText.split("\n")) {
           const t = line.trim();
           if (t.toUpperCase().startsWith(label + ":")) return t.slice(label.length + 1).trim();
         }
         return "";
       }
-      function getMultiline(label) {
-        const lines = text.split("\n");
+      function getMultiline(label, responseText) {
+        const lines = responseText.split("\n");
         let found = false; const collected = [];
         for (const line of lines) {
           if (!found) { if (line.trim().toUpperCase().startsWith(label + ":")) { found = true; const rest = line.slice(line.indexOf(":") + 1).trim(); if (rest) collected.push(rest); } }
@@ -953,28 +951,84 @@ export function AdminPanel({ shows, orgId, onClose, onSaved, accountType = "agen
       }
       function splitBy(str, sep) { return str ? str.split(sep).map(s => s.trim()).filter(Boolean) : []; }
 
-      const podcastPlatforms = splitBy(getField("PLATFORMS_PODCAST"), ",");
-      const socialPlatforms = splitBy(getField("PLATFORMS_SOCIAL"), ",");
+      if (isTranscript) {
+        const prompt = `You are a podcast content strategist. Analyze this podcast transcript and extract the show's DNA — voice, audience, and content patterns.
 
-      setForm(prev => ({
-        ...prev,
-        name: getField("NAME") || prev?.name || "",
-        tag: getField("TAG") || prev?.tag || "",
-        hosts: getField("HOSTS") || prev?.hosts || "",
-        clr: getField("COLOR") || prev?.clr || "#C41230",
-        platforms: {
-          ...DEFAULT_PLATFORMS,
-          podcast: podcastPlatforms.length ? podcastPlatforms : DEFAULT_PLATFORMS.podcast,
-          social: socialPlatforms.length ? socialPlatforms : DEFAULT_PLATFORMS.social,
-        },
-        voice: { traits: getField("VOICE_TRAITS"), energy: getField("VOICE_ENERGY") || "5/10", arch: getField("VOICE_ARCH"), arc: getField("VOICE_ARC"), phrases: splitBy(getField("VOICE_PHRASES"), "|").join("\n"), use: getField("VOICE_USE"), avoid: getField("VOICE_AVOID") },
-        aud: { who: getField("AUD_WHO"), pains: splitBy(getField("AUD_PAINS"), "|").join("\n"), lang: getField("AUD_LANG") },
-        tags: getField("HASHTAGS"),
-        bp: getMultiline("BOILERPLATE"),
-        rules: getField("RULES"),
-        snElements: prev?.snElements || DEFAULT_SN_ELEMENTS,
-      }));
-      setMsg("DNA parsed — review fields and save.");
+Return ONLY these labeled fields, one per line, label in ALL CAPS followed by colon and space, then the value. No other text, no explanations.
+
+NAME: show name (infer from context if not explicit)
+TAG: a one-line tagline that captures the show's essence
+HOSTS: host name(s) — infer from how people address each other
+VOICE_TRAITS: 4-6 adjectives describing the tone and voice (e.g. Warm. Curious. Direct. Science-backed.)
+VOICE_ENERGY: energy level from 1-10 with /10 (e.g. 6/10)
+VOICE_ARCH: host archetype in 2-4 words (e.g. The Curious Guide, The Expert Friend)
+VOICE_ARC: emotional journey listeners go on (e.g. Confused → Curious → Validated → Empowered)
+VOICE_PHRASES: recurring phrases or sign-offs separated by | (pull exact words from transcript)
+VOICE_USE: types of language, analogies, or framing the show gravitates toward
+VOICE_AVOID: language, tone, or topics that seem absent or contrary to this show's voice
+AUD_WHO: describe the ideal listener in 2-3 sentences — who they are, what stage of life/career
+AUD_PAINS: 3-5 core struggles or questions the audience has, separated by |
+AUD_LANG: exact phrases or words the audience would use to describe their problem
+HASHTAGS: 5-8 relevant hashtags for this show
+RULES: 2-3 content rules that emerge from the transcript (e.g. Always cite sources. Never give medical advice.)
+
+TRANSCRIPT:
+${rawDna.substring(0, 10000)}`;
+
+        const j = await claudeAPI({ model: "claude-3-5-haiku-20241022", max_tokens: 2000, messages: [{ role: "user", content: prompt }] });
+        const text = j.content?.filter(b => b.type === "text").map(b => b.text).join("") || "";
+
+        setForm(prev => ({
+          ...prev,
+          name: getField("NAME", text) || prev?.name || "",
+          tag: getField("TAG", text) || prev?.tag || "",
+          hosts: getField("HOSTS", text) || prev?.hosts || "",
+          voice: { traits: getField("VOICE_TRAITS", text) || prev?.voice?.traits || "", energy: getField("VOICE_ENERGY", text) || prev?.voice?.energy || "5/10", arch: getField("VOICE_ARCH", text) || prev?.voice?.arch || "", arc: getField("VOICE_ARC", text) || prev?.voice?.arc || "", phrases: splitBy(getField("VOICE_PHRASES", text), "|").join("\n") || prev?.voice?.phrases || "", use: getField("VOICE_USE", text) || prev?.voice?.use || "", avoid: getField("VOICE_AVOID", text) || prev?.voice?.avoid || "" },
+          aud: { who: getField("AUD_WHO", text) || prev?.aud?.who || "", pains: splitBy(getField("AUD_PAINS", text), "|").join("\n") || prev?.aud?.pains || "", lang: getField("AUD_LANG", text) || prev?.aud?.lang || "" },
+          tags: getField("HASHTAGS", text) || prev?.tags || "",
+          rules: getField("RULES", text) || prev?.rules || "",
+          snElements: prev?.snElements || DEFAULT_SN_ELEMENTS,
+        }));
+        setMsg("✓ Transcript analyzed — review each tab and save.");
+      } else {
+        const prompt = "Read this Show DNA document and fill in each field. " +
+          "Return ONLY these labeled fields, one per line, with the label in ALL CAPS followed by a colon and a space, then the value. No other text.\n\n" +
+          "NAME: show name\nTAG: tagline\nHOSTS: host names\nCOLOR: suggest a hex color\n" +
+          "PLATFORMS_PODCAST: main podcast platforms comma separated\nPLATFORMS_SOCIAL: social platforms comma separated\n" +
+          "VOICE_TRAITS: tone and voice traits\nVOICE_ENERGY: energy level like 6/10\nVOICE_ARCH: host archetype\n" +
+          "VOICE_ARC: emotional arc\nVOICE_PHRASES: signature phrases separated by |\n" +
+          "VOICE_USE: language to use\nVOICE_AVOID: language to avoid\n" +
+          "AUD_WHO: audience persona\nAUD_PAINS: pain points separated by |\nAUD_LANG: language they use\n" +
+          "HASHTAGS: default hashtags\nRULES: content rules\n" +
+          "BOILERPLATE: full boilerplate text including all links and disclaimers\n\n" +
+          "SHOW DNA:\n" + rawDna.substring(0, 8000);
+
+        const j = await claudeAPI({ model: "claude-3-5-haiku-20241022", max_tokens: 4000, messages: [{ role: "user", content: prompt }] });
+        const text = j.content?.filter(b => b.type === "text").map(b => b.text).join("") || "";
+
+        const podcastPlatforms = splitBy(getField("PLATFORMS_PODCAST", text), ",");
+        const socialPlatforms = splitBy(getField("PLATFORMS_SOCIAL", text), ",");
+
+        setForm(prev => ({
+          ...prev,
+          name: getField("NAME", text) || prev?.name || "",
+          tag: getField("TAG", text) || prev?.tag || "",
+          hosts: getField("HOSTS", text) || prev?.hosts || "",
+          clr: getField("COLOR", text) || prev?.clr || "#C41230",
+          platforms: {
+            ...DEFAULT_PLATFORMS,
+            podcast: podcastPlatforms.length ? podcastPlatforms : DEFAULT_PLATFORMS.podcast,
+            social: socialPlatforms.length ? socialPlatforms : DEFAULT_PLATFORMS.social,
+          },
+          voice: { traits: getField("VOICE_TRAITS", text), energy: getField("VOICE_ENERGY", text) || "5/10", arch: getField("VOICE_ARCH", text), arc: getField("VOICE_ARC", text), phrases: splitBy(getField("VOICE_PHRASES", text), "|").join("\n"), use: getField("VOICE_USE", text), avoid: getField("VOICE_AVOID", text) },
+          aud: { who: getField("AUD_WHO", text), pains: splitBy(getField("AUD_PAINS", text), "|").join("\n"), lang: getField("AUD_LANG", text) },
+          tags: getField("HASHTAGS", text),
+          bp: getMultiline("BOILERPLATE", text),
+          rules: getField("RULES", text),
+          snElements: prev?.snElements || DEFAULT_SN_ELEMENTS,
+        }));
+        setMsg("✓ DNA parsed — review fields and save.");
+      }
     } catch (e) { setMsg("Parse error: " + e.message); }
     finally { setParsing(false); }
   }
@@ -1132,7 +1186,6 @@ ${combined}`;
     { id: "editing", label: "Editor Companion" },
     { id: "formats", label: "Episode Formats" },
     { id: "epprep", label: "Episode Prep DNA" },
-    { id: "transcript", label: "✨ AI Fill from Transcripts" },
   ];
 
   return (
@@ -1211,7 +1264,7 @@ ${combined}`;
                 </button>
 
                 {/* Card 2 — AI from Transcripts */}
-                <button onClick={() => { setNewShowPath("transcript"); setTab("transcript"); }}
+                <button onClick={() => { setNewShowPath("dna"); }}
                   style={{ padding: "32px 24px", background: T.card, border: "2px solid " + T.coral + "44", borderRadius: "14px", cursor: "pointer", textAlign: "center", transition: "all .2s", display: "flex", flexDirection: "column", alignItems: "center", gap: "14px", position: "relative" }}
                   onMouseEnter={e => { e.currentTarget.style.borderColor = T.coral; e.currentTarget.style.background = T.coralSoft; }}
                   onMouseLeave={e => { e.currentTarget.style.borderColor = T.coral + "44"; e.currentTarget.style.background = T.card; }}>
@@ -1247,23 +1300,71 @@ ${combined}`;
 
         ) : (
           <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
-            {/* Left paste-DNA panel — only for "dna" path or existing shows */}
-            {(newShowPath === "dna" || selKey !== "__new__") && (
-            <div style={{ width: "380px", borderRight: "1px solid " + T.cardBorder, display: "flex", flexDirection: "column", flexShrink: 0 }}>
-              <div style={{ padding: "20px 24px", borderBottom: "1px solid " + T.cardBorder }}>
-                <div style={{ fontSize: "13px", letterSpacing: "2px", textTransform: "uppercase", color: T.textMuted, marginBottom: "8px", ...LS }}>Paste Show DNA</div>
-                <div style={{ fontSize: "14px", color: T.textSecondary, marginBottom: "12px", ...GA, lineHeight: "1.5" }}>Paste your Show DNA in any format. Claude will extract all fields automatically.</div>
+            {/* Left paste panel — DNA or Transcript, auto-detected */}
+            {(newShowPath === "dna" || selKey !== "__new__") && (() => {
+              const detectedType = detectPasteType(rawDna);
+              const typeLabel = detectedType === "dna" ? "✓ Detected: Show DNA" : detectedType === "transcript" ? "✓ Detected: Transcript" : null;
+              const btnLabel = parsing ? "Analyzing…" : detectedType === "transcript" ? "✨ Analyze Transcript →" : "Parse with AI →";
+              return (
+              <div style={{ width: "380px", borderRight: "1px solid " + T.cardBorder, display: "flex", flexDirection: "column", flexShrink: 0 }}>
+                <div style={{ padding: "20px 24px", borderBottom: "1px solid " + T.cardBorder }}>
+                  <div style={{ fontSize: "13px", letterSpacing: "2px", textTransform: "uppercase", color: T.textMuted, marginBottom: "8px", ...LS }}>Paste Show DNA or Transcript</div>
+                  <div style={{ fontSize: "14px", color: T.textSecondary, ...GA, lineHeight: "1.5" }}>Paste a Show DNA doc or an episode transcript. Claude will detect the content type and fill in your show's fields automatically.</div>
+                </div>
+                <div style={{ flex: 1, padding: "16px 24px", display: "flex", flexDirection: "column", gap: "10px", overflow: "hidden" }}>
+                  <div style={{ position: "relative", flex: 1, display: "flex", flexDirection: "column" }}>
+                    <textarea style={{ flex: 1, background: T.surface, border: "1px solid " + (typeLabel ? (detectedType === "transcript" ? T.coral + "88" : "#52B78888") : T.cardBorder), borderRadius: "6px", padding: "14px", color: T.text, fontSize: "14px", outline: "none", resize: "none", ...GA, lineHeight: "1.6", transition: "border-color .2s" }} placeholder={"Paste your Show DNA or episode transcript here…\n\nOr click 'Upload .txt / .docx' below to load a file."} value={rawDna} onChange={e => setRawDna(e.target.value)} spellCheck={false} />
+                    {typeLabel && (
+                      <div style={{ position: "absolute", bottom: "10px", right: "10px", fontSize: "11px", fontWeight: "700", letterSpacing: "1px", padding: "3px 8px", borderRadius: "20px", background: detectedType === "transcript" ? T.coral + "22" : "#52B78822", color: detectedType === "transcript" ? T.coral : "#52B788", fontFamily: FF, pointerEvents: "none" }}>
+                        {typeLabel}
+                      </div>
+                    )}
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <div style={{ flex: 1, height: "1px", background: T.cardBorder }} />
+                    <span style={{ fontSize: "12px", color: T.textMuted, fontFamily: FF }}>or</span>
+                    <div style={{ flex: 1, height: "1px", background: T.cardBorder }} />
+                  </div>
+                  <label style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", padding: "9px", border: "1px dashed " + T.cardBorder, borderRadius: "6px", cursor: "pointer", fontSize: "13px", color: T.textSecondary, fontFamily: FF, transition: "all .15s" }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = T.coral; e.currentTarget.style.color = T.coral; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = T.cardBorder; e.currentTarget.style.color = T.textSecondary; }}>
+                    📄 Upload .txt or .docx
+                    <input type="file" accept=".txt,.md,.doc,.docx" style={{ display: "none" }} onChange={e => {
+                      const f = e.target.files?.[0]; if (!f) return;
+                      if (f.name.match(/\.docx?$/i)) {
+                        const reader = new FileReader();
+                        reader.onload = async ev => { try { const r = await mammoth.extractRawText({ arrayBuffer: ev.target.result }); setRawDna(r.value); } catch(err) { setMsg("Error reading file: " + err.message); } };
+                        reader.readAsArrayBuffer(f);
+                      } else {
+                        const reader = new FileReader();
+                        reader.onload = ev => setRawDna(ev.target.result);
+                        reader.readAsText(f);
+                      }
+                      e.target.value = "";
+                    }} />
+                  </label>
+                  <button onClick={parseWithAI} disabled={parsing || !rawDna.trim()}
+                    style={{ padding: "13px", background: rawDna.trim() ? T.coral : T.cardBorder, border: "none", borderRadius: "6px", color: rawDna.trim() ? "#fff" : T.textMuted, fontSize: "14px", fontWeight: "700", cursor: rawDna.trim() ? "pointer" : "not-allowed", ...LS, letterSpacing: "2px", textTransform: "uppercase" }}>
+                    {btnLabel}
+                  </button>
+                  {msg && (
+                    <div>
+                      <div style={{ fontSize: "13px", color: msg.startsWith("✓") || msg.startsWith("Saved") ? "#52B788" : "#F09090", ...LS }}>{msg}</div>
+                      {msg.startsWith("✓") && (
+                        <div style={{ marginTop: "8px", display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                          {["basic","voice","audience"].map(t => (
+                            <button key={t} onClick={() => setTab(t)} style={{ padding: "5px 10px", background: T.surface, border: "1px solid " + T.cardBorder, borderRadius: "5px", color: T.coral, fontSize: "11px", cursor: "pointer", fontFamily: FF, fontWeight: "700", letterSpacing: "1px", textTransform: "uppercase" }}>
+                              {t === "basic" ? "Basic Info" : t === "voice" ? "Voice DNA" : "Audience"} →
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
-              <div style={{ flex: 1, padding: "16px 24px", display: "flex", flexDirection: "column", gap: "12px", overflow: "hidden" }}>
-                <textarea style={{ flex: 1, background: T.surface, border: "1px solid " + T.cardBorder, borderRadius: "6px", padding: "14px", color: T.text, fontSize: "14px", outline: "none", resize: "none", ...GA, lineHeight: "1.6" }} placeholder="Paste show DNA here..." value={rawDna} onChange={e => setRawDna(e.target.value)} spellCheck={false} />
-                <button onClick={parseWithAI} disabled={parsing || !rawDna.trim()}
-                  style={{ padding: "13px", background: rawDna.trim() ? T.coral : T.cardBorder, border: "none", borderRadius: "6px", color: rawDna.trim() ? "#fff" : T.textMuted, fontSize: "14px", fontWeight: "700", cursor: rawDna.trim() ? "pointer" : "not-allowed", ...LS, letterSpacing: "2px", textTransform: "uppercase" }}>
-                  {parsing ? "Parsing..." : "Parse with AI →"}
-                </button>
-                {msg && <div style={{ fontSize: "13px", color: msg.startsWith("Saved") || msg.startsWith("DNA") ? "#52B788" : "#F09090", ...LS }}>{msg}</div>}
-              </div>
-            </div>
-            )}
+              );
+            })()}
 
             <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
               {addingNew && selKey === "__new__" && (
@@ -1467,90 +1568,6 @@ ${combined}`;
                   </div>
                 )}
 
-                {tab === "transcript" && (
-                  <Section title="AI Fill from Transcripts">
-                    <div style={{ fontSize: "14px", color: T.textSecondary, marginBottom: "20px", ...GA, lineHeight: "1.7" }}>
-                      Drop 3–5 transcript files (.txt or .docx) and Claude will analyze them to fill in your show's Voice DNA, Audience, and more. You can review and edit every field before saving.
-                    </div>
-
-                    {/* Drop zone */}
-                    <div
-                      onDragOver={e => { e.preventDefault(); setTranscriptDragging(true); }}
-                      onDragLeave={() => setTranscriptDragging(false)}
-                      onDrop={handleTranscriptDrop}
-                      style={{
-                        border: "2px dashed " + (transcriptDragging ? T.coral : T.cardBorder),
-                        borderRadius: "10px",
-                        padding: "36px 24px",
-                        textAlign: "center",
-                        background: transcriptDragging ? T.coralSoft : T.surface,
-                        transition: "all .2s",
-                        marginBottom: "20px",
-                        cursor: "pointer",
-                      }}
-                      onClick={() => { if (transcriptFiles.length < 5) document.getElementById("transcript-file-input").click(); }}
-                    >
-                      <div style={{ fontSize: "32px", marginBottom: "10px" }}>📄</div>
-                      <div style={{ fontSize: "15px", color: T.text, fontFamily: FF, marginBottom: "6px", fontWeight: "600" }}>
-                        {transcriptFiles.length === 0 ? "Drop transcript files here" : `${transcriptFiles.length}/5 transcripts loaded`}
-                      </div>
-                      <div style={{ fontSize: "13px", color: T.textMuted, fontFamily: FF }}>
-                        {transcriptFiles.length < 5 ? "Click or drag — .txt, .docx, or .md files — up to 5 transcripts" : "Maximum 5 transcripts reached"}
-                      </div>
-                      <input
-                        id="transcript-file-input"
-                        type="file"
-                        multiple
-                        accept=".txt,.md,.doc,.docx"
-                        style={{ display: "none" }}
-                        onChange={handleTranscriptDrop}
-                      />
-                    </div>
-
-                    {/* File list */}
-                    {transcriptFiles.length > 0 && (
-                      <div style={{ marginBottom: "20px", display: "flex", flexDirection: "column", gap: "8px" }}>
-                        {transcriptFiles.map((f, i) => (
-                          <div key={i} style={{ display: "flex", alignItems: "center", gap: "12px", background: T.surface, border: "1px solid " + T.cardBorder, borderRadius: "6px", padding: "10px 14px" }}>
-                            <span style={{ fontSize: "16px" }}>📝</span>
-                            <span style={{ flex: 1, fontSize: "14px", color: T.text, fontFamily: FF }}>{f.name}</span>
-                            <span style={{ fontSize: "12px", color: T.textMuted, fontFamily: FF }}>{Math.round(f.text.length / 1000)}k chars</span>
-                            <button onClick={() => setTranscriptFiles(prev => prev.filter((_, j) => j !== i))}
-                              style={{ background: "transparent", border: "none", color: T.textMuted, cursor: "pointer", fontSize: "16px", padding: "0 4px", lineHeight: 1 }}>✕</button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Analyze button */}
-                    <button
-                      onClick={parseFromTranscripts}
-                      disabled={transcriptParsing || transcriptFiles.length === 0}
-                      style={{
-                        width: "100%", padding: "15px", background: transcriptFiles.length > 0 ? T.coral : T.cardBorder,
-                        border: "none", borderRadius: "8px", color: transcriptFiles.length > 0 ? "#fff" : T.textMuted,
-                        fontSize: "15px", fontWeight: "700", cursor: transcriptFiles.length > 0 ? "pointer" : "not-allowed",
-                        fontFamily: FF, letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: "14px",
-                      }}>
-                      {transcriptParsing ? "Analyzing transcripts…" : `✨ Analyze ${transcriptFiles.length > 0 ? transcriptFiles.length : ""} Transcript${transcriptFiles.length !== 1 ? "s" : ""} with AI →`}
-                    </button>
-
-                    {transcriptMsg && (
-                      <div style={{ padding: "14px 16px", background: transcriptMsg.startsWith("✓") ? "#52B78820" : "#F0909020", border: "1px solid " + (transcriptMsg.startsWith("✓") ? "#52B78844" : "#F0909044"), borderRadius: "8px", fontSize: "14px", color: transcriptMsg.startsWith("✓") ? "#52B788" : "#F09090", fontFamily: FF, lineHeight: "1.6" }}>
-                        {transcriptMsg}
-                        {transcriptMsg.startsWith("✓") && (
-                          <div style={{ marginTop: "10px", display: "flex", gap: "10px" }}>
-                            {["basic","voice","audience"].map(t => (
-                              <button key={t} onClick={() => setTab(t)} style={{ padding: "6px 14px", background: T.surface, border: "1px solid " + T.cardBorder, borderRadius: "6px", color: T.coral, fontSize: "12px", cursor: "pointer", fontFamily: FF, fontWeight: "700", letterSpacing: "1px", textTransform: "uppercase" }}>
-                                Review {t === "basic" ? "Basic Info" : t === "voice" ? "Voice DNA" : "Audience"} →
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </Section>
-                )}
 
               </div>
 
