@@ -975,7 +975,7 @@ RULES: 2-3 content rules that emerge from the transcript (e.g. Always cite sourc
 TRANSCRIPT:
 ${rawDna.substring(0, 10000)}`;
 
-        const j = await claudeAPI({ model: "claude-3-5-haiku-20241022", max_tokens: 2000, messages: [{ role: "user", content: prompt }] });
+        const j = await claudeAPI({ model: "claude-sonnet-4-5", max_tokens: 2000, messages: [{ role: "user", content: prompt }] });
         const text = j.content?.filter(b => b.type === "text").map(b => b.text).join("") || "";
 
         setForm(prev => ({
@@ -1003,7 +1003,7 @@ ${rawDna.substring(0, 10000)}`;
           "BOILERPLATE: full boilerplate text including all links and disclaimers\n\n" +
           "SHOW DNA:\n" + rawDna.substring(0, 8000);
 
-        const j = await claudeAPI({ model: "claude-3-5-haiku-20241022", max_tokens: 4000, messages: [{ role: "user", content: prompt }] });
+        const j = await claudeAPI({ model: "claude-sonnet-4-5", max_tokens: 4000, messages: [{ role: "user", content: prompt }] });
         const text = j.content?.filter(b => b.type === "text").map(b => b.text).join("") || "";
 
         const podcastPlatforms = splitBy(getField("PLATFORMS_PODCAST", text), ",");
@@ -1099,7 +1099,7 @@ RULES: 2-3 content rules that emerge from the transcripts (e.g. Always cite sour
 TRANSCRIPTS:
 ${combined}`;
 
-      const j = await claudeAPI({ model: "claude-3-5-haiku-20241022", max_tokens: 2000, messages: [{ role: "user", content: prompt }] });
+      const j = await claudeAPI({ model: "claude-sonnet-4-5", max_tokens: 2000, messages: [{ role: "user", content: prompt }] });
       const text = j.content?.filter(b => b.type === "text").map(b => b.text).join("") || "";
 
       function getField(label) {
