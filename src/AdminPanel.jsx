@@ -884,6 +884,7 @@ export function AdminPanel({ shows, orgId, onClose, onSaved, accountType = "agen
         return saved ? { ...def, enabled: saved.enabled, text: saved.text || "", header: saved.header || "", scope: saved.scope || def.scope } : def;
       }),
       descriptApiKey: s.descriptApiKey || "",
+      editingLevel: s.editingLevel || "1",
     });
     setRawDna(""); setMsg(""); setTab("basic"); setNewShowPath("manual");
   }
@@ -898,6 +899,7 @@ export function AdminPanel({ shows, orgId, onClose, onSaved, accountType = "agen
       tags: "", bp: "", rules: "", publishDay: "", publishTime: "", publishTz: "",
       snElements: DEFAULT_SN_ELEMENTS,
       descriptApiKey: "",
+      editingLevel: "1",
     });
     setNewId(""); setRawDna(""); setMsg(""); setAddingNew(true); setTab("basic"); setNewShowPath(null);
   }
@@ -1091,6 +1093,7 @@ ${combined}`;
         tags: form.tags, bp: form.bp, rules: form.rules, publishDay: form.publishDay || "", publishTime: form.publishTime || "", publishTz: form.publishTz || "",
         snElements: form.snElements,
         descriptApiKey: form.descriptApiKey || "",
+        editingLevel: form.editingLevel || "1",
         tpl: { sn: "", yt: "", sm: "", gk: "", em: "", bl: "" },
       };
       await saveShow(id, dna, orgId);
@@ -1109,6 +1112,7 @@ ${combined}`;
     { id: "platforms", label: "Platforms" },
     { id: "snnotes", label: "Show Notes Builder" },
     { id: "boilerplate", label: "Boilerplate" },
+    { id: "editing", label: "Editor Companion" },
     { id: "transcript", label: "✨ AI Fill from Transcripts" },
   ];
 
@@ -1343,6 +1347,29 @@ ${combined}`;
                     <div style={{ fontSize: "14px", color: T.textSecondary, marginBottom: "16px", ...GA, lineHeight: "1.6" }}>Automatically appended to Show Notes and YouTube descriptions.</div>
                     <BoilerplateEditor value={form.bp} onChange={v => setForm(p => ({ ...p, bp: v }))} />
                   </Section>
+                )}
+
+                {tab === "editing" && (
+                  <div>
+                    <div style={{ marginBottom: "24px" }}>
+                      <div style={{ fontSize: "13px", fontWeight: "700", color: T.coral, marginBottom: "6px", letterSpacing: "1px", textTransform: "uppercase", fontFamily: "'DM Sans', system-ui, sans-serif" }}>Editing Level</div>
+                      <div style={{ fontSize: "14px", color: T.textMuted, marginBottom: "20px", fontFamily: "'DM Sans', system-ui, sans-serif", lineHeight: "1.6" }}>Set the editing standard for this show. Editors will see this level and its description as a coaching brief when they open the Editor Companion.</div>
+                      {[
+                        { id: "1", name: "Level 1 — Clean & Clear", desc: "The goal is a natural, listenable episode with no obvious edit points. Remove long awkward silences unless they are emotional or intentional. Cut anything that clearly signals an edit — mic bumps, false starts, hard stops, technical interruptions. Leave ums, ahs, and filler words unless they are so frequent they disrupt the listening experience. Do not over-edit. The episode should sound like a real conversation, just cleaned up." },
+                        { id: "2", name: "Level 2 — Crafted", desc: "The goal is a polished, well-paced episode that holds attention. Everything in Level 1 applies. Additionally: identify and surface the strongest hook moment and restructure the opening if needed. Remove repetitive points, rambling tangents, and run-on sections that dilute the message. Tighten pacing so the conversation flows freely without losing its natural feel. Add lower thirds at key moments. The episode should sound intentional without sounding produced." },
+                        { id: "3", name: "Level 3 — Story-Driven", desc: "The goal is a fully crafted narrative. Everything in Levels 1 and 2 applies. Additionally: treat the raw recording as source material, not a final structure. Reconstruct the arc — find the story, build toward it, and edit down aggressively if needed (e.g. a 90-minute interview may become a 45-minute episode). Add b-roll, images, and supporting visuals to reinforce meaning. Re-record inserts may be added to fill gaps in the narrative. The episode should feel like a documentary, not a recording." },
+                      ].map(lvl => (
+                        <div key={lvl.id} onClick={() => setForm(p => ({ ...p, editingLevel: lvl.id }))}
+                          style={{ border: "1px solid " + (form.editingLevel === lvl.id ? T.coral : T.cardBorder), borderRadius: "12px", padding: "20px 24px", marginBottom: "12px", cursor: "pointer", background: form.editingLevel === lvl.id ? T.coral + "10" : T.bg, transition: "all 0.15s" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px" }}>
+                            <div style={{ width: "28px", height: "28px", borderRadius: "50%", background: form.editingLevel === lvl.id ? T.coral : T.cardBorder, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "13px", fontWeight: "700", color: form.editingLevel === lvl.id ? "#fff" : T.textMuted, flexShrink: 0, fontFamily: "'DM Sans', system-ui, sans-serif" }}>{lvl.id}</div>
+                            <div style={{ fontSize: "15px", fontWeight: "700", color: form.editingLevel === lvl.id ? T.coral : T.text, fontFamily: "'DM Sans', system-ui, sans-serif" }}>{lvl.name}</div>
+                          </div>
+                          <div style={{ fontSize: "13px", color: T.textMuted, lineHeight: "1.7", fontFamily: "'DM Sans', system-ui, sans-serif", paddingLeft: "40px" }}>{lvl.desc}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 )}
 
                 {tab === "transcript" && (

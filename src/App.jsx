@@ -26,7 +26,7 @@ const T = {
 const MODES = [
   { id: "full", icon: "📦", label: "Full Content Package", desc: "Show notes, YouTube description, social captions, newsletter, blog post & quote cards — everything from one transcript" },
   { id: "clips", icon: "✂️", label: "Short-Form Content", desc: "SEO-optimized titles, captions & hashtags for YouTube Shorts, Instagram Reels, TikTok & Facebook Reels" },
-  { id: "editor", icon: "🎬", label: "Editor Assistant", desc: "Intro hook recommendations, timestamped clip suggestions & production notes your editor can act on immediately" },
+  { id: "editor", icon: "🎬", label: "Editor Companion", desc: "A coaching brief for your editor — editing level guidance, best clip moments with timestamps, and sections to cut based on your show's standard." },
 ];
 const PF = "'DM Sans', system-ui, sans-serif";
 
@@ -290,8 +290,18 @@ function sys(show, k, g, ep, mode, extras=[], clipCount=5) {
   const base = `You are the content strategist for ${d.name}.\n\nOUTPUT FORMAT:\n- PLAIN TEXT only. Zero markdown. No asterisks. No bold. No italic.\n- ALL section headers and sub-headers must be in ALL CAPS — every single one, no exceptions\n- This includes: KEY TAKEAWAYS, NOTABLE QUOTE, GUEST BIO, LINKS & RESOURCES, TIMESTAMPS, HASHTAGS, KEYWORDS, SUBJECT LINE, PREVIEW TEXT, and any other label\n- Separate major sections with ---\n- Bullets use - (hyphen space)\n\nCRITICAL RULES:\n1. SEO TITLES: Write the title ONLY. Do NOT add the podcast name, a dash, episode number, or any other text after the title.\n2. SHOW NOTES: The very first thing after the SHOW NOTES header must be the hook question. No podcast name, no episode info, no intro text.\n3. BULLETS: KEY TAKEAWAYS must be 3-7 bullet points, each on its own line starting with - (hyphen space). Never write takeaways as a paragraph.\n4. HEADERS: Never use Title Case for any header or label. ALL CAPS only. "Links & Resources" must be written as "LINKS & RESOURCES".\n\nShow: ${d.name} | "${d.tag}" | Host(s): ${d.hosts}\n${g?"GUEST episode — include Guest Share Kit.":"SOLO episode — skip Guest Share Kit."}${ep?` | Episode ${ep}`:""}\n\nVOICE: ${voice.traits||""} | Energy: ${voice.energy||""} | ${voice.arch||""}\nArc: ${voice.arc||""}\nPhrases: ${(voice.phrases||[]).join(" | ")}\nUSE: ${voice.use||""}\nAVOID: ${voice.avoid||""}\n\nAUDIENCE: ${aud.who||""}\nPain: ${(aud.pains||[]).join(" | ")}\nLanguage: ${aud.lang||""}\n\nPLATFORMS: ${[...ap,...extras].join(", ")} | HASHTAGS: ${d.tags||""}\n${extras.length>0?`ADDITIONAL PLATFORMS THIS EPISODE: ${extras.join(", ")} -- generate a dedicated social post for each additional platform listed.`:""}\n\n${bp ? `BOILERPLATE — append verbatim at the end of show notes and YouTube, no label:\\\\n${bp}\\\\n\\\\nInclude all URLs exactly as written.` : "No boilerplate for this show."}\\n\\nTIMESTAMPS RULE: Always include timestamps in the YouTube description — generate them from the transcript. ${getTimestampsScope(d.snElements) === "both" ? "Also include timestamps in show notes." : "Do NOT include timestamps in show notes unless the show notes template specifically includes them."}\\n\\nRULES:\n${d.rules||""}\n\n`;
   if(mode==="clips"){return base;}
   if(mode==="editor"){
+    const editLevels = {
+      "1": { name: "Level 1 — Clean & Clear", desc: "The goal is a natural, listenable episode with no obvious edit points. Remove long awkward silences unless they are emotional or intentional. Cut anything that clearly signals an edit — mic bumps, false starts, hard stops, technical interruptions. Leave ums, ahs, and filler words unless they are so frequent they disrupt the listening experience. Do not over-edit. The episode should sound like a real conversation, just cleaned up." },
+      "2": { name: "Level 2 — Crafted", desc: "The goal is a polished, well-paced episode that holds attention. Everything in Level 1 applies. Additionally: identify and surface the strongest hook moment and restructure the opening if needed. Remove repetitive points, rambling tangents, and run-on sections that dilute the message. Tighten pacing so the conversation flows freely without losing its natural feel. Add lower thirds at key moments. The episode should sound intentional without sounding produced." },
+      "3": { name: "Level 3 — Story-Driven", desc: "The goal is a fully crafted narrative. Everything in Levels 1 and 2 applies. Additionally: treat the raw recording as source material, not a final structure. Reconstruct the arc — find the story, build toward it, and edit down aggressively if needed (e.g. a 90-minute interview may become a 45-minute episode). Add b-roll, images, and supporting visuals to reinforce meaning. Re-record inserts may be added to fill gaps in the narrative. The episode should feel like a documentary, not a recording." },
+    };
+    const lvl = editLevels[d.editingLevel || "1"];
     return base + `
-You are analyzing this episode transcript to create an EDITOR BRIEF for a professional podcast editor.
+You are an editor coach analyzing this episode transcript for a professional podcast editor.
+
+EDITING STANDARD FOR THIS SHOW:
+${lvl.name}
+${lvl.desc}
 
 SHOW DNA CONTEXT:
 Target audience: ${d.aud?.who||""}
@@ -299,7 +309,7 @@ Audience pain points: ${(d.aud?.pains||[]).join(", ")}
 Show voice: ${d.voice?.traits||""}
 What resonates with this audience: ${d.voice?.use||""}
 
-Your job is to find the single best intro hook and the best social clips based on what will land with THIS specific audience.
+Your job is to coach the editor through this specific episode based on the editing standard above, find the best clip moments, and flag what should be cut or tightened.
 
 STRICT DURATION RULE: Every clip and hook must be UNDER 60 seconds when spoken. Ideal length is 30-45 seconds. Do not suggest any moment longer than 60 seconds.
 
@@ -307,8 +317,22 @@ Generate the following:
 
 ---
 
-EDITOR NOTES
-[Read this first before reviewing clips. Include: overall episode tone and energy, any audio quality flags apparent from the transcript, suggested music mood, key transitions to watch for, and any other guidance to help the editor approach this episode.]
+EDITOR COMPANION BRIEF
+
+EDITING LEVEL: ${lvl.name}
+
+EPISODE OVERVIEW
+[2-3 sentences on the overall tone, energy, and narrative arc of this episode. What is the core story or message? What makes this episode worth listening to?]
+
+EDITING APPROACH FOR THIS EPISODE
+[Based on the editing level above and this specific episode, give the editor their marching orders. What should they prioritize? What will make this episode shine at this level? Be specific to what you heard in this transcript — not generic advice.]
+
+SECTIONS TO CUT OR TIGHTEN
+[List specific moments with timestamps that should be removed or shortened. For each, explain why — is it repetitive, off-topic, too slow, contradicts the show voice? Be direct.]
+
+TIMESTAMP: [start — end]
+REASON: [why this should be cut or tightened]
+SUGGESTION: [cut entirely / trim to X seconds / restructure]
 
 ---
 
@@ -1370,9 +1394,10 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
                   <div style={{marginBottom:"32px"}}>
                     <p style={{fontSize:"14px",color:T.coral,margin:"0 0 10px",letterSpacing:"2px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600"}}>{d.name}{mode!=="clips"?` · ${guest?"Guest Episode":"Solo Episode"}`:""}{ ep?` · Ep ${ep}`:""}</p>
                     <h1 style={{fontSize:"52px",fontWeight:"700",color:T.text,margin:"0 0 10px",letterSpacing:"-1px",fontFamily:PF,lineHeight:"1.1"}}>{mode==="editor"?"Paste the transcript":"Add your transcript"}</h1>
-                    <p style={{fontSize:"15px",color:T.textMuted,margin:0,fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.6"}}>{mode==="editor"?"Paste your raw transcript below — include timestamps if available (e.g. from Descript or Rev). The AI will identify the best clip moments and write production-ready notes for your editor.":mode==="clips"?"Paste your transcript below. The AI will extract the best short-form moments and write SEO-optimized copy for each clip across your selected platforms.":"Paste your full episode transcript below and the AI will generate your complete content package — show notes, social captions, newsletter, YouTube description and more."}</p>
+                    <p style={{fontSize:"15px",color:T.textMuted,margin:0,fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.6"}}>{mode==="editor"?"Paste your raw transcript below — include timestamps if available. The AI will coach your editor through this episode at the level set for this show, flag what to cut, and surface the best clip moments.":mode==="clips"?"Paste your transcript below. The AI will extract the best short-form moments and write SEO-optimized copy for each clip across your selected platforms.":"Paste your full episode transcript below and the AI will generate your complete content package — show notes, social captions, newsletter, YouTube description and more."}</p>
                   </div>
                   {err&&<div style={{background:"#D94F4F18",border:"1px solid #D94F4F44",borderRadius:"8px",padding:"12px 16px",color:"#F09090",fontSize:"14px",marginBottom:"16px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{err}</div>}
+                  {mode==="editor"&&(()=>{const editLevels={"1":{name:"Level 1 — Clean & Clear",desc:"Remove long awkward silences unless emotional or intentional. Cut mic bumps, false starts, hard stops, technical interruptions. Leave ums and filler words unless disruptive. Do not over-edit — the episode should sound like a real conversation, just cleaned up."},"2":{name:"Level 2 — Crafted",desc:"Everything in Level 1, plus: surface the strongest hook moment and restructure the opening if needed. Remove repetitive points, rambling tangents, and run-on sections. Tighten pacing. Add lower thirds at key moments. The episode should sound intentional without sounding produced."},"3":{name:"Level 3 — Story-Driven",desc:"Everything in Levels 1 and 2, plus: treat the recording as source material — reconstruct the arc, edit down aggressively, add b-roll and visuals to reinforce meaning. The episode should feel like a documentary, not a recording."}};const lvl=editLevels[d?.editingLevel||"1"];return(<div style={{background:T.coral+"12",border:"1px solid "+T.coral+"40",borderRadius:"12px",padding:"20px 24px",marginBottom:"24px"}}><div style={{fontSize:"11px",fontWeight:"700",color:T.coral,letterSpacing:"2px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",marginBottom:"8px"}}>Editor Companion — Coaching Brief</div><div style={{fontSize:"16px",fontWeight:"700",color:T.text,fontFamily:"'DM Sans', system-ui, sans-serif",marginBottom:"8px"}}>{lvl.name}</div><div style={{fontSize:"13px",color:T.textSecondary,lineHeight:"1.7",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{lvl.desc}</div></div>);})()}
                   {mode==="editor"&&<div style={{marginBottom:"24px"}}>
                     <label style={lbl}>How many clip suggestions?</label>
                     <div style={{display:"flex",flexWrap:"wrap",gap:"8px"}}>
@@ -1391,7 +1416,7 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
                     <div style={{fontSize:"12px",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1px"}}>OR CLICK TO BROWSE · .TXT FILES</div>
                   </div>
                   <div style={{textAlign:"center",fontSize:"12px",color:T.textMuted,marginBottom:"16px",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1px"}}>— OR PASTE BELOW —</div>
-                  <textarea style={{...field,minHeight:"220px",lineHeight:"1.7",resize:"vertical"}} placeholder={mode==="editor"?"Paste your raw transcript here — timestamps from Descript or Rev work best. The AI will scan for the strongest clip moments and write notes your editor can act on immediately…":"Paste your full episode transcript here. The AI will read it in full and generate every piece of content in one go — no extra prompting needed…"} value={tx} onChange={e=>setTx(e.target.value)}/>
+                  <textarea style={{...field,minHeight:"220px",lineHeight:"1.7",resize:"vertical"}} placeholder={mode==="editor"?"Paste your raw transcript here — timestamps from Descript or Rev work best. The AI will review this episode as an editor coach, flag what to cut, and surface the best clip moments for your editing level…":"Paste your full episode transcript here. The AI will read it in full and generate every piece of content in one go — no extra prompting needed…"} value={tx} onChange={e=>setTx(e.target.value)}/>
                   {tx.length>0&&<div style={{fontSize:"15px",color:T.textMuted,marginTop:"6px",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1px"}}>{Math.round(tx.split(/\s+/).length).toLocaleString()} WORDS</div>}
                   <button onClick={gen} disabled={!tx.trim()} style={{...primary(T.red),opacity:tx.trim()?1:.35}}>Generate {MODES.find(m=>m.id===mode)?.label} →</button>
                 </>
@@ -1401,7 +1426,7 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
             {/* GENERATING */}
             {step==="generating"&&<div style={{textAlign:"center",padding:"100px 20px",animation:"fadeUp .4s ease"}}>
               <div style={{width:"40px",height:"40px",border:`2px solid ${T.cardBorder}`,borderTopColor:T.coral,borderRadius:"50%",animation:"spin 1s linear infinite",margin:"0 auto 28px"}}/>
-              <h2 style={{fontSize:"38px",fontWeight:"600",color:T.text,marginBottom:"12px",fontFamily:PF,lineHeight:"1.2"}}>{mode==="editor"?"Preparing your editor notes…":mode==="clips"?"Writing your short-form copy…":"Building your content package…"}</h2>
+              <h2 style={{fontSize:"38px",fontWeight:"600",color:T.text,marginBottom:"12px",fontFamily:PF,lineHeight:"1.2"}}>{mode==="editor"?"Preparing your editor companion brief…":mode==="clips"?"Writing your short-form copy…":"Building your content package…"}</h2>
               <p style={{fontSize:"16px",color:T.textMuted,margin:"0 0 8px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{d?.name} · {MODES.find(m=>m.id===mode)?.label}</p>
               <p style={{fontSize:"13px",color:T.coral,animation:"pulse 2s ease-in-out infinite",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1px"}}>THIS TAKES ABOUT 30 SECONDS</p>
             </div>}
