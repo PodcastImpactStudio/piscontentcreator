@@ -929,6 +929,8 @@ export default function App(){
   const[onboardingStep,setOnboardingStep]=useState(null);
   const[accountType,setAccountType]=useState("agency");
   const fileRef=useRef(null);
+  const[showUserMenu,setShowUserMenu]=useState(false);
+  const userMenuRef=useRef(null);
   const[gDriveStatus,setGDriveStatus]=useState(""); // "" | "uploading" | "ok" | "error" | "disconnected"
   const[betaAcknowledged,setBetaAcknowledged]=useState(()=>!!localStorage.getItem("pis_beta_ack_v1"));
   const[showFirstShowWizard,setShowFirstShowWizard]=useState(false);
@@ -945,6 +947,12 @@ export default function App(){
   const ci={select:0,mode:1,configure:2,"clips-setup":3,input:3,generating:3,result:3,"prep-format":2,"prep-details":3}[step]||0;
 
   useEffect(()=>{loadShows().then(s=>{setShows(s);setLoadingShows(false);});},[]);
+  useEffect(()=>{
+    if(!showUserMenu)return;
+    function handleClick(e){if(userMenuRef.current&&!userMenuRef.current.contains(e.target))setShowUserMenu(false);}
+    document.addEventListener("mousedown",handleClick);
+    return()=>document.removeEventListener("mousedown",handleClick);
+  },[showUserMenu]);
   async function refreshShows(){const s=await loadShows();setShows(s);}
   async function readFile(file){const name=file.name.toLowerCase();if(name.endsWith(".txt")||name.endsWith(".md")){const text=await file.text();setTx(text);setErr("");}else{setErr("Unsupported file type. Use .txt");}}
   function handleDrop(e){e.preventDefault();setDragging(false);const f=e.dataTransfer?.files?.[0];if(f)readFile(f);}
@@ -1320,12 +1328,61 @@ PRE-RECORDING CHECKLIST
         <div style={{display:"flex",gap:"10px",alignItems:"center"}}>
           {step!=="select"&&step!=="generating"&&<button onClick={goBack} style={ghost}>← Back</button>}
           {step!=="select"&&step!=="generating"&&<button onClick={reset} style={{...ghost,opacity:.5,fontSize:"13px",padding:"7px 14px"}}>Start Over</button>}
-          <button onClick={()=>setShowProfile(true)} style={{...ghost,border:"none",opacity:.6,fontSize:"14px",padding:"8px 10px"}} title="My Account">👤</button>
-          {isAdmin&&<button onClick={()=>setShowAdmin(true)} style={{...ghost,border:"none",opacity:.7,fontSize:"16px",padding:"8px 10px"}} title="Admin Settings">⚙️</button>}
-          <div style={{width:"1px",height:"20px",background:T.cardBorder,margin:"0 2px"}}/>
-          <button onClick={handleSignOut} style={{...ghost,border:"none",opacity:.5,fontSize:"13px",padding:"7px 12px",display:"flex",alignItems:"center",gap:"5px"}} title="Sign out">
-            <span>Sign out</span><span style={{fontSize:"15px"}}>→</span>
-          </button>
+
+          {/* Avatar dropdown */}
+          {(()=>{
+            const initial=(userProfile?.name||currentUser?.email||"?").charAt(0).toUpperCase();
+            const displayName=userProfile?.name||(currentUser?.email?.split("@")[0]||"");
+            const email=currentUser?.email||"";
+            return(
+            <div ref={userMenuRef} style={{position:"relative"}}>
+              <button
+                onClick={()=>setShowUserMenu(v=>!v)}
+                style={{width:"38px",height:"38px",borderRadius:"50%",background:T.coral,border:"2px solid "+(showUserMenu?T.text:T.coral+"88"),color:"#fff",fontSize:"15px",fontWeight:"700",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'DM Sans',system-ui,sans-serif",transition:"all .15s",flexShrink:0,letterSpacing:"0",boxShadow:showUserMenu?"0 0 0 3px "+T.coral+"33":"none"}}
+                title="Account"
+              >{initial}</button>
+
+              {showUserMenu&&(
+                <div style={{position:"absolute",top:"calc(100% + 10px)",right:0,width:"220px",background:T.surface,border:"1px solid "+T.cardBorder,borderRadius:"12px",boxShadow:"0 8px 32px rgba(0,0,0,.45)",zIndex:999,overflow:"hidden",animation:"fadeUp .15s ease"}}>
+                  {/* User info header */}
+                  <div style={{padding:"14px 16px",borderBottom:"1px solid "+T.cardBorder}}>
+                    <div style={{display:"flex",alignItems:"center",gap:"10px"}}>
+                      <div style={{width:"34px",height:"34px",borderRadius:"50%",background:T.coral,color:"#fff",fontSize:"14px",fontWeight:"700",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'DM Sans',system-ui,sans-serif",flexShrink:0}}>{initial}</div>
+                      <div style={{overflow:"hidden"}}>
+                        {displayName&&<div style={{fontSize:"13px",fontWeight:"700",color:T.text,fontFamily:"'DM Sans',system-ui,sans-serif",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{displayName}</div>}
+                        <div style={{fontSize:"12px",color:T.textMuted,fontFamily:"'DM Sans',system-ui,sans-serif",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{email}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Menu items */}
+                  <div style={{padding:"6px 0"}}>
+                    {[
+                      {icon:"👤",label:"My Profile",action:()=>{setShowProfile(true);setShowUserMenu(false);}},
+                      ...(isAdmin?[{icon:"⚙️",label:"Admin Settings",action:()=>{setShowAdmin(true);setShowUserMenu(false);}}]:[]),
+                    ].map(item=>(
+                      <button key={item.label} onClick={item.action}
+                        style={{width:"100%",padding:"10px 16px",background:"transparent",border:"none",display:"flex",alignItems:"center",gap:"10px",color:T.text,fontSize:"14px",fontFamily:"'DM Sans',system-ui,sans-serif",cursor:"pointer",textAlign:"left",transition:"background .1s"}}
+                        onMouseEnter={e=>e.currentTarget.style.background=T.card}
+                        onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+                        <span style={{fontSize:"16px",width:"20px",textAlign:"center"}}>{item.icon}</span>
+                        <span>{item.label}</span>
+                      </button>
+                    ))}
+                    <div style={{height:"1px",background:T.cardBorder,margin:"6px 0"}}/>
+                    <button onClick={()=>{handleSignOut();setShowUserMenu(false);}}
+                      style={{width:"100%",padding:"10px 16px",background:"transparent",border:"none",display:"flex",alignItems:"center",gap:"10px",color:"#F09090",fontSize:"14px",fontFamily:"'DM Sans',system-ui,sans-serif",cursor:"pointer",textAlign:"left",transition:"background .1s"}}
+                      onMouseEnter={e=>e.currentTarget.style.background=T.card}
+                      onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+                      <span style={{fontSize:"16px",width:"20px",textAlign:"center"}}>→</span>
+                      <span>Sign Out</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+            );
+          })()}
         </div>
       </div>
 
