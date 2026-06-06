@@ -939,9 +939,9 @@ function HelpWidget({ onWhatsNew, onHelpGuide }) {
     { icon:"📖", label:"Help & Guide", action: () => { onHelpGuide(); setOpen(false); } },
   ];
   return (
-    <div ref={ref} style={{ position:"fixed", bottom:"24px", left:"24px", zIndex:9000 }}>
+    <div ref={ref} style={{ position:"fixed", bottom:"24px", right:"24px", zIndex:9000 }}>
       {open && (
-        <div style={{ position:"absolute", bottom:"52px", left:0, background:T.surface, border:"1px solid "+T.cardBorder, borderRadius:"12px", boxShadow:"0 8px 32px rgba(0,0,0,0.3)", overflow:"hidden", minWidth:"190px", animation:"fadeUp .15s ease" }}>
+        <div style={{ position:"absolute", bottom:"52px", right:0, background:T.surface, border:"1px solid "+T.cardBorder, borderRadius:"12px", boxShadow:"0 8px 32px rgba(0,0,0,0.3)", overflow:"hidden", minWidth:"190px", animation:"fadeUp .15s ease" }}>
           {items.map((item, i) => (
             <button key={i} onClick={item.action}
               style={{ width:"100%", padding:"11px 16px", background:"transparent", border:"none", display:"flex", alignItems:"center", gap:"10px", color:T.text, fontSize:"13px", fontFamily:FF, cursor:"pointer", textAlign:"left", borderBottom: i < items.length - 1 ? "1px solid "+T.cardBorder : "none" }}
@@ -1060,8 +1060,9 @@ function FirstShowWizard({ onOpenAdmin, onSkip }) {
 export default function App(){
   const[shows,setShows]=useState({});
   const[loadingShows,setLoadingShows]=useState(true);
-  const[step,setStep]=useState("select");
+  const[step,setStep]=useState("welcome");
   const[show,setShow]=useState(null);
+  const[showSelectorHighlight,setShowSelectorHighlight]=useState(false);
   const[mode,setMode]=useState(null);
   const[guest,setGuest]=useState(null);
   const[ep,setEp]=useState("");
@@ -1130,7 +1131,7 @@ export default function App(){
 
   const d=show?shows[show]:null;
   const clr=d?.clr||T.coral;
-  const ci={select:0,mode:1,configure:2,"clips-setup":3,input:3,generating:3,result:3,"prep-format":2,"prep-details":3}[step]||0;
+  const ci={welcome:0,configure:1,"clips-setup":2,input:2,generating:2,result:2,"prep-format":1,"prep-details":2}[step]||0;
 
   useEffect(()=>{loadShows().then(s=>{setShows(s);setLoadingShows(false);});},[]);
   useEffect(()=>{
@@ -1410,20 +1411,19 @@ PRE-RECORDING CHECKLIST
     }
   }
 
-  function reset(){setStep("select");setShow(null);setMode(null);setGuest(null);setEp("");setTx("");setRaw("");setSecs([]);setErr("");setEditing(false);setESec(null);setETxt("");setExtraPlatforms([]);setClipCount(3);setClipTexts(Array(10).fill(""));setClipResults([]);setClipPlatforms(["YouTube"]);setSelectedFormat(null);setEpGuest("");setEpGuestUrl("");setEpTopic("");setEpTakeaway("");setEpMoments("");setEpPanelists("");}
+  function reset(){setStep("welcome");setMode(null);setGuest(null);setEp("");setTx("");setRaw("");setSecs([]);setErr("");setEditing(false);setESec(null);setETxt("");setExtraPlatforms([]);setClipCount(3);setClipTexts(Array(10).fill(""));setClipResults([]);setClipPlatforms(["YouTube"]);setSelectedFormat(null);setEpGuest("");setEpGuestUrl("");setEpTopic("");setEpTakeaway("");setEpMoments("");setEpPanelists("");}
 
   function goBack(){
     setErr("");
-    if(step==="mode"){setStep("select");}
-    else if(step==="configure"){setStep("mode");}
+    if(step==="configure"){setStep("welcome");}
     else if(step==="clips-setup"){setStep("configure");}
     else if(step==="input"){
-      if(mode==="editor")setStep("mode");
+      if(mode==="editor")setStep("welcome");
       else if(mode==="clips")setStep("clips-setup");
       else setStep("configure");
     }
     else if(step==="result"){setStep("input");}
-    else if(step==="prep-format"){setStep("mode");}
+    else if(step==="prep-format"){setStep("welcome");}
     else if(step==="prep-details"){setStep("prep-format");}
   }
 
@@ -1497,9 +1497,40 @@ PRE-RECORDING CHECKLIST
     );
   }
 
+  // Sidebar nav click handler
+  function handleSidebarNav(newMode){
+    if(!show){
+      setShowSelectorHighlight(true);
+      setTimeout(()=>setShowSelectorHighlight(false),2000);
+      return;
+    }
+    if(Object.keys(shows).length===0&&isAdmin){setShowAdmin(true);return;}
+    setMode(newMode);
+    setErr("");setRaw("");setSecs([]);
+    if(newMode==="prep")setStep("prep-format");
+    else if(newMode==="editor")setStep("input");
+    else setStep("configure");
+  }
+
+  const sidebarSections=[
+    {label:"CREATE",items:[
+      {id:"full",name:"Content Package",desc:"Full content from one transcript"},
+      {id:"clips",name:"Short-Form Content",desc:"Clips for YouTube, Reels, TikTok"},
+    ]},
+    {label:"EDITORIAL",items:[
+      {id:"editor",name:"Editor Companion",desc:"Hook recs, clip timestamps, editing brief"},
+    ]},
+    {label:"PLANNING",items:[
+      {id:"prep",name:"Episode Prep",desc:"Pre-episode research and outline"},
+    ]},
+  ];
+
+  const displayName=userProfile?.name||(currentUser?.email?.split("@")[0]||"");
+  const userInitial=(userProfile?.name||currentUser?.email||"?").charAt(0).toUpperCase();
+
   return(
-    <div style={{minHeight:"100vh",width:"100%",background:T.bg,color:T.text,display:"flex",flexDirection:"column"}}>
-      <style>{`*{box-sizing:border-box}@keyframes spin{to{transform:rotate(360deg)}}@keyframes pulse{0%,100%{opacity:.3}50%{opacity:1}}@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}textarea::placeholder,input::placeholder{color:${T.textMuted}}button:hover{opacity:.85}::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:${T.cardBorder};border-radius:2px}a{transition:opacity .2s}a:hover{opacity:.7}`}</style>
+    <div style={{minHeight:"100vh",width:"100%",background:T.bg,color:T.text,display:"flex",flexDirection:"row"}}>
+      <style>{`*{box-sizing:border-box}@keyframes spin{to{transform:rotate(360deg)}}@keyframes pulse{0%,100%{opacity:.3}50%{opacity:1}}@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}textarea::placeholder,input::placeholder{color:${T.textMuted}}button:hover{opacity:.85}::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#3A3A3A;border-radius:2px}a{transition:opacity .2s}a:hover{opacity:.7}.sidebar-nav-item:hover{background:#252525}.sidebar-show-select:focus{outline:2px solid #C41230;border-color:#C41230}`}</style>
 
       {showProfile&&currentUser&&<Profile user={currentUser} onClose={()=>setShowProfile(false)} onSignOut={handleSignOut}/>}
       {showAdmin&&<AdminPanel shows={shows} orgId={orgId} accountType={accountType} userEmail={currentUser?.email} onClose={()=>setShowAdmin(false)} onSaved={async()=>{await refreshShows();if(!onboardingComplete)await markOnboardingComplete();}}/>}
@@ -1516,160 +1547,201 @@ PRE-RECORDING CHECKLIST
       {/* HELP & GUIDE */}
       {showHelpGuide&&<HelpGuideModal onClose={()=>setShowHelpGuide(false)}/>}
 
-      {/* HELP WIDGET — fixed bottom left */}
+      {/* HELP WIDGET — fixed bottom right */}
       <HelpWidget onWhatsNew={()=>setShowWhatsNew(true)} onHelpGuide={()=>setShowHelpGuide(true)}/>
 
-      {/* HEADER */}
-      <div style={{padding:"0 40px",background:T.surface,borderBottom:`1px solid ${T.cardBorder}`,display:"flex",justifyContent:"space-between",alignItems:"center",height:"110px",flexShrink:0}}>
-        <div style={{display:"flex",alignItems:"center"}}>
-          <img src="/logo-nav.png" alt="Podcast Impact Content Planner" style={{height:"100px",objectFit:"contain"}}/>
-        </div>
-        <div style={{display:"flex",gap:"10px",alignItems:"center"}}>
-          {step!=="select"&&step!=="generating"&&<button onClick={goBack} style={ghost}>← Back</button>}
-          {step!=="select"&&step!=="generating"&&<button onClick={reset} style={{...ghost,opacity:.5,fontSize:"13px",padding:"7px 14px"}}>Start Over</button>}
+      {/* ── SIDEBAR ── */}
+      <div style={{width:"240px",minWidth:"240px",height:"100vh",background:"#1A1A1A",display:"flex",flexDirection:"column",position:"sticky",top:0,flexShrink:0,borderRight:"1px solid #2A2A2A",overflowY:"auto"}}>
 
-          {/* Avatar dropdown */}
-          {(()=>{
-            const initial=(userProfile?.name||currentUser?.email||"?").charAt(0).toUpperCase();
-            const displayName=userProfile?.name||(currentUser?.email?.split("@")[0]||"");
-            const email=currentUser?.email||"";
-            return(
+        {/* Logo */}
+        <div style={{padding:"20px 20px 12px"}}>
+          <img src="/logo-nav.png" alt="Podcast Impact Content Studio" style={{height:"44px",objectFit:"contain"}}/>
+        </div>
+
+        <div style={{height:"1px",background:"#2A2A2A",margin:"0 16px"}}/>
+
+        {/* Show selector */}
+        <div style={{padding:"16px 16px 8px"}}>
+          <div style={{fontSize:"11px",letterSpacing:"2px",textTransform:"uppercase",color:"#6B6B6B",marginBottom:"8px",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600"}}>SHOW</div>
+          <select
+            className="sidebar-show-select"
+            value={show||""}
+            onChange={e=>{
+              const val=e.target.value;
+              setShow(val||null);
+              if(val&&mode&&step==="welcome"){
+                setErr("");setRaw("");setSecs([]);
+                if(mode==="prep")setStep("prep-format");
+                else if(mode==="editor")setStep("input");
+                else setStep("configure");
+              }
+            }}
+            style={{width:"100%",background:"#252525",border:`1px solid ${showSelectorHighlight?"#C41230":"#3A3A3A"}`,borderRadius:"6px",color:show?"#FFFFFF":"#6B6B6B",fontSize:"13px",padding:"8px 10px",fontFamily:"'DM Sans', system-ui, sans-serif",cursor:"pointer",outline:"none",transition:"border-color .2s",boxShadow:showSelectorHighlight?"0 0 0 2px #C4123040":"none"}}>
+            <option value="">Select a show...</option>
+            {Object.entries(shows).sort(([,a],[,b])=>a.name.localeCompare(b.name)).map(([k,s])=>(
+              <option key={k} value={k}>{s.name}</option>
+            ))}
+          </select>
+          {showSelectorHighlight&&<div style={{fontSize:"11px",color:"#C41230",marginTop:"4px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Select a show first</div>}
+        </div>
+
+        <div style={{height:"1px",background:"#2A2A2A",margin:"8px 16px"}}/>
+
+        {/* Nav sections */}
+        <nav style={{flex:1,padding:"4px 0"}}>
+          {sidebarSections.map(section=>(
+            <div key={section.label} style={{marginBottom:"4px"}}>
+              <div style={{fontSize:"11px",letterSpacing:"2px",textTransform:"uppercase",color:"#6B6B6B",padding:"10px 16px 4px",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600"}}>{section.label}</div>
+              {section.items.map(item=>{
+                const isActive=mode===item.id&&step!=="welcome";
+                return(
+                  <button
+                    key={item.id}
+                    className="sidebar-nav-item"
+                    onClick={()=>handleSidebarNav(item.id)}
+                    style={{width:"100%",padding:"9px 16px",background:isActive?"#252525":"transparent",border:"none",borderLeft:isActive?"3px solid #C41230":"3px solid transparent",color:isActive?"#C41230":"#FFFFFF",fontSize:"14px",fontWeight:isActive?"600":"400",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",transition:"all .1s",display:"block"}}>
+                    {item.name}
+                  </button>
+                );
+              })}
+            </div>
+          ))}
+        </nav>
+
+        <div style={{height:"1px",background:"#2A2A2A",margin:"0 16px"}}/>
+
+        {/* Bottom: settings + user */}
+        <div style={{padding:"8px 0 16px"}}>
+          <button
+            className="sidebar-nav-item"
+            onClick={()=>isAdmin?setShowAdmin(true):setShowProfile(true)}
+            style={{width:"100%",padding:"9px 16px",background:"transparent",border:"none",borderLeft:"3px solid transparent",color:"#FFFFFF",fontSize:"14px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",display:"block"}}>
+            Settings
+          </button>
+          <div style={{padding:"8px 16px 0"}}>
             <div ref={userMenuRef} style={{position:"relative"}}>
               <button
                 onClick={()=>setShowUserMenu(v=>!v)}
-                style={{width:"38px",height:"38px",borderRadius:"50%",background:T.coral,border:"2px solid "+(showUserMenu?T.text:T.coral+"88"),color:"#fff",fontSize:"15px",fontWeight:"700",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'DM Sans',system-ui,sans-serif",transition:"all .15s",flexShrink:0,letterSpacing:"0",boxShadow:showUserMenu?"0 0 0 3px "+T.coral+"33":"none"}}
-                title="Account"
-              >{initial}</button>
-
+                style={{width:"100%",padding:"8px 0",background:"transparent",border:"none",cursor:"pointer",display:"flex",alignItems:"center",gap:"10px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>
+                <div style={{width:"30px",height:"30px",borderRadius:"50%",background:"#C41230",color:"#fff",fontSize:"13px",fontWeight:"700",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{userInitial}</div>
+                <div style={{flex:1,overflow:"hidden",textAlign:"left"}}>
+                  <div style={{fontSize:"13px",color:"#FFFFFF",fontWeight:"500",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{displayName||currentUser?.email}</div>
+                </div>
+                <div style={{fontSize:"14px",color:"#6B6B6B",flexShrink:0}}>→</div>
+              </button>
               {showUserMenu&&(
-                <div style={{position:"absolute",top:"calc(100% + 10px)",right:0,width:"220px",background:T.surface,border:"1px solid "+T.cardBorder,borderRadius:"12px",boxShadow:"0 8px 32px rgba(0,0,0,.45)",zIndex:999,overflow:"hidden",animation:"fadeUp .15s ease"}}>
-                  {/* User info header */}
-                  <div style={{padding:"14px 16px",borderBottom:"1px solid "+T.cardBorder}}>
-                    <div style={{display:"flex",alignItems:"center",gap:"10px"}}>
-                      <div style={{width:"34px",height:"34px",borderRadius:"50%",background:T.coral,color:"#fff",fontSize:"14px",fontWeight:"700",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'DM Sans',system-ui,sans-serif",flexShrink:0}}>{initial}</div>
-                      <div style={{overflow:"hidden"}}>
-                        {displayName&&<div style={{fontSize:"13px",fontWeight:"700",color:T.text,fontFamily:"'DM Sans',system-ui,sans-serif",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{displayName}</div>}
-                        <div style={{fontSize:"12px",color:T.textMuted,fontFamily:"'DM Sans',system-ui,sans-serif",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{email}</div>
-                      </div>
-                    </div>
+                <div style={{position:"absolute",bottom:"calc(100% + 8px)",left:0,width:"200px",background:"#252525",border:"1px solid #3A3A3A",borderRadius:"10px",boxShadow:"0 8px 32px rgba(0,0,0,.6)",zIndex:999,overflow:"hidden",animation:"fadeUp .15s ease"}}>
+                  <div style={{padding:"10px 14px",borderBottom:"1px solid #3A3A3A"}}>
+                    <div style={{fontSize:"12px",color:"#6B6B6B",fontFamily:"'DM Sans', system-ui, sans-serif",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{currentUser?.email}</div>
                   </div>
-
-                  {/* Menu items */}
-                  <div style={{padding:"6px 0"}}>
+                  <div style={{padding:"4px 0"}}>
                     {[
-                      {icon:"👤",label:"My Profile",action:()=>{setShowProfile(true);setShowUserMenu(false);}},
-                      ...(isAdmin?[{icon:"⚙️",label:"Admin Settings",action:()=>{setShowAdmin(true);setShowUserMenu(false);}}]:[]),
+                      {label:"My Profile",action:()=>{setShowProfile(true);setShowUserMenu(false);}},
+                      ...(isAdmin?[{label:"Admin Settings",action:()=>{setShowAdmin(true);setShowUserMenu(false);}}]:[]),
                     ].map(item=>(
                       <button key={item.label} onClick={item.action}
-                        style={{width:"100%",padding:"10px 16px",background:"transparent",border:"none",display:"flex",alignItems:"center",gap:"10px",color:T.text,fontSize:"14px",fontFamily:"'DM Sans',system-ui,sans-serif",cursor:"pointer",textAlign:"left",transition:"background .1s"}}
-                        onMouseEnter={e=>e.currentTarget.style.background=T.card}
+                        style={{width:"100%",padding:"9px 14px",background:"transparent",border:"none",color:"#FFFFFF",fontSize:"13px",fontFamily:"'DM Sans', system-ui, sans-serif",cursor:"pointer",textAlign:"left",transition:"background .1s"}}
+                        onMouseEnter={e=>e.currentTarget.style.background="#3A3A3A"}
                         onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                        <span style={{fontSize:"16px",width:"20px",textAlign:"center"}}>{item.icon}</span>
-                        <span>{item.label}</span>
+                        {item.label}
                       </button>
                     ))}
-                    <div style={{height:"1px",background:T.cardBorder,margin:"6px 0"}}/>
+                    <div style={{height:"1px",background:"#3A3A3A",margin:"4px 0"}}/>
                     <button onClick={()=>{handleSignOut();setShowUserMenu(false);}}
-                      style={{width:"100%",padding:"10px 16px",background:"transparent",border:"none",display:"flex",alignItems:"center",gap:"10px",color:"#F09090",fontSize:"14px",fontFamily:"'DM Sans',system-ui,sans-serif",cursor:"pointer",textAlign:"left",transition:"background .1s"}}
-                      onMouseEnter={e=>e.currentTarget.style.background=T.card}
+                      style={{width:"100%",padding:"9px 14px",background:"transparent",border:"none",color:"#F09090",fontSize:"13px",fontFamily:"'DM Sans', system-ui, sans-serif",cursor:"pointer",textAlign:"left",transition:"background .1s"}}
+                      onMouseEnter={e=>e.currentTarget.style.background="#3A3A3A"}
                       onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                      <span style={{fontSize:"16px",width:"20px",textAlign:"center"}}>→</span>
-                      <span>Sign Out</span>
+                      Sign Out
                     </button>
                   </div>
                 </div>
               )}
             </div>
-            );
-          })()}
+          </div>
         </div>
       </div>
 
-      {/* PROGRESS BAR */}
-      <div style={{height:"2px",background:T.cardBorder,flexShrink:0}}>
-        <div style={{height:"100%",background:T.coral,width:`${[25,50,75,100][ci]}%`,transition:"width .4s ease"}}/>
-      </div>
+      {/* ── MAIN CONTENT AREA ── */}
+      <div style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden",background:T.bg}}>
 
-      {/* CONTENT */}
-      <div style={{flex:1,display:"flex",overflow:"hidden"}}>
+        {/* Top bar — 48px, breadcrumb + back/start over */}
+        <div style={{height:"48px",background:T.surface,borderBottom:`1px solid ${T.cardBorder}`,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 32px",flexShrink:0}}>
+          <div style={{fontSize:"12px",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1px"}}>
+            {step==="welcome"&&<span style={{color:T.textMuted}}>Dashboard</span>}
+            {step==="configure"&&<span>{d?.name&&<span style={{color:T.coral,marginRight:"8px"}}>{d.name}</span>}<span style={{color:T.textMuted}}>Configure</span></span>}
+            {step==="clips-setup"&&<span>{d?.name&&<span style={{color:T.coral,marginRight:"8px"}}>{d.name}</span>}<span style={{color:T.textMuted}}>Clips Setup</span></span>}
+            {step==="input"&&<span>{d?.name&&<span style={{color:T.coral,marginRight:"8px"}}>{d.name}</span>}<span style={{color:T.textMuted}}>Transcript</span></span>}
+            {step==="generating"&&<span style={{color:T.textMuted}}>Generating...</span>}
+            {step==="result"&&<span>{d?.name&&<span style={{color:T.coral,marginRight:"8px"}}>{d.name}</span>}<span style={{color:T.textMuted}}>Results</span></span>}
+            {step==="prep-format"&&<span>{d?.name&&<span style={{color:T.coral,marginRight:"8px"}}>{d.name}</span>}<span style={{color:T.textMuted}}>Episode Format</span></span>}
+            {step==="prep-details"&&<span>{d?.name&&<span style={{color:T.coral,marginRight:"8px"}}>{d.name}</span>}<span style={{color:T.textMuted}}>Episode Details</span></span>}
+          </div>
+          {/* Progress + nav buttons */}
+          <div style={{display:"flex",alignItems:"center",gap:"12px"}}>
+            {step!=="welcome"&&step!=="generating"&&(
+              <>
+                {ci>0&&<div style={{display:"flex",gap:"3px",alignItems:"center"}}>
+                  {[0,1,2].map(i=><div key={i} style={{width:i<ci?"20px":"6px",height:"4px",borderRadius:"2px",background:i<ci?T.coral:T.cardBorder,transition:"all .3s"}}/>)}
+                </div>}
+                <button onClick={goBack} style={ghost}>Back</button>
+                <button onClick={reset} style={{...ghost,opacity:.5,fontSize:"12px",padding:"6px 12px"}}>Start Over</button>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Scrollable content */}
         <div style={{flex:1,overflowY:"auto",padding:"40px 48px"}}>
           <div style={{maxWidth:"900px",margin:"0 auto",width:"100%"}}>
 
-            {/* SELECT SHOW */}
-            {step==="select"&&<div style={{animation:"fadeUp .4s ease"}}>
-              <div style={{marginBottom:"40px"}}>
-                {(orgName||userProfile?.name)&&<p style={{fontSize:"14px",color:T.coral,margin:"0 0 10px",letterSpacing:"2px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600"}}>Welcome back, {orgName||userProfile?.name} 👋</p>}
-                <h1 style={{fontSize:"52px",fontWeight:"700",color:T.text,margin:"0 0 8px",letterSpacing:"-1px",fontFamily:PF,lineHeight:"1.1"}}>Select a show</h1>
-                <p style={{fontSize:"15px",color:T.textMuted,margin:0,fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"2px",textTransform:"uppercase"}}>Choose the podcast you're creating content for</p>
+            {/* WELCOME SCREEN */}
+            {step==="welcome"&&<div style={{animation:"fadeUp .4s ease"}}>
+              <div style={{marginBottom:"48px"}}>
+                <h1 style={{fontSize:"40px",fontWeight:"700",color:T.text,margin:"0 0 8px",letterSpacing:"-0.5px",fontFamily:PF,lineHeight:"1.2"}}>
+                  Welcome back{displayName?`, ${displayName.split(" ")[0]}`:""}.</h1>
+                <p style={{fontSize:"17px",color:T.textMuted,margin:0,fontFamily:"'DM Sans', system-ui, sans-serif"}}>What are you creating today?</p>
               </div>
               {loadingShows?(
                 <div style={{textAlign:"center",padding:"60px",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"2px",fontSize:"12px"}}>LOADING SHOWS...</div>
               ):Object.keys(shows).length===0?(
-                isAdmin ? (
-                  showFirstShowWizard ? (
+                isAdmin?(
+                  showFirstShowWizard?(
                     <FirstShowWizard
-                      onOpenAdmin={(method) => {
-                        setShowFirstShowWizard(false);
-                        setShowAdmin(true);
-                      }}
-                      onSkip={() => { setShowFirstShowWizard(false); setShowAdmin(true); }}
+                      onOpenAdmin={()=>{setShowFirstShowWizard(false);setShowAdmin(true);}}
+                      onSkip={()=>{setShowFirstShowWizard(false);setShowAdmin(true);}}
                     />
-                  ) : (
+                  ):(
                     <div style={{background:T.card,border:`1px solid ${T.cardBorder}`,borderRadius:"16px",padding:"56px 48px",textAlign:"center",animation:"fadeUp .4s ease",maxWidth:"580px",margin:"0 auto"}}>
-                      <div style={{fontSize:"52px",marginBottom:"20px"}}>🎙️</div>
-                      <h2 style={{fontSize:"30px",fontWeight:"700",color:T.text,margin:"0 0 12px",fontFamily:PF}}>Let's set up your first show</h2>
-                      <p style={{fontSize:"15px",color:T.textMuted,margin:"0 0 32px",lineHeight:"1.7",maxWidth:"420px",marginLeft:"auto",marginRight:"auto"}}>
-                        We'll walk you through adding your show's DNA — the voice, audience, and platforms that make your content sound uniquely yours.
-                      </p>
-                      <button onClick={()=>setShowFirstShowWizard(true)} style={{...primary(T.coral),width:"auto",padding:"16px 40px",fontSize:"15px",letterSpacing:"1.5px"}}>
-                        Get Started →
-                      </button>
-                      <div style={{marginTop:"16px"}}>
-                        <button onClick={()=>setShowAdmin(true)} style={{background:"none",border:"none",color:T.textMuted,fontSize:"13px",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",padding:0,textDecoration:"underline"}}>
-                          Skip to admin panel
-                        </button>
-                      </div>
+                      <h2 style={{fontSize:"28px",fontWeight:"700",color:T.text,margin:"0 0 12px",fontFamily:PF}}>Set up your first show</h2>
+                      <p style={{fontSize:"15px",color:T.textMuted,margin:"0 0 32px",lineHeight:"1.7"}}>Add your show's DNA — the voice, audience, and platforms that make your content sound uniquely yours.</p>
+                      <button onClick={()=>setShowFirstShowWizard(true)} style={{...primary(T.coral),width:"auto",padding:"16px 40px",fontSize:"15px",letterSpacing:"1.5px"}}>Get Started</button>
+                      <div style={{marginTop:"16px"}}><button onClick={()=>setShowAdmin(true)} style={{background:"none",border:"none",color:T.textMuted,fontSize:"13px",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",textDecoration:"underline"}}>Skip to admin panel</button></div>
                     </div>
                   )
-                ) : (
+                ):(
                   <div style={{background:T.card,border:`1px solid ${T.cardBorder}`,borderRadius:"12px",padding:"48px",textAlign:"center"}}>
-                    <div style={{fontSize:"48px",marginBottom:"20px"}}>🎙️</div>
                     <p style={{fontSize:"16px",color:T.textMuted}}>Your admin hasn't added any shows yet. Check back soon!</p>
                   </div>
                 )
               ):(
-                <div style={{display:"flex",flexDirection:"column",gap:"8px"}}>
-                  {Object.entries(shows).sort(([,a],[,b])=>a.name.localeCompare(b.name)).map(([k,s])=>(
-                    <div key={k} onClick={()=>{setShow(k);setStep("mode");}} style={{background:show===k?T.coralSoft:T.card,border:show===k?`1px solid ${s.clr||T.coral}`:` 1px solid ${T.cardBorder}`,borderRadius:"10px",padding:"22px 24px",cursor:"pointer",transition:"all .15s",position:"relative"}}>
-                      {show===k&&<div style={{position:"absolute",top:"50%",right:"20px",transform:"translateY(-50%)",width:"8px",height:"8px",borderRadius:"50%",background:T.coral}}/>}
-                      <div style={{fontSize:"22px",color:T.coral,fontWeight:"600",marginBottom:"6px",fontFamily:PF}}>{s.name}</div>
-                      <div style={{fontSize:"16px",color:T.textMuted,fontStyle:"italic",lineHeight:"1.5"}}>{s.tag}</div>
-                      {s.publishDay&&s.publishTime&&s.publishTz&&(()=>{try{const sched=formatPublishSchedule(s,userProfile?.timezone);if(!sched)return null;return(<div style={{fontSize:"14px",color:T.textMuted,marginTop:"8px",display:"flex",alignItems:"center",gap:"6px"}}><span style={{color:T.coral}}>📅</span><span><strong>Publishes</strong> {sched.showTime}{sched.isDifferent?" · "+sched.localTime+" your time":""}</span></div>);}catch{return null;}})()}
+                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill, minmax(200px, 1fr))",gap:"12px"}}>
+                  {[
+                    {id:"full",name:"Content Package",desc:"Show notes, social, email, blog — everything from one transcript"},
+                    {id:"clips",name:"Short-Form Content",desc:"Optimized titles, captions and hashtags for Reels, TikTok and YouTube Shorts"},
+                    {id:"editor",name:"Editor Companion",desc:"Hook recs, clip timestamps and a coaching brief for your editor"},
+                    {id:"prep",name:"Episode Prep",desc:"Pre-episode research, questions, run-of-show and coaching notes"},
+                  ].map(card=>(
+                    <div key={card.id}
+                      onClick={()=>handleSidebarNav(card.id)}
+                      style={{background:T.card,border:`1px solid ${T.cardBorder}`,borderRadius:"12px",padding:"24px 20px",cursor:"pointer",transition:"all .15s"}}
+                      onMouseEnter={e=>{e.currentTarget.style.border=`1px solid ${T.coral}55`;e.currentTarget.style.boxShadow="0 4px 20px rgba(196,18,48,.08)";}}
+                      onMouseLeave={e=>{e.currentTarget.style.border=`1px solid ${T.cardBorder}`;e.currentTarget.style.boxShadow="none";}}>
+                      <div style={{fontSize:"16px",fontWeight:"700",color:T.text,marginBottom:"8px",fontFamily:PF}}>{card.name}</div>
+                      <div style={{fontSize:"13px",color:T.textMuted,lineHeight:"1.6",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{card.desc}</div>
                     </div>
                   ))}
                 </div>
               )}
-            </div>}
-
-            {/* MODE */}
-            {step==="mode"&&d&&<div style={{animation:"fadeUp .4s ease"}}>
-              <div style={{marginBottom:"40px"}}>
-                <p style={{fontSize:"14px",color:T.coral,margin:"0 0 10px",letterSpacing:"2px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600"}}>{d.name}</p>
-                <h1 style={{fontSize:"52px",fontWeight:"700",color:T.text,margin:"0 0 10px",letterSpacing:"-1px",fontFamily:PF,lineHeight:"1.1"}}>What are you creating?</h1>
-                <p style={{fontSize:"15px",color:T.textMuted,margin:0,fontFamily:"'DM Sans', system-ui, sans-serif"}}>Choose a content type below — each one is powered by your show's unique voice and platform settings.</p>
-              </div>
-              <div style={{display:"flex",flexDirection:"column",gap:"10px"}}>
-                {MODES.map(m=>(
-                  <div key={m.id} onClick={()=>{setMode(m.id);setStep(m.id==="editor"?"input":m.id==="prep"?"prep-format":"configure");}} style={{background:mode===m.id?`${T.coral}10`:T.card,border:mode===m.id?`1px solid ${T.coral}`:`1px solid ${T.cardBorder}`,borderRadius:"10px",padding:"22px 24px",cursor:"pointer",transition:"all .15s",display:"flex",alignItems:"center",gap:"20px"}}>
-                    <span style={{fontSize:"26px",flexShrink:0}}>{m.icon}</span>
-                    <div>
-                      <div style={{fontSize:"20px",color:mode===m.id?T.text:T.textSecondary,fontWeight:"600",marginBottom:"5px",fontFamily:PF}}>{m.label}</div>
-                      <div style={{fontSize:"15px",color:T.textMuted,lineHeight:"1.5"}}>{m.desc}</div>
-                    </div>
-                    {mode===m.id&&<div style={{marginLeft:"auto",width:"8px",height:"8px",borderRadius:"50%",background:T.coral,flexShrink:0}}/>}
-                  </div>
-                ))}
-              </div>
             </div>}
 
             {/* CONFIGURE */}
@@ -1927,12 +1999,6 @@ PRE-RECORDING CHECKLIST
 
           </div>
         </div>
-      </div>
-
-      {/* FOOTER */}
-      <div style={{padding:"14px 40px",background:T.surface,borderTop:`1px solid ${T.cardBorder}`,display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0}}>
-        <span style={{fontSize:"13px",color:T.textSecondary,fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1px"}}>© {new Date().getFullYear()} PODCAST IMPACT STUDIO</span>
-        <a href="/privacy.html" target="_blank" rel="noopener" style={{fontSize:"13px",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1px",textDecoration:"underline"}}>PRIVACY POLICY</a>
       </div>
     </div>
   );
