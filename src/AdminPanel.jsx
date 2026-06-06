@@ -1414,10 +1414,6 @@ ${epfPasteText.substring(0, 8000)}`;
           <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
             {/* Left show list */}
             <div style={{ width: "200px", background: T.surface, borderRight: "1px solid " + T.cardBorder, display: "flex", flexDirection: "column", flexShrink: 0 }}>
-              <button onClick={startNew}
-                style={{ margin: "12px", padding: "10px 14px", background: T.coral, border: "none", borderRadius: "6px", color: "#fff", fontSize: "13px", fontWeight: "700", cursor: "pointer", fontFamily: FF, letterSpacing: "0.5px" }}>
-                + Add Show
-              </button>
               <div style={{ flex: 1, overflowY: "auto" }}>
                 {[...Object.entries(shows)].sort(([,a],[,b]) => a.name.localeCompare(b.name)).map(([k, s]) => (
                   <button key={k} onClick={() => selectShow(k)}
@@ -1434,7 +1430,7 @@ ${epfPasteText.substring(0, 8000)}`;
               <div style={{ textAlign: "center", color: T.textMuted }}>
                 <div style={{ fontSize: "40px", marginBottom: "16px", opacity: 0.4 }}>◈</div>
                 <div style={{ fontSize: "15px", ...LS, letterSpacing: "1px", color: T.textSecondary, marginBottom: "6px" }}>Select a show to edit</div>
-                <div style={{ fontSize: "13px", color: T.textMuted, fontFamily: FF }}>or click + Add Show to create a new one</div>
+                <div style={{ fontSize: "13px", color: T.textMuted, fontFamily: FF }}>or use "+ Add Show" in the sidebar to create a new one</div>
               </div>
             </div>
           </div>
@@ -1444,10 +1440,6 @@ ${epfPasteText.substring(0, 8000)}`;
           <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
             {/* Left show list */}
             <div style={{ width: "200px", background: T.surface, borderRight: "1px solid " + T.cardBorder, display: "flex", flexDirection: "column", flexShrink: 0 }}>
-              <button onClick={startNew}
-                style={{ margin: "12px", padding: "10px 14px", background: T.coral, border: "none", borderRadius: "6px", color: "#fff", fontSize: "13px", fontWeight: "700", cursor: "pointer", fontFamily: FF, letterSpacing: "0.5px" }}>
-                + Add Show
-              </button>
               <div style={{ flex: 1, overflowY: "auto" }}>
                 {[...Object.entries(shows)].sort(([,a],[,b]) => a.name.localeCompare(b.name)).map(([k, s]) => (
                   <button key={k} onClick={() => selectShow(k)}
@@ -1531,10 +1523,6 @@ ${epfPasteText.substring(0, 8000)}`;
 
             {/* ── Left show list ── */}
             <div style={{ width: "200px", background: T.surface, borderRight: "1px solid " + T.cardBorder, display: "flex", flexDirection: "column", flexShrink: 0 }}>
-              <button onClick={startNew}
-                style={{ margin: "12px", padding: "10px 14px", background: T.coral, border: "none", borderRadius: "6px", color: "#fff", fontSize: "13px", fontWeight: "700", cursor: "pointer", fontFamily: FF, letterSpacing: "0.5px" }}>
-                + Add Show
-              </button>
               <div style={{ flex: 1, overflowY: "auto" }}>
                 {[...Object.entries(shows)].sort(([,a],[,b]) => a.name.localeCompare(b.name)).map(([k, s]) => (
                   <button key={k} onClick={() => selectShow(k)}
