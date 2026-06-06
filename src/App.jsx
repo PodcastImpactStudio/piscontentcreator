@@ -1414,20 +1414,21 @@ PRE-RECORDING CHECKLIST
     }
   }
 
-  function reset(){setStep("welcome");setMode(null);setGuest(null);setEp("");setTx("");setRaw("");setSecs([]);setErr("");setEditing(false);setESec(null);setETxt("");setExtraPlatforms([]);setClipCount(3);setClipTexts(Array(10).fill(""));setClipResults([]);setClipPlatforms(["YouTube"]);setSelectedFormat(null);setEpGuest("");setEpGuestUrl("");setEpTopic("");setEpTakeaway("");setEpMoments("");setEpPanelists("");}
+  function reset(){setStep("welcome");setMode(null);if(Object.keys(shows).length>1)setShow(null);setGuest(null);setEp("");setTx("");setRaw("");setSecs([]);setErr("");setEditing(false);setESec(null);setETxt("");setExtraPlatforms([]);setClipCount(3);setClipTexts(Array(10).fill(""));setClipResults([]);setClipPlatforms(["YouTube"]);setSelectedFormat(null);setEpGuest("");setEpGuestUrl("");setEpTopic("");setEpTakeaway("");setEpMoments("");setEpPanelists("");}
 
   function goBack(){
     setErr("");
-    if(step==="configure"){setStep("welcome");}
+    if(step==="show-select"){setStep("welcome");setMode(null);}
+    else if(step==="configure"){setStep(Object.keys(shows).length>1?"show-select":"welcome");}
     else if(step==="clips-setup"){setStep("configure");}
     else if(step==="input"){
-      if(mode==="editor")setStep("welcome");
+      if(mode==="editor")setStep(Object.keys(shows).length>1?"show-select":"welcome");
       else if(mode==="clips")setStep("clips-setup");
       else setStep("configure");
     }
     else if(step==="result"){setStep("input");}
-    else if(step==="prep-format"){setStep("welcome");}
-    else if(step==="prep-details"){const hasFmts=d?.episodeFormats?.length>0;setStep(hasFmts?"prep-format":"welcome");}
+    else if(step==="prep-format"){setStep(Object.keys(shows).length>1?"show-select":"welcome");}
+    else if(step==="prep-details"){const hasFmts=d?.episodeFormats?.length>0;setStep(hasFmts?"prep-format":(Object.keys(shows).length>1?"show-select":"welcome"));}
   }
 
   const lbl={fontSize:"15px",letterSpacing:"2px",textTransform:"uppercase",color:T.textMuted,marginBottom:"10px",display:"block",fontFamily:"'DM Sans', system-ui, sans-serif"};
@@ -1500,23 +1501,32 @@ PRE-RECORDING CHECKLIST
     );
   }
 
-  // Sidebar nav click handler
-  function handleSidebarNav(newMode){
-    if(!show){
-      setShowSelectorHighlight(true);
-      setTimeout(()=>setShowSelectorHighlight(false),2000);
-      return;
-    }
-    if(Object.keys(shows).length===0&&isAdmin){setShowAdmin(true);return;}
-    setMode(newMode);
+  // Advance to the first step of a mode for the given show
+  function advanceToMode(newMode, showKey){
+    setMode(newMode); setShow(showKey);
     setErr("");setRaw("");setSecs([]);setSelectedFormat(null);
     if(newMode==="prep"){
-      // Skip format selection if show has no formats configured
-      const hasFmts=shows[show]?.episodeFormats?.length>0;
+      const hasFmts=shows[showKey]?.episodeFormats?.length>0;
       setStep(hasFmts?"prep-format":"prep-details");
-    }
-    else if(newMode==="editor")setStep("input");
+    } else if(newMode==="editor") setStep("input");
     else setStep("configure");
+  }
+
+  // Sidebar nav click handler
+  function handleSidebarNav(newMode){
+    if(Object.keys(shows).length===0&&isAdmin){setShowAdmin(true);return;}
+    const showKeys=Object.keys(shows);
+    if(show){
+      // Already have a show — just switch mode
+      advanceToMode(newMode, show);
+    } else if(showKeys.length===1){
+      // Single show — auto-select and go
+      advanceToMode(newMode, showKeys[0]);
+    } else {
+      // Multiple shows — ask which one
+      setMode(newMode);
+      setStep("show-select");
+    }
   }
 
   const sidebarSections=[
@@ -1565,30 +1575,16 @@ PRE-RECORDING CHECKLIST
           <img src="/logo-nav.png" alt="Podcast Impact Content Studio" style={{height:"120px",objectFit:"contain",width:"100%"}}/>
         </div>
 
-        {/* Show selector — only shown for multi-show accounts */}
-        {(()=>{const showList=Object.entries(shows).sort(([,a],[,b])=>a.name.localeCompare(b.name));
-          if(showList.length===0)return null;
-          if(showList.length===1)return(
-            <div style={{padding:"14px 16px",borderBottom:"1px solid #2E2E2E"}}>
-              <div style={{fontSize:"11px",letterSpacing:"2px",textTransform:"uppercase",color:"#6B6B6B",marginBottom:"4px",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600"}}>SHOW</div>
-              <div style={{fontSize:"13px",color:"#FFFFFF",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600",padding:"2px 0"}}>{showList[0][1].name}</div>
+        {/* Active show indicator — shown once a show is selected */}
+        {show&&shows[show]&&(
+          <div style={{padding:"12px 16px",borderBottom:"1px solid #2E2E2E"}}>
+            <div style={{fontSize:"10px",letterSpacing:"2px",textTransform:"uppercase",color:"#6B6B6B",marginBottom:"4px",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600"}}>SHOW</div>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:"8px"}}>
+              <div style={{fontSize:"13px",color:"#FFFFFF",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{shows[show].name}</div>
+              {Object.keys(shows).length>1&&<button onClick={()=>{setShow(null);setMode(null);setStep("welcome");}} style={{background:"none",border:"none",color:"#6B6B6B",fontSize:"11px",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",flexShrink:0,padding:"2px 0"}} title="Change show">change</button>}
             </div>
-          );
-          return(
-            <div style={{padding:"14px 16px",borderBottom:"1px solid #2E2E2E"}}>
-              <div style={{fontSize:"11px",letterSpacing:"2px",textTransform:"uppercase",color:"#6B6B6B",marginBottom:"6px",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600"}}>SHOW</div>
-              <select
-                className="sidebar-show-select"
-                value={show||""}
-                onChange={e=>{const val=e.target.value;setShow(val||null);if(val&&mode&&step==="welcome"){setErr("");setRaw("");setSecs([]);if(mode==="prep")setStep("prep-format");else if(mode==="editor")setStep("input");else setStep("configure");}}}
-                style={{width:"100%",background:"#2E2E2E",border:`1px solid ${showSelectorHighlight?"#C41230":"#3A3A3A"}`,borderRadius:"6px",color:show?"#FFFFFF":"#6B6B6B",fontSize:"13px",padding:"8px 10px",fontFamily:"'DM Sans', system-ui, sans-serif",cursor:"pointer",outline:"none",transition:"border-color .2s",boxShadow:showSelectorHighlight?"0 0 0 2px #C4123040":"none"}}>
-                <option value="">Select a show...</option>
-                {showList.map(([k,s])=><option key={k} value={k}>{s.name}</option>)}
-              </select>
-              {showSelectorHighlight&&<div style={{fontSize:"11px",color:"#C41230",marginTop:"4px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Select a show first</div>}
-            </div>
-          );
-        })()}
+          </div>
+        )}
 
         {/* Nav sections */}
         <nav style={{flex:1,padding:"4px 0"}}>
@@ -1753,6 +1749,29 @@ PRE-RECORDING CHECKLIST
                   ))}
                 </div>
               )}
+            </div>}
+
+            {/* SHOW SELECT — shown after clicking a card when multiple shows exist */}
+            {step==="show-select"&&<div style={{animation:"fadeUp .35s ease"}}>
+              <div style={{marginBottom:"36px"}}>
+                <div style={{fontSize:"13px",color:T.coral,fontWeight:"700",letterSpacing:"2px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",marginBottom:"10px"}}>{MODES.find(m=>m.id===mode)?.label||mode}</div>
+                <h1 style={{fontSize:"40px",fontWeight:"700",color:T.text,margin:"0 0 8px",letterSpacing:"-0.5px",fontFamily:PF,lineHeight:"1.2"}}>Which show is this for?</h1>
+                <p style={{fontSize:"16px",color:T.textMuted,margin:0,fontFamily:"'DM Sans', system-ui, sans-serif"}}>Select the podcast you're creating content for.</p>
+              </div>
+              <div style={{display:"flex",flexDirection:"column",gap:"8px"}}>
+                {Object.entries(shows).sort(([,a],[,b])=>a.name.localeCompare(b.name)).map(([k,s])=>(
+                  <button key={k} onClick={()=>advanceToMode(mode,k)}
+                    style={{width:"100%",padding:"18px 24px",background:T.card,border:`1px solid ${T.cardBorder}`,borderRadius:"12px",cursor:"pointer",textAlign:"left",transition:"all .15s",display:"flex",alignItems:"center",justifyContent:"space-between",gap:"16px"}}
+                    onMouseEnter={e=>{e.currentTarget.style.border=`2px solid ${T.coral}`;e.currentTarget.style.boxShadow=`0 4px 16px rgba(196,18,48,.1)`;}}
+                    onMouseLeave={e=>{e.currentTarget.style.border=`1px solid ${T.cardBorder}`;e.currentTarget.style.boxShadow="none";}}>
+                    <div>
+                      <div style={{fontSize:"17px",fontWeight:"700",color:T.text,fontFamily:PF,marginBottom:"3px"}}>{s.name}</div>
+                      {s.tag&&<div style={{fontSize:"13px",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",fontStyle:"italic"}}>{s.tag}</div>}
+                    </div>
+                    <div style={{fontSize:"18px",color:T.coral,flexShrink:0}}>→</div>
+                  </button>
+                ))}
+              </div>
             </div>}
 
             {/* CONFIGURE */}
