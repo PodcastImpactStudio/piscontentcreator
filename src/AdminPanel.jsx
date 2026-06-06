@@ -800,7 +800,7 @@ export function AdminGate({ onSuccess, onClose }) {
   );
 }
 
-export function AdminPanel({ shows, orgId, onClose, onSaved, accountType = "agency", userEmail = "" }) {
+export function AdminPanel({ shows, orgId, onClose, onSaved, accountType = "agency", userEmail = "", userName = "", onSignOut }) {
   const [adminView, setAdminView] = useState("shows");
   const [selKey, setSelKey] = useState(null);
   const [form, setForm] = useState(null);
@@ -849,6 +849,11 @@ export function AdminPanel({ shows, orgId, onClose, onSaved, accountType = "agen
     }
     loadOrgData();
   }, [orgId]);
+
+  useEffect(() => {
+    const keys = Object.keys(shows);
+    if (keys.length === 1 && !selKey) selectShow(keys[0]);
+  }, [shows]);
 
   async function saveOrgData() {
     setOrgDataSaved(false);
@@ -1265,45 +1270,106 @@ ${epfPasteText.substring(0, 8000)}`;
     { id: "formats", label: "Episode Formats" },
   ];
 
+  const adminUserName = userName || (userEmail ? userEmail.split("@")[0] : "");
+  const adminUserInitial = (userName || userEmail || "?").charAt(0).toUpperCase();
+  const showKeys = Object.keys(shows);
+
   return (
-    <div style={{ position: "fixed", inset: 0, background: T.bg, zIndex: 1000, display: "flex", flexDirection: "column" }}>
-      <div style={{ background: T.surface, borderBottom: "1px solid " + T.cardBorder, flexShrink: 0 }}>
-        <div style={{ padding: "0 32px", display: "flex", justifyContent: "space-between", alignItems: "center", height: "56px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <div style={{ width: "3px", height: "24px", background: T.coral, borderRadius: "2px" }} />
-            <span style={{ fontSize: "20px", color: T.text, fontFamily: PF, fontWeight: "700" }}>Podcast Impact Studio</span>
-            <span style={{ fontSize: "11px", color: T.textMuted, fontFamily: "'DM Sans', system-ui, sans-serif", background: T.card, padding: "3px 8px", borderRadius: "4px", border: "1px solid " + T.cardBorder }}>Admin</span>
-          </div>
-          <button onClick={onClose} style={{ padding: "8px 16px", background: "transparent", border: "1px solid " + T.cardBorder, borderRadius: "6px", color: T.textSecondary, fontSize: "13px", cursor: "pointer", fontFamily: "'DM Sans', system-ui, sans-serif" }}>✕ Close</button>
+    <div style={{ position: "fixed", inset: 0, zIndex: 1000, display: "flex", flexDirection: "row" }}>
+      <style>{`.sidebar-nav-item:hover{background:#252525}`}</style>
+
+      {/* ── DARK SIDEBAR ── */}
+      <div style={{ width: "240px", minWidth: "240px", height: "100vh", background: "#222222", display: "flex", flexDirection: "column", borderRight: "1px solid #2E2E2E", flexShrink: 0, overflowY: "auto" }}>
+
+        {/* Logo */}
+        <div style={{ padding: "24px 20px 20px", display: "flex", alignItems: "center", justifyContent: "center", borderBottom: "1px solid #2E2E2E" }}>
+          <img src="/logo-nav.png" alt="Podcast Impact Content Studio" style={{ height: "120px", objectFit: "contain", width: "100%" }} />
         </div>
-        <div style={{ display: "flex", padding: "0 32px" }}>
-          {["shows", "settings"].map(v => (
-            <button key={v} onClick={() => setAdminView(v)}
-              style={{ padding: "10px 24px", background: "transparent", border: "none", borderBottom: adminView === v ? "2px solid " + T.coral : "2px solid transparent", color: adminView === v ? T.coral : T.textMuted, fontSize: "13px", cursor: "pointer", fontFamily: "'DM Sans', system-ui, sans-serif", letterSpacing: "2px", textTransform: "uppercase", fontWeight: adminView === v ? "700" : "500", transition: "all .15s" }}>
-              {v === "shows" ? (accountType === "solo" ? "My Shows" : "Show DNA Manager") : "Settings"}
+
+        {/* Show selector */}
+        {showKeys.length > 0 && (
+          <div style={{ padding: "14px 16px", borderBottom: "1px solid #2E2E2E" }}>
+            <div style={{ fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase", color: "#6B6B6B", marginBottom: showKeys.length === 1 ? "4px" : "6px", fontFamily: "'DM Sans', system-ui, sans-serif", fontWeight: "600" }}>SHOW</div>
+            {showKeys.length === 1 ? (
+              <div style={{ fontSize: "13px", color: "#FFFFFF", fontFamily: "'DM Sans', system-ui, sans-serif", fontWeight: "600", padding: "2px 0" }}>{shows[showKeys[0]].name}</div>
+            ) : (
+              <select
+                value={selKey && selKey !== "__new__" ? selKey : ""}
+                onChange={e => { const val = e.target.value; if (val) selectShow(val); }}
+                style={{ width: "100%", background: "#2E2E2E", border: "1px solid #3A3A3A", borderRadius: "6px", color: selKey && selKey !== "__new__" ? "#FFFFFF" : "#6B6B6B", fontSize: "13px", padding: "8px 10px", fontFamily: "'DM Sans', system-ui, sans-serif", cursor: "pointer", outline: "none" }}>
+                <option value="">Select a show...</option>
+                {[...Object.entries(shows)].sort(([,a],[,b]) => a.name.localeCompare(b.name)).map(([k, s]) => (
+                  <option key={k} value={k}>{s.name}</option>
+                ))}
+              </select>
+            )}
+            <button onClick={startNew} style={{ width: "100%", marginTop: "8px", padding: "8px 10px", background: "#C41230", border: "none", borderRadius: "6px", color: "#fff", fontSize: "13px", fontWeight: "700", cursor: "pointer", fontFamily: "'DM Sans', system-ui, sans-serif", letterSpacing: "1px", textTransform: "uppercase" }}>+ Add Show</button>
+          </div>
+        )}
+
+        {/* Nav sections */}
+        <nav style={{ flex: 1, padding: "4px 0" }}>
+          <div style={{ marginBottom: "4px" }}>
+            <div style={{ fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase", color: "#6B6B6B", padding: "10px 16px 4px", fontFamily: "'DM Sans', system-ui, sans-serif", fontWeight: "600" }}>MANAGE</div>
+            <button className="sidebar-nav-item"
+              onClick={() => setAdminView("shows")}
+              style={{ width: "100%", padding: "9px 16px", background: adminView === "shows" ? "#252525" : "transparent", border: "none", borderLeft: adminView === "shows" ? "3px solid #C41230" : "3px solid transparent", color: adminView === "shows" ? "#C41230" : "#FFFFFF", fontSize: "14px", fontWeight: adminView === "shows" ? "600" : "400", cursor: "pointer", textAlign: "left", fontFamily: "'DM Sans', system-ui, sans-serif", transition: "all .1s", display: "block" }}>
+              Show DNA Manager
             </button>
-          ))}
+          </div>
+          <div style={{ marginBottom: "4px" }}>
+            <div style={{ fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase", color: "#6B6B6B", padding: "10px 16px 4px", fontFamily: "'DM Sans', system-ui, sans-serif", fontWeight: "600" }}>CONFIGURE</div>
+            <button className="sidebar-nav-item"
+              onClick={() => setAdminView("settings")}
+              style={{ width: "100%", padding: "9px 16px", background: adminView === "settings" ? "#252525" : "transparent", border: "none", borderLeft: adminView === "settings" ? "3px solid #C41230" : "3px solid transparent", color: adminView === "settings" ? "#C41230" : "#FFFFFF", fontSize: "14px", fontWeight: adminView === "settings" ? "600" : "400", cursor: "pointer", textAlign: "left", fontFamily: "'DM Sans', system-ui, sans-serif", transition: "all .1s", display: "block" }}>
+              Settings
+            </button>
+          </div>
+          <div style={{ marginBottom: "4px" }}>
+            <div style={{ fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase", color: "#6B6B6B", padding: "10px 16px 4px", fontFamily: "'DM Sans', system-ui, sans-serif", fontWeight: "600" }}>INTEGRATIONS</div>
+            <div style={{ padding: "9px 16px", color: "#4A4A4A", fontSize: "14px", fontFamily: "'DM Sans', system-ui, sans-serif" }}>Coming Soon</div>
+          </div>
+        </nav>
+
+        {/* Divider */}
+        <div style={{ height: "1px", background: "#2E2E2E", margin: "0 16px" }} />
+
+        {/* Bottom: user + actions */}
+        <div style={{ padding: "12px 16px 20px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "12px" }}>
+            <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: "#C41230", color: "#fff", fontSize: "14px", fontWeight: "700", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{adminUserInitial}</div>
+            <div style={{ flex: 1, overflow: "hidden" }}>
+              <div style={{ fontSize: "13px", color: "#FFFFFF", fontWeight: "600", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontFamily: "'DM Sans', system-ui, sans-serif" }}>{adminUserName}</div>
+              <div style={{ fontSize: "11px", color: "#6B6B6B", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontFamily: "'DM Sans', system-ui, sans-serif", marginTop: "1px" }}>{userEmail}</div>
+            </div>
+          </div>
+          <button onClick={onClose}
+            style={{ width: "100%", padding: "8px 12px", background: "#2E2E2E", border: "1px solid #3A3A3A", borderRadius: "6px", color: "#FFFFFF", fontSize: "13px", cursor: "pointer", fontFamily: "'DM Sans', system-ui, sans-serif", fontWeight: "500", marginBottom: "6px", textAlign: "center" }}>
+            Back to Studio
+          </button>
+          {onSignOut && (
+            <button onClick={onSignOut}
+              style={{ width: "100%", padding: "8px 12px", background: "transparent", border: "none", borderRadius: "6px", color: "#F09090", fontSize: "13px", cursor: "pointer", fontFamily: "'DM Sans', system-ui, sans-serif", fontWeight: "500", textAlign: "center" }}>
+              Sign Out
+            </button>
+          )}
         </div>
       </div>
 
-      {adminView === "settings" ? (
-        <SettingsView globalSettings={globalSettings} setGlobalSettings={setGlobalSettings} saveGlobalSettings={saveGlobalSettings} globalSettingsSaved={globalSettingsSaved} globalSettingsLoading={globalSettingsLoading} orgId={orgId} accountType={accountType} userEmail={userEmail} orgData={orgData} setOrgData={setOrgData} saveOrgData={saveOrgData} orgDataSaved={orgDataSaved} />
-      ) : (
-      <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
-        <div style={{ width: "220px", background: T.surface, borderRight: "1px solid " + T.cardBorder, display: "flex", flexDirection: "column", flexShrink: 0 }}>
-          <div style={{ padding: "16px", borderBottom: "1px solid " + T.cardBorder }}>
-            <button onClick={startNew} style={{ width: "100%", padding: "10px", background: T.coral, border: "none", borderRadius: "6px", color: "#fff", fontSize: "14px", fontWeight: "700", cursor: "pointer", ...LS, letterSpacing: "1.5px", textTransform: "uppercase" }}>+ Add Show</button>
-          </div>
-          <div style={{ flex: 1, overflowY: "auto", padding: "8px" }}>
-            {Object.entries(shows).map(([k, s]) => (
-              <div key={k} onClick={() => selectShow(k)}
-                style={{ padding: "12px 14px", borderRadius: "6px", cursor: "pointer", background: selKey === k ? (s.clr ? s.clr + "18" : T.coralSoft) : "transparent", border: "1px solid " + (selKey === k ? (s.clr || T.coral) + "44" : "transparent"), marginBottom: "4px", transition: "all .15s" }}>
-                <div style={{ fontSize: "16px", color: selKey === k ? (s.clr || T.coral) : T.coral, fontWeight: "600", fontFamily: PF, marginBottom: "3px" }}>{s.name}</div>
-                <div style={{ fontSize: "13px", color: T.textMuted, fontFamily: FF, fontStyle: "italic" }}>{(s.tag || "").substring(0, 40)}{(s.tag || "").length > 40 ? "..." : ""}</div>
-              </div>
-            ))}
+      {/* ── RIGHT CONTENT AREA ── */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", background: T.bg }}>
+
+        {/* Thin 48px top bar */}
+        <div style={{ height: "48px", background: T.surface, borderBottom: "1px solid " + T.cardBorder, display: "flex", alignItems: "center", padding: "0 28px", flexShrink: 0 }}>
+          <div style={{ fontSize: "12px", color: T.textMuted, fontFamily: "'DM Sans', system-ui, sans-serif", letterSpacing: "1px" }}>
+            {adminView === "settings" ? "Settings" : (selKey && selKey !== "__new__" && shows[selKey]?.name) ? shows[selKey].name : "Show DNA Manager"}
           </div>
         </div>
+
+        {adminView === "settings" ? (
+          <SettingsView globalSettings={globalSettings} setGlobalSettings={setGlobalSettings} saveGlobalSettings={saveGlobalSettings} globalSettingsSaved={globalSettingsSaved} globalSettingsLoading={globalSettingsLoading} orgId={orgId} accountType={accountType} userEmail={userEmail} orgData={orgData} setOrgData={setOrgData} saveOrgData={saveOrgData} orgDataSaved={orgDataSaved} />
+        ) : (
+        <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
 
         {!form ? (
           <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -1709,8 +1775,9 @@ ${epfPasteText.substring(0, 8000)}`;
             </div>
           </div>
         )}
+        </div>
+        )}
       </div>
-      )}
     </div>
   );
 }
