@@ -865,6 +865,7 @@ export function AdminPanel({ shows, orgId, onClose, onSaved, accountType = "agen
   const [epfParsing, setEpfParsing] = useState(false);
   const [epfMsg, setEpfMsg] = useState("");
   const [showPresetsPanel, setShowPresetsPanel] = useState(false);
+  const [showAIPanel, setShowAIPanel] = useState(false);
 
   useEffect(() => {
     async function loadGlobalSettings() {
@@ -1297,14 +1298,14 @@ ${epfPasteText.substring(0, 8000)}`;
 
   const TABS = [
     { id: "basic", label: "Basic Info" },
-    { id: "voice", label: "Voice DNA" },
+    { id: "voice", label: "Voice & Tone" },
     { id: "audience", label: "Audience" },
     { id: "epprep", label: "Episode Prep" },
     { id: "platforms", label: "Platforms" },
-    { id: "snnotes", label: "Show Notes Builder" },
+    { id: "snnotes", label: "Show Notes" },
     { id: "boilerplate", label: "Boilerplate" },
-    { id: "editing", label: "Editor Companion" },
-    { id: "formats", label: "Episode Formats" },
+    { id: "editing", label: "Editor" },
+    { id: "formats", label: "Formats" },
   ];
 
   const adminUserName = userName || (userEmail ? userEmail.split("@")[0] : "");
@@ -1409,285 +1410,347 @@ ${epfPasteText.substring(0, 8000)}`;
         <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
 
         {!form ? (
-          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <div style={{ textAlign: "center", color: T.textMuted }}>
-              <div style={{ fontSize: "48px", marginBottom: "16px" }}>🎙️</div>
-              <div style={{ fontSize: "15px", ...LS, letterSpacing: "2px", textTransform: "uppercase" }}>Select a show or add a new one</div>
+          /* ── EMPTY STATE with show list ──────────────────────────── */
+          <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
+            {/* Left show list */}
+            <div style={{ width: "200px", background: T.surface, borderRight: "1px solid " + T.cardBorder, display: "flex", flexDirection: "column", flexShrink: 0 }}>
+              <button onClick={startNew}
+                style={{ margin: "12px", padding: "10px 14px", background: T.coral, border: "none", borderRadius: "6px", color: "#fff", fontSize: "13px", fontWeight: "700", cursor: "pointer", fontFamily: FF, letterSpacing: "0.5px" }}>
+                + Add Show
+              </button>
+              <div style={{ flex: 1, overflowY: "auto" }}>
+                {[...Object.entries(shows)].sort(([,a],[,b]) => a.name.localeCompare(b.name)).map(([k, s]) => (
+                  <button key={k} onClick={() => selectShow(k)}
+                    style={{ width: "100%", padding: "10px 14px", background: "transparent", border: "none", borderLeft: "3px solid transparent", color: T.text, fontSize: "13px", cursor: "pointer", textAlign: "left", fontFamily: FF, fontWeight: "500", display: "block", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
+                    onMouseEnter={e => { e.currentTarget.style.background = T.coralSoft; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
+                    {s.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {/* Empty main area */}
+            <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <div style={{ textAlign: "center", color: T.textMuted }}>
+                <div style={{ fontSize: "40px", marginBottom: "16px", opacity: 0.4 }}>◈</div>
+                <div style={{ fontSize: "15px", ...LS, letterSpacing: "1px", color: T.textSecondary, marginBottom: "6px" }}>Select a show to edit</div>
+                <div style={{ fontSize: "13px", color: T.textMuted, fontFamily: FF }}>or click + Add Show to create a new one</div>
+              </div>
             </div>
           </div>
 
         ) : selKey === "__new__" && newShowPath === null ? (
           /* ── PATH CHOOSER ─────────────────────────────────────────── */
-          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 60px" }}>
-            <div style={{ maxWidth: "760px", width: "100%" }}>
-              <div style={{ textAlign: "center", marginBottom: "48px" }}>
-                <div style={{ fontSize: "30px", fontWeight: "700", color: T.text, fontFamily: PF, marginBottom: "10px" }}>How would you like to set up your show?</div>
-                <div style={{ fontSize: "16px", color: T.textSecondary, fontFamily: FF, lineHeight: "1.5" }}>
-                  The more we know about your show, the more your content will sound like you.
-                </div>
+          <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
+            {/* Left show list */}
+            <div style={{ width: "200px", background: T.surface, borderRight: "1px solid " + T.cardBorder, display: "flex", flexDirection: "column", flexShrink: 0 }}>
+              <button onClick={startNew}
+                style={{ margin: "12px", padding: "10px 14px", background: T.coral, border: "none", borderRadius: "6px", color: "#fff", fontSize: "13px", fontWeight: "700", cursor: "pointer", fontFamily: FF, letterSpacing: "0.5px" }}>
+                + Add Show
+              </button>
+              <div style={{ flex: 1, overflowY: "auto" }}>
+                {[...Object.entries(shows)].sort(([,a],[,b]) => a.name.localeCompare(b.name)).map(([k, s]) => (
+                  <button key={k} onClick={() => selectShow(k)}
+                    style={{ width: "100%", padding: "10px 14px", background: "transparent", border: "none", borderLeft: "3px solid transparent", color: T.text, fontSize: "13px", cursor: "pointer", textAlign: "left", fontFamily: FF, fontWeight: "500", display: "block", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
+                    onMouseEnter={e => { e.currentTarget.style.background = T.coralSoft; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
+                    {s.name}
+                  </button>
+                ))}
+                <button
+                  style={{ width: "100%", padding: "10px 14px", background: T.coralSoft, border: "none", borderLeft: "3px solid " + T.coral, color: T.coral, fontSize: "13px", cursor: "pointer", textAlign: "left", fontFamily: FF, fontWeight: "700", display: "block" }}>
+                  New Show
+                </button>
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "16px" }}>
-
-                {/* Card 1 — Enter Manually */}
-                <button onClick={() => setNewShowPath("manual")}
-                  style={{ padding: "32px 24px", background: T.card, border: "2px solid " + T.cardBorder, borderRadius: "14px", cursor: "pointer", textAlign: "center", transition: "all .2s", display: "flex", flexDirection: "column", alignItems: "center", gap: "14px" }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = T.coral; e.currentTarget.style.background = T.coralSoft; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = T.cardBorder; e.currentTarget.style.background = T.card; }}>
-                  <div style={{ fontSize: "36px" }}>📝</div>
-                  <div>
-                    <div style={{ fontSize: "16px", fontWeight: "700", color: T.text, fontFamily: FF, marginBottom: "8px" }}>Enter Manually</div>
-                    <div style={{ fontSize: "13px", color: T.textSecondary, fontFamily: FF, lineHeight: "1.6" }}>
-                      Fill in your show's details yourself — name, voice, audience, and more — tab by tab.
-                    </div>
+            </div>
+            {/* Path chooser main area */}
+            <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 60px" }}>
+              <div style={{ maxWidth: "760px", width: "100%" }}>
+                <div style={{ textAlign: "center", marginBottom: "48px" }}>
+                  <div style={{ fontSize: "30px", fontWeight: "700", color: T.text, fontFamily: PF, marginBottom: "10px" }}>How would you like to set up your show?</div>
+                  <div style={{ fontSize: "16px", color: T.textSecondary, fontFamily: FF, lineHeight: "1.5" }}>
+                    The more we know about your show, the more your content will sound like you.
                   </div>
-                  <div style={{ marginTop: "auto", fontSize: "13px", color: T.coral, fontFamily: FF, fontWeight: "600" }}>Start filling in →</div>
-                </button>
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "16px" }}>
 
-                {/* Card 2 — AI from Transcripts */}
-                <button onClick={() => { setNewShowPath("dna"); }}
-                  style={{ padding: "32px 24px", background: T.card, border: "2px solid " + T.coral + "44", borderRadius: "14px", cursor: "pointer", textAlign: "center", transition: "all .2s", display: "flex", flexDirection: "column", alignItems: "center", gap: "14px", position: "relative" }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = T.coral; e.currentTarget.style.background = T.coralSoft; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = T.coral + "44"; e.currentTarget.style.background = T.card; }}>
-                  <div style={{ position: "absolute", top: "-12px", left: "50%", transform: "translateX(-50%)", background: T.coral, color: "#fff", fontSize: "11px", fontWeight: "700", letterSpacing: "1.5px", padding: "4px 12px", borderRadius: "20px", fontFamily: FF, whiteSpace: "nowrap" }}>RECOMMENDED</div>
-                  <div style={{ fontSize: "36px" }}>✨</div>
-                  <div>
-                    <div style={{ fontSize: "16px", fontWeight: "700", color: T.text, fontFamily: FF, marginBottom: "8px" }}>Draft from Episodes</div>
-                    <div style={{ fontSize: "13px", color: T.textSecondary, fontFamily: FF, lineHeight: "1.6" }}>
-                      Upload 3–5 of your best episode transcripts (.txt or .docx) and AI will draft your show's voice, audience, and style automatically.
+                  {/* Card 1 — Enter Manually */}
+                  <button onClick={() => setNewShowPath("manual")}
+                    style={{ padding: "32px 24px", background: T.card, border: "2px solid " + T.cardBorder, borderRadius: "14px", cursor: "pointer", textAlign: "center", transition: "all .2s", display: "flex", flexDirection: "column", alignItems: "center", gap: "14px" }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = T.coral; e.currentTarget.style.background = T.coralSoft; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = T.cardBorder; e.currentTarget.style.background = T.card; }}>
+                    <div style={{ fontSize: "36px" }}>📝</div>
+                    <div>
+                      <div style={{ fontSize: "16px", fontWeight: "700", color: T.text, fontFamily: FF, marginBottom: "8px" }}>Enter Manually</div>
+                      <div style={{ fontSize: "13px", color: T.textSecondary, fontFamily: FF, lineHeight: "1.6" }}>
+                        Fill in your show's details yourself — name, voice, audience, and more — section by section.
+                      </div>
                     </div>
-                  </div>
-                  <div style={{ marginTop: "auto", fontSize: "13px", color: T.coral, fontFamily: FF, fontWeight: "600" }}>Upload transcripts →</div>
-                </button>
+                    <div style={{ marginTop: "auto", fontSize: "13px", color: T.coral, fontFamily: FF, fontWeight: "600" }}>Start filling in →</div>
+                  </button>
 
-                {/* Card 3 — Paste Show DNA */}
-                <button onClick={() => setNewShowPath("dna")}
-                  style={{ padding: "32px 24px", background: T.card, border: "2px solid " + T.cardBorder, borderRadius: "14px", cursor: "pointer", textAlign: "center", transition: "all .2s", display: "flex", flexDirection: "column", alignItems: "center", gap: "14px" }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = T.coral; e.currentTarget.style.background = T.coralSoft; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = T.cardBorder; e.currentTarget.style.background = T.card; }}>
-                  <div style={{ fontSize: "36px" }}>📋</div>
-                  <div>
-                    <div style={{ fontSize: "16px", fontWeight: "700", color: T.text, fontFamily: FF, marginBottom: "8px" }}>Paste Show DNA</div>
-                    <div style={{ fontSize: "13px", color: T.textSecondary, fontFamily: FF, lineHeight: "1.6" }}>
-                      Already have a Show DNA document or detailed show brief? Paste it here and AI will extract all the fields for you.
+                  {/* Card 2 — AI from Transcripts */}
+                  <button onClick={() => { setNewShowPath("dna"); }}
+                    style={{ padding: "32px 24px", background: T.card, border: "2px solid " + T.coral + "44", borderRadius: "14px", cursor: "pointer", textAlign: "center", transition: "all .2s", display: "flex", flexDirection: "column", alignItems: "center", gap: "14px", position: "relative" }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = T.coral; e.currentTarget.style.background = T.coralSoft; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = T.coral + "44"; e.currentTarget.style.background = T.card; }}>
+                    <div style={{ position: "absolute", top: "-12px", left: "50%", transform: "translateX(-50%)", background: T.coral, color: "#fff", fontSize: "11px", fontWeight: "700", letterSpacing: "1.5px", padding: "4px 12px", borderRadius: "20px", fontFamily: FF, whiteSpace: "nowrap" }}>RECOMMENDED</div>
+                    <div style={{ fontSize: "36px" }}>✨</div>
+                    <div>
+                      <div style={{ fontSize: "16px", fontWeight: "700", color: T.text, fontFamily: FF, marginBottom: "8px" }}>Draft from Episodes</div>
+                      <div style={{ fontSize: "13px", color: T.textSecondary, fontFamily: FF, lineHeight: "1.6" }}>
+                        Upload 3–5 of your best episode transcripts (.txt or .docx) and AI will draft your show's voice, audience, and style automatically.
+                      </div>
                     </div>
-                  </div>
-                  <div style={{ marginTop: "auto", fontSize: "13px", color: T.coral, fontFamily: FF, fontWeight: "600" }}>Paste & parse →</div>
-                </button>
+                    <div style={{ marginTop: "auto", fontSize: "13px", color: T.coral, fontFamily: FF, fontWeight: "600" }}>Upload transcripts →</div>
+                  </button>
 
+                  {/* Card 3 — Paste Show DNA */}
+                  <button onClick={() => setNewShowPath("dna")}
+                    style={{ padding: "32px 24px", background: T.card, border: "2px solid " + T.cardBorder, borderRadius: "14px", cursor: "pointer", textAlign: "center", transition: "all .2s", display: "flex", flexDirection: "column", alignItems: "center", gap: "14px" }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = T.coral; e.currentTarget.style.background = T.coralSoft; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = T.cardBorder; e.currentTarget.style.background = T.card; }}>
+                    <div style={{ fontSize: "36px" }}>📋</div>
+                    <div>
+                      <div style={{ fontSize: "16px", fontWeight: "700", color: T.text, fontFamily: FF, marginBottom: "8px" }}>Paste Show DNA</div>
+                      <div style={{ fontSize: "13px", color: T.textSecondary, fontFamily: FF, lineHeight: "1.6" }}>
+                        Already have a Show DNA document or detailed show brief? Paste it here and AI will extract all the fields for you.
+                      </div>
+                    </div>
+                    <div style={{ marginTop: "auto", fontSize: "13px", color: T.coral, fontFamily: FF, fontWeight: "600" }}>Paste & parse →</div>
+                  </button>
+
+                </div>
               </div>
             </div>
           </div>
 
         ) : (
+          /* ── MAIN SHOW EDITOR ────────────────────────────────────── */
           <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
-            {/* Left paste panel — DNA or Transcript, auto-detected */}
-            {(newShowPath === "dna" || selKey !== "__new__") && (() => {
-              const detectedType = detectPasteType(rawDna);
-              const typeLabel = detectedType === "dna" ? "✓ Detected: Show DNA" : detectedType === "transcript" ? "✓ Detected: Transcript" : null;
-              const btnLabel = parsing ? "Analyzing…" : detectedType === "transcript" ? "✨ Analyze Transcript →" : "Parse with AI →";
-              return (
-              <div style={{ width: "380px", borderRight: "1px solid " + T.cardBorder, display: "flex", flexDirection: "column", flexShrink: 0 }}>
-                <div style={{ padding: "20px 24px", borderBottom: "1px solid " + T.cardBorder }}>
-                  <div style={{ fontSize: "13px", letterSpacing: "2px", textTransform: "uppercase", color: T.textMuted, marginBottom: "8px", ...LS }}>Paste Show DNA or Transcript</div>
-                  <div style={{ fontSize: "14px", color: T.textSecondary, ...GA, lineHeight: "1.5" }}>Paste a Show DNA doc or an episode transcript. Claude will detect the content type and fill in your show's fields automatically.</div>
-                </div>
-                <div style={{ flex: 1, padding: "16px 24px", display: "flex", flexDirection: "column", gap: "10px", overflow: "hidden" }}>
-                  <div style={{ position: "relative", flex: 1, display: "flex", flexDirection: "column" }}>
-                    <textarea style={{ flex: 1, background: T.surface, border: "1px solid " + (typeLabel ? (detectedType === "transcript" ? T.coral + "88" : "#52B78888") : T.cardBorder), borderRadius: "6px", padding: "14px", color: T.text, fontSize: "14px", outline: "none", resize: "none", ...GA, lineHeight: "1.6", transition: "border-color .2s" }} placeholder={"Paste your Show DNA or episode transcript here…\n\nOr click 'Upload .txt / .docx' below to load a file."} value={rawDna} onChange={e => setRawDna(e.target.value)} spellCheck={false} />
-                    {typeLabel && (
-                      <div style={{ position: "absolute", bottom: "10px", right: "10px", fontSize: "11px", fontWeight: "700", letterSpacing: "1px", padding: "3px 8px", borderRadius: "20px", background: detectedType === "transcript" ? T.coral + "22" : "#52B78822", color: detectedType === "transcript" ? T.coral : "#52B788", fontFamily: FF, pointerEvents: "none" }}>
-                        {typeLabel}
-                      </div>
-                    )}
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <div style={{ flex: 1, height: "1px", background: T.cardBorder }} />
-                    <span style={{ fontSize: "12px", color: T.textMuted, fontFamily: FF }}>or</span>
-                    <div style={{ flex: 1, height: "1px", background: T.cardBorder }} />
-                  </div>
-                  <label style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", padding: "9px", border: "1px dashed " + T.cardBorder, borderRadius: "6px", cursor: "pointer", fontSize: "13px", color: T.textSecondary, fontFamily: FF, transition: "all .15s" }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = T.coral; e.currentTarget.style.color = T.coral; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = T.cardBorder; e.currentTarget.style.color = T.textSecondary; }}>
-                    📄 Upload .txt or .docx
-                    <input type="file" accept=".txt,.md,.doc,.docx" style={{ display: "none" }} onChange={e => {
-                      const f = e.target.files?.[0]; if (!f) return;
-                      if (f.name.match(/\.docx?$/i)) {
-                        const reader = new FileReader();
-                        reader.onload = async ev => { try { const r = await mammoth.extractRawText({ arrayBuffer: ev.target.result }); setRawDna(r.value); } catch(err) { setMsg("Error reading file: " + err.message); } };
-                        reader.readAsArrayBuffer(f);
-                      } else {
-                        const reader = new FileReader();
-                        reader.onload = ev => setRawDna(ev.target.result);
-                        reader.readAsText(f);
-                      }
-                      e.target.value = "";
-                    }} />
-                  </label>
-                  <button onClick={parseWithAI} disabled={parsing || !rawDna.trim()}
-                    style={{ padding: "13px", background: rawDna.trim() ? T.coral : T.cardBorder, border: "none", borderRadius: "6px", color: rawDna.trim() ? "#fff" : T.textMuted, fontSize: "14px", fontWeight: "700", cursor: rawDna.trim() ? "pointer" : "not-allowed", ...LS, letterSpacing: "2px", textTransform: "uppercase" }}>
-                    {btnLabel}
-                  </button>
-                  {msg && (
-                    <div>
-                      <div style={{ fontSize: "13px", color: msg.startsWith("✓") || msg.startsWith("Saved") ? "#52B788" : "#F09090", ...LS }}>{msg}</div>
-                      {msg.startsWith("✓") && (
-                        <div style={{ marginTop: "8px", display: "flex", flexWrap: "wrap", gap: "6px" }}>
-                          {["basic","voice","audience"].map(t => (
-                            <button key={t} onClick={() => setTab(t)} style={{ padding: "5px 10px", background: T.surface, border: "1px solid " + T.cardBorder, borderRadius: "5px", color: T.coral, fontSize: "11px", cursor: "pointer", fontFamily: FF, fontWeight: "700", letterSpacing: "1px", textTransform: "uppercase" }}>
-                              {t === "basic" ? "Basic Info" : t === "voice" ? "Voice DNA" : "Audience"} →
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-              );
-            })()}
 
-            <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-              {addingNew && selKey === "__new__" && (
-                <div style={{ padding: "12px 24px", background: T.coralSoft, borderBottom: "1px solid " + T.coral + "33" }}>
-                  <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-                    <label style={{ ...lbl(), margin: 0, whiteSpace: "nowrap" }}>Show ID:</label>
-                    <input style={{ ...fld(), padding: "8px 12px", fontSize: "14px", flex: 1 }} placeholder="e.g. my-podcast" value={newId} onChange={e => setNewId(e.target.value)} />
-                  </div>
-                </div>
-              )}
-
-              {selKey === "__new__" && (
-                <div style={{ padding: "14px 24px", background: "#FF313110", borderBottom: "1px solid " + T.coral + "33", display: "flex", gap: "12px", alignItems: "flex-start" }}>
-                  <span style={{ fontSize: "20px", flexShrink: 0 }}>💡</span>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: "13px", fontWeight: "700", color: T.coral, marginBottom: "3px", letterSpacing: "1px", textTransform: "uppercase", fontFamily: "'DM Sans', system-ui, sans-serif" }}>For best results, fill in every tab</div>
-                    <div style={{ fontSize: "13px", color: T.textSecondary, lineHeight: "1.5", fontFamily: "'DM Sans', system-ui, sans-serif" }}>
-                      The more detail you provide — voice DNA, audience, platforms, boilerplate — the more tailored and on-brand your generated content will be. Start with <strong style={{ color: T.text }}>Basic Info</strong>, then work through each tab. You can always come back and update.
-                    </div>
-                  </div>
-                  <button onClick={() => setNewShowPath(null)} style={{ flexShrink: 0, background: "transparent", border: "1px solid " + T.cardBorder, borderRadius: "6px", color: T.textMuted, fontSize: "12px", cursor: "pointer", padding: "5px 10px", fontFamily: FF, whiteSpace: "nowrap" }}>← Change path</button>
-                </div>
-              )}
-
-              <div style={{ display: "flex", borderBottom: "1px solid " + T.cardBorder, flexShrink: 0, overflowX: "auto" }}>
-                {TABS.map(t => (
-                  <button key={t.id} onClick={() => setTab(t.id)}
-                    style={{ padding: "12px 18px", background: tab === t.id ? T.bg : "transparent", borderBottom: tab === t.id ? "2px solid " + T.coral : "2px solid transparent", border: "none", color: tab === t.id ? T.coral : T.text, fontSize: "13px", cursor: "pointer", ...LS, letterSpacing: "1.5px", textTransform: "uppercase", whiteSpace: "nowrap", fontWeight: tab === t.id ? "700" : "500" }}>
-                    {t.label}
+            {/* ── Left show list ── */}
+            <div style={{ width: "200px", background: T.surface, borderRight: "1px solid " + T.cardBorder, display: "flex", flexDirection: "column", flexShrink: 0 }}>
+              <button onClick={startNew}
+                style={{ margin: "12px", padding: "10px 14px", background: T.coral, border: "none", borderRadius: "6px", color: "#fff", fontSize: "13px", fontWeight: "700", cursor: "pointer", fontFamily: FF, letterSpacing: "0.5px" }}>
+                + Add Show
+              </button>
+              <div style={{ flex: 1, overflowY: "auto" }}>
+                {[...Object.entries(shows)].sort(([,a],[,b]) => a.name.localeCompare(b.name)).map(([k, s]) => (
+                  <button key={k} onClick={() => selectShow(k)}
+                    style={{ width: "100%", padding: "10px 14px", background: selKey === k ? T.coralSoft : "transparent", border: "none", borderLeft: "3px solid " + (selKey === k ? T.coral : "transparent"), color: selKey === k ? T.coral : T.text, fontSize: "13px", cursor: "pointer", textAlign: "left", fontFamily: FF, fontWeight: selKey === k ? "700" : "500", display: "block", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", transition: "all .1s" }}
+                    onMouseEnter={e => { if (selKey !== k) { e.currentTarget.style.background = T.coralSoft + "88"; } }}
+                    onMouseLeave={e => { if (selKey !== k) { e.currentTarget.style.background = "transparent"; } }}>
+                    {s.name}
                   </button>
                 ))}
+                {selKey === "__new__" && (
+                  <button
+                    style={{ width: "100%", padding: "10px 14px", background: T.coralSoft, border: "none", borderLeft: "3px solid " + T.coral, color: T.coral, fontSize: "13px", cursor: "pointer", textAlign: "left", fontFamily: FF, fontWeight: "700", display: "block" }}>
+                    New Show
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* ── Right: top bar + two-col layout ── */}
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+
+              {/* Top action bar */}
+              <div style={{ height: "56px", background: T.surface, borderBottom: "1px solid " + T.cardBorder, display: "flex", alignItems: "center", padding: "0 24px", gap: "16px", flexShrink: 0 }}>
+                {/* Breadcrumb */}
+                <div style={{ flex: 1, display: "flex", alignItems: "center", gap: "8px", overflow: "hidden" }}>
+                  <span style={{ fontSize: "14px", fontWeight: "600", color: T.text, fontFamily: FF, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                    {selKey === "__new__" ? "New Show" : (form?.name || "Untitled Show")}
+                  </span>
+                  <span style={{ color: T.textMuted, fontSize: "14px" }}>›</span>
+                  <span style={{ fontSize: "13px", color: T.textMuted, fontFamily: FF, whiteSpace: "nowrap" }}>
+                    {TABS.find(t => t.id === tab)?.label || "Basic Info"}
+                  </span>
+                </div>
+                {/* Action buttons */}
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", flexShrink: 0 }}>
+                  {selKey !== "__new__" && (
+                    <button
+                      onClick={() => { if (window.confirm("Delete this show? This cannot be undone.")) { /* delete handler — existing show */ } }}
+                      style={{ background: "none", border: "none", color: "#D94F4F", fontSize: "12px", cursor: "pointer", fontFamily: FF, padding: "4px 8px", opacity: 0.7 }}
+                      onMouseEnter={e => e.currentTarget.style.opacity = "1"}
+                      onMouseLeave={e => e.currentTarget.style.opacity = "0.7"}>
+                      Delete show
+                    </button>
+                  )}
+                  <button onClick={() => setShowAIPanel(v => !v)}
+                    style={{ padding: "8px 16px", background: showAIPanel ? T.coral : "transparent", border: "1px solid " + T.coral, borderRadius: "6px", color: showAIPanel ? "#fff" : T.coral, fontSize: "13px", fontWeight: "600", cursor: "pointer", fontFamily: FF, transition: "all .15s", whiteSpace: "nowrap" }}>
+                    AI Fill
+                  </button>
+                  <button onClick={handleSave} disabled={saving}
+                    style={{ padding: "8px 20px", background: T.coral, border: "none", borderRadius: "6px", color: "#fff", fontSize: "13px", fontWeight: "700", cursor: saving ? "not-allowed" : "pointer", fontFamily: FF, letterSpacing: "0.5px", opacity: saving ? 0.6 : 1, whiteSpace: "nowrap" }}>
+                    {saving ? "Saving..." : "Save Show →"}
+                  </button>
+                </div>
               </div>
 
-              <div style={{ flex: 1, overflowY: "auto", padding: "24px" }}>
+              {/* New show banner */}
+              {selKey === "__new__" && (
+                <div style={{ padding: "10px 24px", background: "#FF313110", borderBottom: "1px solid " + T.coral + "33", display: "flex", gap: "12px", alignItems: "center" }}>
+                  <div style={{ flex: 1, display: "flex", gap: "10px", alignItems: "center" }}>
+                    <label style={{ ...lbl(), margin: 0, whiteSpace: "nowrap" }}>Show ID:</label>
+                    <input style={{ ...fld(), padding: "6px 12px", fontSize: "13px", maxWidth: "220px" }} placeholder="e.g. my-podcast" value={newId} onChange={e => setNewId(e.target.value)} />
+                    <span style={{ fontSize: "13px", color: T.textSecondary, fontFamily: FF, lineHeight: "1.4" }}>Fill every section for best results — especially Voice, Audience, and Platforms.</span>
+                  </div>
+                  <button onClick={() => setNewShowPath(null)} style={{ flexShrink: 0, background: "transparent", border: "1px solid " + T.cardBorder, borderRadius: "6px", color: T.textMuted, fontSize: "12px", cursor: "pointer", padding: "5px 10px", fontFamily: FF, whiteSpace: "nowrap" }}>Change path</button>
+                </div>
+              )}
+
+              {/* Status message bar */}
+              {msg && (
+                <div style={{ padding: "8px 24px", background: msg.startsWith("Saved") || msg.startsWith("✓") ? "#52B78812" : "#F0909012", borderBottom: "1px solid " + (msg.startsWith("Saved") || msg.startsWith("✓") ? "#52B78840" : "#F0909040") }}>
+                  <span style={{ fontSize: "13px", color: msg.startsWith("Saved") || msg.startsWith("✓") ? "#52B788" : "#F09090", fontFamily: FF }}>{msg}</span>
+                </div>
+              )}
+
+              {/* Two-col: section nav + content */}
+              <div style={{ flex: 1, display: "flex", overflow: "hidden", position: "relative" }}>
+
+                {/* Vertical section nav */}
+                <div style={{ width: "180px", background: T.surface, borderRight: "1px solid " + T.cardBorder, flexShrink: 0, overflowY: "auto", padding: "16px 8px" }}>
+                  {TABS.map(t => (
+                    <button key={t.id} onClick={() => setTab(t.id)}
+                      style={{ width: "100%", padding: "9px 14px", background: tab === t.id ? T.coralSoft : "transparent", border: "none", borderLeft: "3px solid " + (tab === t.id ? T.coral : "transparent"), color: tab === t.id ? T.coral : T.textSecondary, fontSize: "14px", fontWeight: tab === t.id ? "700" : "400", cursor: "pointer", textAlign: "left", fontFamily: FF, display: "block", marginBottom: "2px", borderRadius: "0 6px 6px 0", transition: "all .1s" }}
+                      onMouseEnter={e => { if (tab !== t.id) { e.currentTarget.style.background = T.coralSoft + "55"; e.currentTarget.style.color = T.text; } }}
+                      onMouseLeave={e => { if (tab !== t.id) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = T.textSecondary; } }}>
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Main content area */}
+                <div style={{ flex: 1, overflowY: "auto", padding: "40px 48px", position: "relative" }}>
+                  <div style={{ maxWidth: "800px" }}>
 
                 {tab === "basic" && (
-                  <Section title="Basic Information">
-                    <Fld label="Show Name"><input style={fld()} value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} placeholder="The Podcast Name" /></Fld>
-                    <Fld label="Tagline / Motto"><input style={fld()} value={form.tag} onChange={e => setForm(p => ({ ...p, tag: e.target.value }))} placeholder="Your show's one-liner" /></Fld>
-                    <Fld label="Host(s)"><input style={fld()} value={form.hosts} onChange={e => setForm(p => ({ ...p, hosts: e.target.value }))} placeholder="Jane Smith, John Doe" /></Fld>
-
-                    <Fld label="Default Hashtags"><textarea style={{ ...fld(), minHeight: "70px", resize: "vertical" }} value={form.tags} onChange={e => setForm(p => ({ ...p, tags: e.target.value }))} placeholder="#ShowName #Topic1 #Topic2" /></Fld>
-                    <div style={{ marginBottom: "14px" }}>
-                      <label style={lbl()}>Publish Schedule</label>
-                      <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-                        <select style={{ ...fld(), flex: 1, minWidth: "140px", cursor: "pointer" }} value={form.publishDay || ""} onChange={e => setForm(p => ({ ...p, publishDay: e.target.value }))}>
-                          <option value="">Day of week...</option>
-                          {["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"].map(d => <option key={d} value={d}>{d}</option>)}
-                        </select>
-                        <input type="time" style={{ ...fld(), flex: 1, minWidth: "120px" }} value={form.publishTime || ""} onChange={e => setForm(p => ({ ...p, publishTime: e.target.value }))} />
-                        <select style={{ ...fld(), flex: 2, minWidth: "180px", cursor: "pointer" }} value={form.publishTz || ""} onChange={e => setForm(p => ({ ...p, publishTz: e.target.value }))}>
-                          <option value="">Timezone...</option>
-                          {[["America/New_York","Eastern Time (ET)"],["America/Chicago","Central Time (CT)"],["America/Denver","Mountain Time (MT)"],["America/Los_Angeles","Pacific Time (PT)"],["America/Vancouver","Vancouver (PT)"],["America/Toronto","Toronto (ET)"],["Europe/London","London (GMT/BST)"],["Asia/Manila","Manila (PHT)"],["Asia/Tokyo","Tokyo (JST)"],["Australia/Sydney","Sydney (AEST)"]].map(([v,l]) => <option key={v} value={v}>{l}</option>)}
-                        </select>
-                      </div>
-                      <div style={{ fontSize: "12px", color: T.textMuted, marginTop: "6px", fontStyle: "italic" }}>Editors in other timezones will see this converted to their local time.</div>
+                  <div>
+                    <div style={{ marginBottom: "32px" }}>
+                      <div style={{ fontSize: "24px", fontWeight: "700", color: T.text, fontFamily: PF, marginBottom: "6px" }}>Basic Info</div>
+                      <div style={{ fontSize: "14px", color: T.textMuted, fontFamily: FF }}>Core show details used across all generated content.</div>
                     </div>
-                  </Section>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+                      <div><label style={lbl()}>Show Name</label><input style={fld()} value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} placeholder="The Podcast Name" /></div>
+                      <div><label style={lbl()}>Tagline / Motto</label><input style={fld()} value={form.tag} onChange={e => setForm(p => ({ ...p, tag: e.target.value }))} placeholder="Your show's one-liner" /></div>
+                      <div><label style={lbl()}>Host(s)</label><input style={fld()} value={form.hosts} onChange={e => setForm(p => ({ ...p, hosts: e.target.value }))} placeholder="Jane Smith, John Doe" /></div>
+                      <div><label style={lbl()}>Default Hashtags</label><textarea style={{ ...fld(), minHeight: "70px", resize: "vertical" }} value={form.tags} onChange={e => setForm(p => ({ ...p, tags: e.target.value }))} placeholder="#ShowName #Topic1 #Topic2" /></div>
+                      <div>
+                        <label style={lbl()}>Publish Schedule</label>
+                        <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                          <select style={{ ...fld(), flex: 1, minWidth: "140px", cursor: "pointer" }} value={form.publishDay || ""} onChange={e => setForm(p => ({ ...p, publishDay: e.target.value }))}>
+                            <option value="">Day of week...</option>
+                            {["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"].map(d => <option key={d} value={d}>{d}</option>)}
+                          </select>
+                          <input type="time" style={{ ...fld(), flex: 1, minWidth: "120px" }} value={form.publishTime || ""} onChange={e => setForm(p => ({ ...p, publishTime: e.target.value }))} />
+                          <select style={{ ...fld(), flex: 2, minWidth: "180px", cursor: "pointer" }} value={form.publishTz || ""} onChange={e => setForm(p => ({ ...p, publishTz: e.target.value }))}>
+                            <option value="">Timezone...</option>
+                            {[["America/New_York","Eastern Time (ET)"],["America/Chicago","Central Time (CT)"],["America/Denver","Mountain Time (MT)"],["America/Los_Angeles","Pacific Time (PT)"],["America/Vancouver","Vancouver (PT)"],["America/Toronto","Toronto (ET)"],["Europe/London","London (GMT/BST)"],["Asia/Manila","Manila (PHT)"],["Asia/Tokyo","Tokyo (JST)"],["Australia/Sydney","Sydney (AEST)"]].map(([v,l]) => <option key={v} value={v}>{l}</option>)}
+                          </select>
+                        </div>
+                        <div style={{ fontSize: "12px", color: T.textMuted, marginTop: "6px", fontStyle: "italic" }}>Editors in other timezones will see this converted to their local time.</div>
+                      </div>
+                    </div>
+                  </div>
                 )}
 
                 {tab === "voice" && (
-                  <Section title="Voice DNA">
-                    <Fld label="Voice Traits"><textarea style={{ ...fld(), minHeight: "70px", resize: "vertical" }} value={form.voice.traits} onChange={e => setForm(p => ({ ...p, voice: { ...p.voice, traits: e.target.value } }))} placeholder="Warm. Curious. Grounded. Direct." /></Fld>
-                    <Fld label="Energy Level"><input style={fld()} value={form.voice.energy} onChange={e => setForm(p => ({ ...p, voice: { ...p.voice, energy: e.target.value } }))} placeholder="e.g. 6/10" /></Fld>
-                    <Fld label="Host Archetype"><input style={fld()} value={form.voice.arch} onChange={e => setForm(p => ({ ...p, voice: { ...p.voice, arch: e.target.value } }))} placeholder="e.g. Guide + Mirror" /></Fld>
-                    <Fld label="Emotional Arc"><textarea style={{ ...fld(), minHeight: "70px", resize: "vertical" }} value={form.voice.arc} onChange={e => setForm(p => ({ ...p, voice: { ...p.voice, arc: e.target.value } }))} placeholder="Curious → Seen → Understood → Inspired" /></Fld>
-                    <Fld label="Signature Phrases (one per line)"><textarea style={{ ...fld(), minHeight: "90px", resize: "vertical" }} value={form.voice.phrases} onChange={e => setForm(p => ({ ...p, voice: { ...p.voice, phrases: e.target.value } }))} placeholder="Your show's tagline phrases" /></Fld>
-                    <Fld label="Language to USE"><textarea style={{ ...fld(), minHeight: "80px", resize: "vertical" }} value={form.voice.use} onChange={e => setForm(p => ({ ...p, voice: { ...p.voice, use: e.target.value } }))} placeholder="Words and concepts that fit the show" /></Fld>
-                    <Fld label="Language to AVOID"><textarea style={{ ...fld(), minHeight: "80px", resize: "vertical" }} value={form.voice.avoid} onChange={e => setForm(p => ({ ...p, voice: { ...p.voice, avoid: e.target.value } }))} placeholder="Words and concepts to never use" /></Fld>
-                    <Fld label="Content Rules"><textarea style={{ ...fld(), minHeight: "80px", resize: "vertical" }} value={form.rules} onChange={e => setForm(p => ({ ...p, rules: e.target.value }))} placeholder="Any specific rules for content generation" /></Fld>
-                  </Section>
+                  <div>
+                    <div style={{ marginBottom: "32px" }}>
+                      <div style={{ fontSize: "24px", fontWeight: "700", color: T.text, fontFamily: PF, marginBottom: "6px" }}>Voice &amp; Tone</div>
+                      <div style={{ fontSize: "14px", color: T.textMuted, fontFamily: FF }}>How this show sounds — the personality, energy, and language that makes it distinct.</div>
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+                      <div><label style={lbl()}>Voice Traits</label><textarea style={{ ...fld(), minHeight: "70px", resize: "vertical" }} value={form.voice.traits} onChange={e => setForm(p => ({ ...p, voice: { ...p.voice, traits: e.target.value } }))} placeholder="Warm. Curious. Grounded. Direct." /></div>
+                      <div><label style={lbl()}>Energy Level</label><input style={fld()} value={form.voice.energy} onChange={e => setForm(p => ({ ...p, voice: { ...p.voice, energy: e.target.value } }))} placeholder="e.g. 6/10" /></div>
+                      <div><label style={lbl()}>Host Archetype</label><input style={fld()} value={form.voice.arch} onChange={e => setForm(p => ({ ...p, voice: { ...p.voice, arch: e.target.value } }))} placeholder="e.g. Guide + Mirror" /></div>
+                      <div><label style={lbl()}>Emotional Arc</label><textarea style={{ ...fld(), minHeight: "70px", resize: "vertical" }} value={form.voice.arc} onChange={e => setForm(p => ({ ...p, voice: { ...p.voice, arc: e.target.value } }))} placeholder="Curious → Seen → Understood → Inspired" /></div>
+                      <div><label style={lbl()}>Signature Phrases (one per line)</label><textarea style={{ ...fld(), minHeight: "90px", resize: "vertical" }} value={form.voice.phrases} onChange={e => setForm(p => ({ ...p, voice: { ...p.voice, phrases: e.target.value } }))} placeholder="Your show's tagline phrases" /></div>
+                      <div><label style={lbl()}>Language to USE</label><textarea style={{ ...fld(), minHeight: "80px", resize: "vertical" }} value={form.voice.use} onChange={e => setForm(p => ({ ...p, voice: { ...p.voice, use: e.target.value } }))} placeholder="Words and concepts that fit the show" /></div>
+                      <div><label style={lbl()}>Language to AVOID</label><textarea style={{ ...fld(), minHeight: "80px", resize: "vertical" }} value={form.voice.avoid} onChange={e => setForm(p => ({ ...p, voice: { ...p.voice, avoid: e.target.value } }))} placeholder="Words and concepts to never use" /></div>
+                      <div><label style={lbl()}>Content Rules</label><textarea style={{ ...fld(), minHeight: "80px", resize: "vertical" }} value={form.rules} onChange={e => setForm(p => ({ ...p, rules: e.target.value }))} placeholder="Any specific rules for content generation" /></div>
+                    </div>
+                  </div>
                 )}
 
                 {tab === "audience" && (
                   <div>
-                    {/* The ONE Person — merged into Audience */}
-                    <div style={{ marginBottom: "28px" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
-                        <div style={{ fontSize: "13px", fontWeight: "700", color: T.coral, letterSpacing: "1px", textTransform: "uppercase", fontFamily: "'DM Sans', system-ui, sans-serif" }}>The ONE Person</div>
-                        <div style={{ height: "1px", flex: 1, background: T.cardBorder }} />
-                      </div>
-                      <div style={{ fontSize: "13px", color: T.textMuted, marginBottom: "14px", fontFamily: "'DM Sans', system-ui, sans-serif", lineHeight: "1.6" }}>The single listener this show is made for. Used to write hooks, permission slip closes, and episode structure.</div>
-                      <div style={{ display: "grid", gap: "12px" }}>
-                        <Fld label="First Name"><input style={fld()} value={form.epPrep?.onePerson?.name || ""} onChange={e => setForm(p => ({ ...p, epPrep: { ...p.epPrep, onePerson: { ...p.epPrep.onePerson, name: e.target.value } } }))} placeholder="e.g. Sarah" /></Fld>
-                        <Fld label="2AM Question"><input style={fld()} value={form.epPrep?.onePerson?.question2AM || ""} onChange={e => setForm(p => ({ ...p, epPrep: { ...p.epPrep, onePerson: { ...p.epPrep.onePerson, question2AM: e.target.value } } }))} placeholder="The question keeping them up at 2AM" /></Fld>
-                        <Fld label="Core Wound"><input style={fld()} value={form.epPrep?.onePerson?.wound || ""} onChange={e => setForm(p => ({ ...p, epPrep: { ...p.epPrep, onePerson: { ...p.epPrep.onePerson, wound: e.target.value } } }))} placeholder="The deeper fear or wound underneath the question" /></Fld>
-                      </div>
+                    <div style={{ marginBottom: "32px" }}>
+                      <div style={{ fontSize: "24px", fontWeight: "700", color: T.text, fontFamily: PF, marginBottom: "6px" }}>Audience</div>
+                      <div style={{ fontSize: "14px", color: T.textMuted, fontFamily: FF }}>Who this show is made for — used to write hooks, permission slips, and episode structure.</div>
                     </div>
-
-                    {/* Broader Audience DNA */}
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
-                      <div style={{ fontSize: "13px", fontWeight: "700", color: T.coral, letterSpacing: "1px", textTransform: "uppercase", fontFamily: "'DM Sans', system-ui, sans-serif" }}>Audience DNA</div>
-                      <div style={{ height: "1px", flex: 1, background: T.cardBorder }} />
-                    </div>
-                    <div style={{ fontSize: "13px", color: T.textMuted, marginBottom: "14px", fontFamily: "'DM Sans', system-ui, sans-serif", lineHeight: "1.6" }}>The broader audience picture — persona, pain points, and the language they use.</div>
-                    <div style={{ display: "grid", gap: "12px" }}>
-                      <Fld label="Listener Persona"><textarea style={{ ...fld(), minHeight: "90px", resize: "vertical" }} value={form.aud.who} onChange={e => setForm(p => ({ ...p, aud: { ...p.aud, who: e.target.value } }))} placeholder="Who is your ideal listener?" /></Fld>
-                      <Fld label="Pain Points (one per line)"><textarea style={{ ...fld(), minHeight: "100px", resize: "vertical" }} value={form.aud.pains} onChange={e => setForm(p => ({ ...p, aud: { ...p.aud, pains: e.target.value } }))} placeholder="I've tried everything and nothing works." /></Fld>
-                      <Fld label="Language They Use"><textarea style={{ ...fld(), minHeight: "80px", resize: "vertical" }} value={form.aud.lang} onChange={e => setForm(p => ({ ...p, aud: { ...p.aud, lang: e.target.value } }))} placeholder="how to stop / why can't I" /></Fld>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+                      {/* The ONE Person */}
+                      <div style={{ padding: "24px", background: T.card, border: "1px solid " + T.cardBorder, borderRadius: "10px" }}>
+                        <div style={{ fontSize: "13px", fontWeight: "700", color: T.coral, letterSpacing: "1px", textTransform: "uppercase", fontFamily: FF, marginBottom: "4px" }}>The ONE Person</div>
+                        <div style={{ fontSize: "13px", color: T.textMuted, marginBottom: "20px", fontFamily: FF, lineHeight: "1.6" }}>The single listener this show is made for.</div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                          <div><label style={lbl()}>First Name</label><input style={fld()} value={form.epPrep?.onePerson?.name || ""} onChange={e => setForm(p => ({ ...p, epPrep: { ...p.epPrep, onePerson: { ...p.epPrep.onePerson, name: e.target.value } } }))} placeholder="e.g. Sarah" /></div>
+                          <div><label style={lbl()}>2AM Question</label><input style={fld()} value={form.epPrep?.onePerson?.question2AM || ""} onChange={e => setForm(p => ({ ...p, epPrep: { ...p.epPrep, onePerson: { ...p.epPrep.onePerson, question2AM: e.target.value } } }))} placeholder="The question keeping them up at 2AM" /></div>
+                          <div><label style={lbl()}>Core Wound</label><input style={fld()} value={form.epPrep?.onePerson?.wound || ""} onChange={e => setForm(p => ({ ...p, epPrep: { ...p.epPrep, onePerson: { ...p.epPrep.onePerson, wound: e.target.value } } }))} placeholder="The deeper fear or wound underneath the question" /></div>
+                        </div>
+                      </div>
+                      {/* Audience DNA */}
+                      <div><label style={lbl()}>Listener Persona</label><textarea style={{ ...fld(), minHeight: "90px", resize: "vertical" }} value={form.aud.who} onChange={e => setForm(p => ({ ...p, aud: { ...p.aud, who: e.target.value } }))} placeholder="Who is your ideal listener?" /></div>
+                      <div><label style={lbl()}>Pain Points (one per line)</label><textarea style={{ ...fld(), minHeight: "100px", resize: "vertical" }} value={form.aud.pains} onChange={e => setForm(p => ({ ...p, aud: { ...p.aud, pains: e.target.value } }))} placeholder="I've tried everything and nothing works." /></div>
+                      <div><label style={lbl()}>Language They Use</label><textarea style={{ ...fld(), minHeight: "80px", resize: "vertical" }} value={form.aud.lang} onChange={e => setForm(p => ({ ...p, aud: { ...p.aud, lang: e.target.value } }))} placeholder="how to stop / why can't I" /></div>
                     </div>
                   </div>
                 )}
 
                 {tab === "platforms" && (
-                  <Section title="Platform Hub">
-                    <div style={{ fontSize: "14px", color: T.textSecondary, marginBottom: "20px", ...GA, lineHeight: "1.6" }}>
-                      Select every platform this show publishes to. Content will be generated and optimized for each selected platform.
+                  <div>
+                    <div style={{ marginBottom: "32px" }}>
+                      <div style={{ fontSize: "24px", fontWeight: "700", color: T.text, fontFamily: PF, marginBottom: "6px" }}>Platforms</div>
+                      <div style={{ fontSize: "14px", color: T.textMuted, fontFamily: FF }}>Select every platform this show publishes to. Content will be generated and optimized for each selected platform.</div>
                     </div>
                     <PlatformHub platforms={form.platforms || DEFAULT_PLATFORMS} onChange={pl => setForm(p => ({ ...p, platforms: pl }))} />
-                  </Section>
+                  </div>
                 )}
 
                 {tab === "snnotes" && (
-                  <Section title="Show Notes Builder">
-                    <div style={{ fontSize: "14px", color: T.textSecondary, marginBottom: "16px", ...GA, lineHeight: "1.6" }}>Toggle which elements to include and drag to set their order.</div>
+                  <div>
+                    <div style={{ marginBottom: "32px" }}>
+                      <div style={{ fontSize: "24px", fontWeight: "700", color: T.text, fontFamily: PF, marginBottom: "6px" }}>Show Notes</div>
+                      <div style={{ fontSize: "14px", color: T.textMuted, fontFamily: FF }}>Toggle which elements to include and drag to set their order.</div>
+                    </div>
                     <SNBuilder elements={form.snElements} onChange={el => setForm(p => ({ ...p, snElements: el }))} />
-                  </Section>
+                  </div>
                 )}
 
                 {tab === "boilerplate" && (
-                  <Section title="Boilerplate">
-                    <div style={{ fontSize: "14px", color: T.textSecondary, marginBottom: "16px", ...GA, lineHeight: "1.6" }}>Automatically appended to Show Notes and YouTube descriptions.</div>
+                  <div>
+                    <div style={{ marginBottom: "32px" }}>
+                      <div style={{ fontSize: "24px", fontWeight: "700", color: T.text, fontFamily: PF, marginBottom: "6px" }}>Boilerplate</div>
+                      <div style={{ fontSize: "14px", color: T.textMuted, fontFamily: FF }}>Automatically appended to Show Notes and YouTube descriptions.</div>
+                    </div>
                     <BoilerplateEditor value={form.bp} onChange={v => setForm(p => ({ ...p, bp: v }))} />
-                  </Section>
+                  </div>
                 )}
 
                 {tab === "editing" && (
                   <div>
-                    <div style={{ marginBottom: "24px" }}>
-                      <div style={{ fontSize: "13px", fontWeight: "700", color: T.coral, marginBottom: "6px", letterSpacing: "1px", textTransform: "uppercase", fontFamily: "'DM Sans', system-ui, sans-serif" }}>Editing Level</div>
-                      <div style={{ fontSize: "14px", color: T.textMuted, marginBottom: "20px", fontFamily: "'DM Sans', system-ui, sans-serif", lineHeight: "1.6" }}>Set the editing standard for this show. Editors will see this level and its description as a coaching brief when they open the Editor Companion.</div>
+                    <div style={{ marginBottom: "32px" }}>
+                      <div style={{ fontSize: "24px", fontWeight: "700", color: T.text, fontFamily: PF, marginBottom: "6px" }}>Editor</div>
+                      <div style={{ fontSize: "14px", color: T.textMuted, fontFamily: FF }}>Set the editing standard for this show. Editors will see this level as a coaching brief in the Editor Companion.</div>
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                       {[
                         { id: "1", name: "Level 1 — Clean & Clear", desc: "The goal is a natural, listenable episode with no obvious edit points. Remove long awkward silences unless they are emotional or intentional. Cut anything that clearly signals an edit — mic bumps, false starts, hard stops, technical interruptions. Leave ums, ahs, and filler words unless they are so frequent they disrupt the listening experience. Do not over-edit. The episode should sound like a real conversation, just cleaned up." },
                         { id: "2", name: "Level 2 — Crafted", desc: "The goal is a polished, well-paced episode that holds attention. Everything in Level 1 applies. Additionally: identify and surface the strongest hook moment and restructure the opening if needed. Remove repetitive points, rambling tangents, and run-on sections that dilute the message. Tighten pacing so the conversation flows freely without losing its natural feel. Add lower thirds at key moments. The episode should sound intentional without sounding produced." },
                         { id: "3", name: "Level 3 — Story-Driven", desc: "The goal is a fully crafted narrative. Everything in Levels 1 and 2 applies. Additionally: treat the raw recording as source material, not a final structure. Reconstruct the arc — find the story, build toward it, and edit down aggressively if needed (e.g. a 90-minute interview may become a 45-minute episode). Add b-roll, images, and supporting visuals to reinforce meaning. Re-record inserts may be added to fill gaps in the narrative. The episode should feel like a documentary, not a recording." },
                       ].map(lvl => (
                         <div key={lvl.id} onClick={() => setForm(p => ({ ...p, editingLevel: lvl.id }))}
-                          style={{ border: "1px solid " + (form.editingLevel === lvl.id ? T.coral : T.cardBorder), borderRadius: "12px", padding: "20px 24px", marginBottom: "12px", cursor: "pointer", background: form.editingLevel === lvl.id ? T.coral + "10" : T.bg, transition: "all 0.15s" }}>
+                          style={{ border: "1px solid " + (form.editingLevel === lvl.id ? T.coral : T.cardBorder), borderRadius: "12px", padding: "20px 24px", cursor: "pointer", background: form.editingLevel === lvl.id ? T.coral + "10" : T.card, transition: "all 0.15s" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px" }}>
-                            <div style={{ width: "28px", height: "28px", borderRadius: "50%", background: form.editingLevel === lvl.id ? T.coral : T.cardBorder, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "13px", fontWeight: "700", color: form.editingLevel === lvl.id ? "#fff" : T.textMuted, flexShrink: 0, fontFamily: "'DM Sans', system-ui, sans-serif" }}>{lvl.id}</div>
-                            <div style={{ fontSize: "15px", fontWeight: "700", color: form.editingLevel === lvl.id ? T.coral : T.text, fontFamily: "'DM Sans', system-ui, sans-serif" }}>{lvl.name}</div>
+                            <div style={{ width: "28px", height: "28px", borderRadius: "50%", background: form.editingLevel === lvl.id ? T.coral : T.cardBorder, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "13px", fontWeight: "700", color: form.editingLevel === lvl.id ? "#fff" : T.textMuted, flexShrink: 0, fontFamily: FF }}>{lvl.id}</div>
+                            <div style={{ fontSize: "15px", fontWeight: "700", color: form.editingLevel === lvl.id ? T.coral : T.text, fontFamily: FF }}>{lvl.name}</div>
                           </div>
-                          <div style={{ fontSize: "13px", color: T.textMuted, lineHeight: "1.7", fontFamily: "'DM Sans', system-ui, sans-serif", paddingLeft: "40px" }}>{lvl.desc}</div>
+                          <div style={{ fontSize: "13px", color: T.textMuted, lineHeight: "1.7", fontFamily: FF, paddingLeft: "40px" }}>{lvl.desc}</div>
                         </div>
                       ))}
                     </div>
@@ -1696,29 +1759,35 @@ ${epfPasteText.substring(0, 8000)}`;
 
                 {tab === "epprep" && (
                   <div>
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
-                      <div style={{ fontSize: "13px", fontWeight: "700", color: T.coral, letterSpacing: "1px", textTransform: "uppercase", fontFamily: "'DM Sans', system-ui, sans-serif" }}>Story-Mission Connection</div>
-                      <div style={{ height: "1px", flex: 1, background: T.cardBorder }} />
+                    <div style={{ marginBottom: "32px" }}>
+                      <div style={{ fontSize: "24px", fontWeight: "700", color: T.text, fontFamily: PF, marginBottom: "6px" }}>Episode Prep</div>
+                      <div style={{ fontSize: "14px", color: T.textMuted, fontFamily: FF }}>Story mission and permission slips — used verbatim in episode structure and closing.</div>
                     </div>
-                    <div style={{ fontSize: "13px", color: T.textMuted, marginBottom: "10px", fontFamily: "'DM Sans', system-ui, sans-serif", lineHeight: "1.6" }}>The host's personal connection to this show's mission. Used verbatim in the Bridge section of every episode.</div>
-                    <textarea value={form.epPrep?.storyMission || ""} onChange={e => setForm(p => ({ ...p, epPrep: { ...p.epPrep, storyMission: e.target.value } }))} placeholder="Write the host's personal story connection here — this will be used verbatim in the Bridge." rows={6} style={{ width: "100%", padding: "12px 14px", border: "1px solid " + T.cardBorder, borderRadius: "8px", background: T.bg, color: T.text, fontSize: "14px", fontFamily: "'DM Sans', system-ui, sans-serif", resize: "vertical", boxSizing: "border-box", marginBottom: "28px" }} />
-
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
-                      <div style={{ fontSize: "13px", fontWeight: "700", color: T.coral, letterSpacing: "1px", textTransform: "uppercase", fontFamily: "'DM Sans', system-ui, sans-serif" }}>Permission Slip Bank</div>
-                      <div style={{ height: "1px", flex: 1, background: T.cardBorder }} />
+                    <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+                      <div>
+                        <label style={lbl()}>Story-Mission Connection</label>
+                        <div style={{ fontSize: "13px", color: T.textMuted, marginBottom: "10px", fontFamily: FF, lineHeight: "1.6" }}>The host's personal connection to this show's mission. Used verbatim in the Bridge section of every episode.</div>
+                        <textarea value={form.epPrep?.storyMission || ""} onChange={e => setForm(p => ({ ...p, epPrep: { ...p.epPrep, storyMission: e.target.value } }))} placeholder="Write the host's personal story connection here — this will be used verbatim in the Bridge." rows={6} style={{ width: "100%", padding: "12px 14px", border: "1px solid " + T.cardBorder, borderRadius: "8px", background: T.surface, color: T.text, fontSize: "14px", fontFamily: FF, resize: "vertical", boxSizing: "border-box" }} />
+                      </div>
+                      <div>
+                        <label style={lbl()}>Permission Slip Bank</label>
+                        <div style={{ fontSize: "13px", color: T.textMuted, marginBottom: "10px", fontFamily: FF, lineHeight: "1.6" }}>One permission slip per line. Used verbatim in the Permission Slip Close at the end of each episode.</div>
+                        <textarea value={form.epPrep?.permissionSlips || ""} onChange={e => setForm(p => ({ ...p, epPrep: { ...p.epPrep, permissionSlips: e.target.value } }))} placeholder={"You have permission to feel all of it.\nYou have permission to not have it figured out.\nYou have permission to begin again."} rows={8} style={{ width: "100%", padding: "12px 14px", border: "1px solid " + T.cardBorder, borderRadius: "8px", background: T.surface, color: T.text, fontSize: "14px", fontFamily: FF, resize: "vertical", boxSizing: "border-box" }} />
+                      </div>
                     </div>
-                    <div style={{ fontSize: "13px", color: T.textMuted, marginBottom: "10px", fontFamily: "'DM Sans', system-ui, sans-serif", lineHeight: "1.6" }}>One permission slip per line. These are used verbatim in the Permission Slip Close at the end of each episode.</div>
-                    <textarea value={form.epPrep?.permissionSlips || ""} onChange={e => setForm(p => ({ ...p, epPrep: { ...p.epPrep, permissionSlips: e.target.value } }))} placeholder={"You have permission to feel all of it.\nYou have permission to not have it figured out.\nYou have permission to begin again."} rows={8} style={{ width: "100%", padding: "12px 14px", border: "1px solid " + T.cardBorder, borderRadius: "8px", background: T.bg, color: T.text, fontSize: "14px", fontFamily: "'DM Sans', system-ui, sans-serif", resize: "vertical", boxSizing: "border-box" }} />
                   </div>
                 )}
 
                 {tab === "formats" && (
                   <div>
+                    <div style={{ marginBottom: "32px" }}>
+                      <div style={{ fontSize: "24px", fontWeight: "700", color: T.text, fontFamily: PF, marginBottom: "6px" }}>Episode Formats</div>
+                      <div style={{ fontSize: "14px", color: T.textMuted, fontFamily: FF }}>{(form.episodeFormats||[]).length} format{(form.episodeFormats||[]).length !== 1 ? "s" : ""} configured for this show.</div>
+                    </div>
+
                     {/* Presets panel header */}
                     <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"16px" }}>
-                      <div style={{ fontSize:"13px", color:T.textMuted, fontFamily:FF }}>
-                        {(form.episodeFormats||[]).length} format{(form.episodeFormats||[]).length !== 1 ? "s" : ""} configured
-                      </div>
+                      <div style={{ fontSize:"13px", color:T.textMuted, fontFamily:FF }}></div>
                       <button onClick={() => setShowPresetsPanel(v => !v)}
                         style={{ padding:"8px 16px", background: showPresetsPanel ? T.coral : "transparent", border:"1px solid "+(showPresetsPanel ? T.coral : T.cardBorder), borderRadius:"6px", color: showPresetsPanel ? "#fff" : T.coral, fontSize:"13px", fontWeight:"700", cursor:"pointer", fontFamily:FF, transition:"all .15s" }}>
                         {showPresetsPanel ? "Hide Presets" : "Browse Preset Formats"}
@@ -1732,7 +1801,6 @@ ${epfPasteText.substring(0, 8000)}`;
                           <div style={{ fontSize:"15px", fontWeight:"700", color:T.text, fontFamily:PF, marginBottom:"4px" }}>Preset Format Library</div>
                           <div style={{ fontSize:"13px", color:T.textMuted, fontFamily:FF }}>Select formats to add to this show. You can customise them after adding.</div>
                         </div>
-                        {/* Group by category */}
                         {(() => {
                           const grouped = {};
                           PRESET_FORMATS.forEach(f => { if (!grouped[f.category]) grouped[f.category] = []; grouped[f.category].push(f); });
@@ -1768,45 +1836,45 @@ ${epfPasteText.substring(0, 8000)}`;
                     )}
 
                     {(!form.episodeFormats || form.episodeFormats.length === 0) && !epfShowForm && !showPresetsPanel && (
-                      <div style={{ textAlign: "center", padding: "40px 20px", color: T.textMuted, fontFamily: "'DM Sans', system-ui, sans-serif" }}>
-                        <div style={{ fontSize: "32px", marginBottom: "12px" }}>📋</div>
+                      <div style={{ textAlign: "center", padding: "40px 20px", color: T.textMuted, fontFamily: FF }}>
+                        <div style={{ fontSize: "32px", marginBottom: "12px", opacity: 0.4 }}>◈</div>
                         <div style={{ fontSize: "15px", fontWeight: "600", color: T.text, marginBottom: "6px" }}>No formats yet</div>
-                        <div style={{ fontSize: "13px", marginBottom: "20px" }}>Add your first episode format to use Episode Prep.</div>
+                        <div style={{ fontSize: "13px", marginBottom: "20px" }}>Add your first episode format or browse the preset library above.</div>
                       </div>
                     )}
                     {(form.episodeFormats || []).map((fmt, idx) => (
-                      <div key={fmt.id || idx} style={{ border: "1px solid " + T.cardBorder, borderRadius: "10px", padding: "16px 20px", marginBottom: "10px", background: T.bg }}>
+                      <div key={fmt.id || idx} style={{ border: "1px solid " + T.cardBorder, borderRadius: "10px", padding: "16px 20px", marginBottom: "10px", background: T.card }}>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                           <div>
                             <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
-                              <div style={{ fontSize: "15px", fontWeight: "700", color: T.text, fontFamily: "'DM Sans', system-ui, sans-serif" }}>{fmt.name}</div>
+                              <div style={{ fontSize: "15px", fontWeight: "700", color: T.text, fontFamily: FF }}>{fmt.name}</div>
                               {fmt.status === "imported" && <span style={{ fontSize: "10px", background: "#FFF3CD", color: "#856404", border: "1px solid #FFEAA7", borderRadius: "20px", padding: "2px 8px", fontWeight: "700", letterSpacing: "0.5px" }}>IMPORTED — PLEASE REVIEW</span>}
                             </div>
-                            <div style={{ fontSize: "13px", color: T.textMuted, fontFamily: "'DM Sans', system-ui, sans-serif" }}>{fmt.type}{fmt.targetLength ? " · " + fmt.targetLength : ""}</div>
+                            <div style={{ fontSize: "13px", color: T.textMuted, fontFamily: FF }}>{fmt.type}{fmt.targetLength ? " · " + fmt.targetLength : ""}</div>
                           </div>
                           <div style={{ display: "flex", gap: "8px" }}>
-                            <button onClick={() => { setEpfForm({ name: fmt.name, type: fmt.type, targetLength: fmt.targetLength || "", structure: fmt.structure || "", signOffLine: fmt.signOffLine || "", ratingSystem: fmt.ratingSystem || "" }); setEpfEditing(fmt.id || idx); setEpfShowForm(true); }} style={{ padding: "6px 14px", border: "1px solid " + T.cardBorder, borderRadius: "6px", background: "transparent", color: T.text, fontSize: "12px", cursor: "pointer", fontFamily: "'DM Sans', system-ui, sans-serif" }}>Edit</button>
-                            <button onClick={() => setForm(p => ({ ...p, episodeFormats: p.episodeFormats.filter((_, i) => i !== idx) }))} style={{ padding: "6px 14px", border: "1px solid #D94F4F44", borderRadius: "6px", background: "transparent", color: "#D94F4F", fontSize: "12px", cursor: "pointer", fontFamily: "'DM Sans', system-ui, sans-serif" }}>Delete</button>
+                            <button onClick={() => { setEpfForm({ name: fmt.name, type: fmt.type, targetLength: fmt.targetLength || "", structure: fmt.structure || "", signOffLine: fmt.signOffLine || "", ratingSystem: fmt.ratingSystem || "" }); setEpfEditing(fmt.id || idx); setEpfShowForm(true); }} style={{ padding: "6px 14px", border: "1px solid " + T.cardBorder, borderRadius: "6px", background: "transparent", color: T.text, fontSize: "12px", cursor: "pointer", fontFamily: FF }}>Edit</button>
+                            <button onClick={() => setForm(p => ({ ...p, episodeFormats: p.episodeFormats.filter((_, i) => i !== idx) }))} style={{ padding: "6px 14px", border: "1px solid #D94F4F44", borderRadius: "6px", background: "transparent", color: "#D94F4F", fontSize: "12px", cursor: "pointer", fontFamily: FF }}>Delete</button>
                           </div>
                         </div>
                       </div>
                     ))}
                     {!epfShowForm && (
-                      <button onClick={() => { setEpfForm({ name: "", type: "Guest Interview", targetLength: "", structure: "", signOffLine: "", ratingSystem: "" }); setEpfEditing(null); setEpfShowForm(true); }} style={{ width: "100%", padding: "12px", border: "2px dashed " + T.cardBorder, borderRadius: "10px", background: "transparent", color: T.coral, fontSize: "14px", fontWeight: "700", cursor: "pointer", fontFamily: "'DM Sans', system-ui, sans-serif", marginTop: "8px" }}>+ Add Format</button>
+                      <button onClick={() => { setEpfForm({ name: "", type: "Guest Interview", targetLength: "", structure: "", signOffLine: "", ratingSystem: "" }); setEpfEditing(null); setEpfShowForm(true); }} style={{ width: "100%", padding: "12px", border: "2px dashed " + T.cardBorder, borderRadius: "10px", background: "transparent", color: T.coral, fontSize: "14px", fontWeight: "700", cursor: "pointer", fontFamily: FF, marginTop: "8px" }}>+ Add Format</button>
                     )}
                     {epfShowForm && (
                       <div style={{ border: "1px solid " + T.coral + "40", borderRadius: "12px", padding: "24px", background: T.coral + "08", marginTop: "12px" }}>
                         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
-                          <div style={{ fontSize: "14px", fontWeight: "700", color: T.coral, fontFamily: "'DM Sans', system-ui, sans-serif", textTransform: "uppercase", letterSpacing: "1px" }}>{epfEditing !== null ? "Edit Format" : "New Format"}</div>
+                          <div style={{ fontSize: "14px", fontWeight: "700", color: T.coral, fontFamily: FF, textTransform: "uppercase", letterSpacing: "1px" }}>{epfEditing !== null ? "Edit Format" : "New Format"}</div>
                           <button onClick={() => { setEpfPasteOpen(v => !v); setEpfMsg(""); setEpfPasteText(""); }}
-                            style={{ padding: "6px 14px", background: epfPasteOpen ? T.coral : "transparent", border: "1px solid " + (epfPasteOpen ? T.coral : T.cardBorder), borderRadius: "20px", color: epfPasteOpen ? "#fff" : T.coral, fontSize: "12px", fontWeight: "700", cursor: "pointer", fontFamily: "'DM Sans', system-ui, sans-serif", letterSpacing: "0.5px", transition: "all .15s" }}>
-                            ✨ AI Fill from Paste
+                            style={{ padding: "6px 14px", background: epfPasteOpen ? T.coral : "transparent", border: "1px solid " + (epfPasteOpen ? T.coral : T.cardBorder), borderRadius: "20px", color: epfPasteOpen ? "#fff" : T.coral, fontSize: "12px", fontWeight: "700", cursor: "pointer", fontFamily: FF, letterSpacing: "0.5px", transition: "all .15s" }}>
+                            AI Fill from Paste
                           </button>
                         </div>
 
                         {epfPasteOpen && (
                           <div style={{ marginBottom: "20px", padding: "16px", background: T.bg, border: "1px solid " + T.cardBorder, borderRadius: "10px" }}>
-                            <div style={{ fontSize: "13px", color: T.textSecondary, fontFamily: "'DM Sans', system-ui, sans-serif", marginBottom: "10px", lineHeight: "1.5" }}>
+                            <div style={{ fontSize: "13px", color: T.textSecondary, fontFamily: FF, marginBottom: "10px", lineHeight: "1.5" }}>
                               Paste your format document — Claude will extract the name, type, structure, sign-off, and more.
                             </div>
                             <textarea
@@ -1818,21 +1886,21 @@ ${epfPasteText.substring(0, 8000)}`;
                             />
                             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                               <button onClick={parseFormatWithAI} disabled={epfParsing || !epfPasteText.trim()}
-                                style={{ padding: "9px 20px", background: epfPasteText.trim() ? T.coral : T.cardBorder, border: "none", borderRadius: "6px", color: epfPasteText.trim() ? "#fff" : T.textMuted, fontSize: "13px", fontWeight: "700", cursor: epfPasteText.trim() ? "pointer" : "not-allowed", fontFamily: "'DM Sans', system-ui, sans-serif", letterSpacing: "1px", textTransform: "uppercase" }}>
+                                style={{ padding: "9px 20px", background: epfPasteText.trim() ? T.coral : T.cardBorder, border: "none", borderRadius: "6px", color: epfPasteText.trim() ? "#fff" : T.textMuted, fontSize: "13px", fontWeight: "700", cursor: epfPasteText.trim() ? "pointer" : "not-allowed", fontFamily: FF, letterSpacing: "1px", textTransform: "uppercase" }}>
                                 {epfParsing ? "Parsing…" : "Parse with AI →"}
                               </button>
-                              {epfMsg && <span style={{ fontSize: "13px", color: epfMsg.startsWith("✓") ? "#52B788" : "#F09090", fontFamily: "'DM Sans', system-ui, sans-serif" }}>{epfMsg}</span>}
+                              {epfMsg && <span style={{ fontSize: "13px", color: epfMsg.startsWith("✓") ? "#52B788" : "#F09090", fontFamily: FF }}>{epfMsg}</span>}
                             </div>
                           </div>
                         )}
 
                         <div style={{ display: "grid", gap: "14px" }}>
-                          <div><label style={{ fontSize: "12px", fontWeight: "700", color: T.textMuted, letterSpacing: "1px", textTransform: "uppercase", fontFamily: "'DM Sans', system-ui, sans-serif", display: "block", marginBottom: "6px" }}>Format Name *</label><input value={epfForm.name} onChange={e => setEpfForm(p => ({ ...p, name: e.target.value }))} placeholder="e.g. Guest Interview, Solo Deep Dive" style={{ width: "100%", padding: "10px 14px", border: "1px solid " + T.cardBorder, borderRadius: "8px", background: T.bg, color: T.text, fontSize: "14px", fontFamily: "'DM Sans', system-ui, sans-serif", boxSizing: "border-box" }} /></div>
-                          <div><label style={{ fontSize: "12px", fontWeight: "700", color: T.textMuted, letterSpacing: "1px", textTransform: "uppercase", fontFamily: "'DM Sans', system-ui, sans-serif", display: "block", marginBottom: "6px" }}>Format Type *</label><select value={epfForm.type} onChange={e => setEpfForm(p => ({ ...p, type: e.target.value }))} style={{ width: "100%", padding: "10px 14px", border: "1px solid " + T.cardBorder, borderRadius: "8px", background: T.bg, color: T.text, fontSize: "14px", fontFamily: "'DM Sans', system-ui, sans-serif", boxSizing: "border-box" }}><option>Guest Interview</option><option>Review & Reaction Panel</option><option>Hot Take & Breaking News</option><option>Solo Monologue</option><option>Custom</option></select></div>
-                          <div><label style={{ fontSize: "12px", fontWeight: "700", color: T.textMuted, letterSpacing: "1px", textTransform: "uppercase", fontFamily: "'DM Sans', system-ui, sans-serif", display: "block", marginBottom: "6px" }}>Target Length</label><input value={epfForm.targetLength} onChange={e => setEpfForm(p => ({ ...p, targetLength: e.target.value }))} placeholder="e.g. 30–45 min" style={{ width: "100%", padding: "10px 14px", border: "1px solid " + T.cardBorder, borderRadius: "8px", background: T.bg, color: T.text, fontSize: "14px", fontFamily: "'DM Sans', system-ui, sans-serif", boxSizing: "border-box" }} /></div>
-                          <div><label style={{ fontSize: "12px", fontWeight: "700", color: T.textMuted, letterSpacing: "1px", textTransform: "uppercase", fontFamily: "'DM Sans', system-ui, sans-serif", display: "block", marginBottom: "6px" }}>Format Structure *</label><textarea value={epfForm.structure} onChange={e => setEpfForm(p => ({ ...p, structure: e.target.value }))} placeholder={"Paste the full segment structure here:\n\nSEGMENT 1 — HOOK (0:00–1:30)\n...\nSEGMENT 2 — INTRO (1:30–4:00)\nStanding questions: ...\n..."} rows={10} style={{ width: "100%", padding: "12px 14px", border: "1px solid " + T.cardBorder, borderRadius: "8px", background: T.bg, color: T.text, fontSize: "13px", fontFamily: "monospace", resize: "vertical", boxSizing: "border-box" }} /></div>
-                          <div><label style={{ fontSize: "12px", fontWeight: "700", color: T.textMuted, letterSpacing: "1px", textTransform: "uppercase", fontFamily: "'DM Sans', system-ui, sans-serif", display: "block", marginBottom: "6px" }}>Sign-off Line *</label><input value={epfForm.signOffLine} onChange={e => setEpfForm(p => ({ ...p, signOffLine: e.target.value }))} placeholder="The exact closing line — used verbatim every episode" style={{ width: "100%", padding: "10px 14px", border: "1px solid " + T.cardBorder, borderRadius: "8px", background: T.bg, color: T.text, fontSize: "14px", fontFamily: "'DM Sans', system-ui, sans-serif", boxSizing: "border-box" }} /></div>
-                          <div><label style={{ fontSize: "12px", fontWeight: "700", color: T.textMuted, letterSpacing: "1px", textTransform: "uppercase", fontFamily: "'DM Sans', system-ui, sans-serif", display: "block", marginBottom: "6px" }}>Rating/Scoring System <span style={{ fontWeight: "400", textTransform: "none" }}>(optional — for review formats)</span></label><input value={epfForm.ratingSystem} onChange={e => setEpfForm(p => ({ ...p, ratingSystem: e.target.value }))} placeholder="e.g. Sobees Score 1–5" style={{ width: "100%", padding: "10px 14px", border: "1px solid " + T.cardBorder, borderRadius: "8px", background: T.bg, color: T.text, fontSize: "14px", fontFamily: "'DM Sans', system-ui, sans-serif", boxSizing: "border-box" }} /></div>
+                          <div><label style={{ fontSize: "12px", fontWeight: "700", color: T.textMuted, letterSpacing: "1px", textTransform: "uppercase", fontFamily: FF, display: "block", marginBottom: "6px" }}>Format Name *</label><input value={epfForm.name} onChange={e => setEpfForm(p => ({ ...p, name: e.target.value }))} placeholder="e.g. Guest Interview, Solo Deep Dive" style={{ width: "100%", padding: "10px 14px", border: "1px solid " + T.cardBorder, borderRadius: "8px", background: T.surface, color: T.text, fontSize: "14px", fontFamily: FF, boxSizing: "border-box" }} /></div>
+                          <div><label style={{ fontSize: "12px", fontWeight: "700", color: T.textMuted, letterSpacing: "1px", textTransform: "uppercase", fontFamily: FF, display: "block", marginBottom: "6px" }}>Format Type *</label><select value={epfForm.type} onChange={e => setEpfForm(p => ({ ...p, type: e.target.value }))} style={{ width: "100%", padding: "10px 14px", border: "1px solid " + T.cardBorder, borderRadius: "8px", background: T.surface, color: T.text, fontSize: "14px", fontFamily: FF, boxSizing: "border-box" }}><option>Guest Interview</option><option>Review & Reaction Panel</option><option>Hot Take & Breaking News</option><option>Solo Monologue</option><option>Custom</option></select></div>
+                          <div><label style={{ fontSize: "12px", fontWeight: "700", color: T.textMuted, letterSpacing: "1px", textTransform: "uppercase", fontFamily: FF, display: "block", marginBottom: "6px" }}>Target Length</label><input value={epfForm.targetLength} onChange={e => setEpfForm(p => ({ ...p, targetLength: e.target.value }))} placeholder="e.g. 30–45 min" style={{ width: "100%", padding: "10px 14px", border: "1px solid " + T.cardBorder, borderRadius: "8px", background: T.surface, color: T.text, fontSize: "14px", fontFamily: FF, boxSizing: "border-box" }} /></div>
+                          <div><label style={{ fontSize: "12px", fontWeight: "700", color: T.textMuted, letterSpacing: "1px", textTransform: "uppercase", fontFamily: FF, display: "block", marginBottom: "6px" }}>Format Structure *</label><textarea value={epfForm.structure} onChange={e => setEpfForm(p => ({ ...p, structure: e.target.value }))} placeholder={"Paste the full segment structure here:\n\nSEGMENT 1 — HOOK (0:00–1:30)\n...\nSEGMENT 2 — INTRO (1:30–4:00)\nStanding questions: ...\n..."} rows={10} style={{ width: "100%", padding: "12px 14px", border: "1px solid " + T.cardBorder, borderRadius: "8px", background: T.surface, color: T.text, fontSize: "13px", fontFamily: "monospace", resize: "vertical", boxSizing: "border-box" }} /></div>
+                          <div><label style={{ fontSize: "12px", fontWeight: "700", color: T.textMuted, letterSpacing: "1px", textTransform: "uppercase", fontFamily: FF, display: "block", marginBottom: "6px" }}>Sign-off Line *</label><input value={epfForm.signOffLine} onChange={e => setEpfForm(p => ({ ...p, signOffLine: e.target.value }))} placeholder="The exact closing line — used verbatim every episode" style={{ width: "100%", padding: "10px 14px", border: "1px solid " + T.cardBorder, borderRadius: "8px", background: T.surface, color: T.text, fontSize: "14px", fontFamily: FF, boxSizing: "border-box" }} /></div>
+                          <div><label style={{ fontSize: "12px", fontWeight: "700", color: T.textMuted, letterSpacing: "1px", textTransform: "uppercase", fontFamily: FF, display: "block", marginBottom: "6px" }}>Rating/Scoring System <span style={{ fontWeight: "400", textTransform: "none" }}>(optional)</span></label><input value={epfForm.ratingSystem} onChange={e => setEpfForm(p => ({ ...p, ratingSystem: e.target.value }))} placeholder="e.g. Sobees Score 1–5" style={{ width: "100%", padding: "10px 14px", border: "1px solid " + T.cardBorder, borderRadius: "8px", background: T.surface, color: T.text, fontSize: "14px", fontFamily: FF, boxSizing: "border-box" }} /></div>
                         </div>
                         <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
                           <button onClick={() => {
@@ -1844,23 +1912,86 @@ ${epfPasteText.substring(0, 8000)}`;
                               setForm(p => ({ ...p, episodeFormats: [...(p.episodeFormats || []), newFmt] }));
                             }
                             setEpfShowForm(false); setEpfEditing(null); setEpfForm({ name: "", type: "Guest Interview", targetLength: "", structure: "", signOffLine: "", ratingSystem: "" }); setEpfPasteText(""); setEpfPasteOpen(false); setEpfMsg("");
-                          }} style={{ padding: "12px 24px", background: T.coral, border: "none", borderRadius: "8px", color: "#fff", fontSize: "14px", fontWeight: "700", cursor: "pointer", fontFamily: "'DM Sans', system-ui, sans-serif" }}>Save Format</button>
-                          <button onClick={() => { setEpfShowForm(false); setEpfEditing(null); setEpfForm({ name: "", type: "Guest Interview", targetLength: "", structure: "", signOffLine: "", ratingSystem: "" }); setEpfPasteText(""); setEpfPasteOpen(false); setEpfMsg(""); }} style={{ padding: "12px 24px", background: "transparent", border: "1px solid " + T.cardBorder, borderRadius: "8px", color: T.textMuted, fontSize: "14px", cursor: "pointer", fontFamily: "'DM Sans', system-ui, sans-serif" }}>Cancel</button>
+                          }} style={{ padding: "12px 24px", background: T.coral, border: "none", borderRadius: "8px", color: "#fff", fontSize: "14px", fontWeight: "700", cursor: "pointer", fontFamily: FF }}>Save Format</button>
+                          <button onClick={() => { setEpfShowForm(false); setEpfEditing(null); setEpfForm({ name: "", type: "Guest Interview", targetLength: "", structure: "", signOffLine: "", ratingSystem: "" }); setEpfPasteText(""); setEpfPasteOpen(false); setEpfMsg(""); }} style={{ padding: "12px 24px", background: "transparent", border: "1px solid " + T.cardBorder, borderRadius: "8px", color: T.textMuted, fontSize: "14px", cursor: "pointer", fontFamily: FF }}>Cancel</button>
                         </div>
                       </div>
                     )}
                   </div>
                 )}
 
+                  </div>
+                </div>
 
-              </div>
+                {/* Right slide-in AI Fill panel */}
+                {showAIPanel && (() => {
+                  const detectedType = detectPasteType(rawDna);
+                  const typeLabel = detectedType === "dna" ? "Detected: Show DNA" : detectedType === "transcript" ? "Detected: Transcript" : null;
+                  const btnLabel = parsing ? "Analyzing…" : detectedType === "transcript" ? "Analyze Transcript →" : "Parse with AI →";
+                  return (
+                    <div style={{ position: "absolute", top: 0, right: 0, width: "420px", height: "100%", background: T.surface, borderLeft: "1px solid " + T.cardBorder, display: "flex", flexDirection: "column", zIndex: 10, boxShadow: "-4px 0 24px rgba(0,0,0,0.08)" }}>
+                      <div style={{ padding: "20px 24px", borderBottom: "1px solid " + T.cardBorder, display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+                        <div>
+                          <div style={{ fontSize: "15px", fontWeight: "700", color: T.text, fontFamily: FF, marginBottom: "4px" }}>AI Fill</div>
+                          <div style={{ fontSize: "13px", color: T.textSecondary, fontFamily: FF, lineHeight: "1.5" }}>Paste a Show DNA doc or an episode transcript. Claude will detect the content type and fill in your show's fields automatically.</div>
+                        </div>
+                        <button onClick={() => setShowAIPanel(false)}
+                          style={{ background: "none", border: "none", color: T.textMuted, fontSize: "20px", cursor: "pointer", padding: "0 0 0 12px", lineHeight: 1, flexShrink: 0 }}>
+                          ×
+                        </button>
+                      </div>
+                      <div style={{ flex: 1, padding: "16px 24px", display: "flex", flexDirection: "column", gap: "10px", overflow: "hidden" }}>
+                        <div style={{ position: "relative", flex: 1, display: "flex", flexDirection: "column" }}>
+                          <textarea style={{ flex: 1, background: T.card, border: "1px solid " + (typeLabel ? (detectedType === "transcript" ? T.coral + "88" : "#52B78888") : T.cardBorder), borderRadius: "6px", padding: "14px", color: T.text, fontSize: "14px", outline: "none", resize: "none", fontFamily: FF, lineHeight: "1.6", transition: "border-color .2s" }} placeholder={"Paste your Show DNA or episode transcript here…\n\nOr click Upload below to load a .txt or .docx file."} value={rawDna} onChange={e => setRawDna(e.target.value)} spellCheck={false} />
+                          {typeLabel && (
+                            <div style={{ position: "absolute", bottom: "10px", right: "10px", fontSize: "11px", fontWeight: "700", letterSpacing: "1px", padding: "3px 8px", borderRadius: "20px", background: detectedType === "transcript" ? T.coral + "22" : "#52B78822", color: detectedType === "transcript" ? T.coral : "#52B788", fontFamily: FF, pointerEvents: "none" }}>
+                              {typeLabel}
+                            </div>
+                          )}
+                        </div>
+                        <div style={{ display: "flex", gap: "8px", marginTop: "16px" }}>
+                          <label style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", padding: "9px 14px", border: "1px dashed " + T.cardBorder, borderRadius: "6px", cursor: "pointer", fontSize: "13px", color: T.textSecondary, fontFamily: FF }}
+                            onMouseEnter={e => { e.currentTarget.style.borderColor = T.coral; e.currentTarget.style.color = T.coral; }}
+                            onMouseLeave={e => { e.currentTarget.style.borderColor = T.cardBorder; e.currentTarget.style.color = T.textSecondary; }}>
+                            Upload .txt or .docx
+                            <input type="file" accept=".txt,.md,.doc,.docx" style={{ display: "none" }} onChange={e => {
+                              const f = e.target.files?.[0]; if (!f) return;
+                              if (f.name.match(/\.docx?$/i)) {
+                                const reader = new FileReader();
+                                reader.onload = async ev => { try { const r = await mammoth.extractRawText({ arrayBuffer: ev.target.result }); setRawDna(r.value); } catch(err) { setMsg("Error reading file: " + err.message); } };
+                                reader.readAsArrayBuffer(f);
+                              } else {
+                                const reader = new FileReader();
+                                reader.onload = ev => setRawDna(ev.target.result);
+                                reader.readAsText(f);
+                              }
+                              e.target.value = "";
+                            }} />
+                          </label>
+                          <button onClick={parseWithAI} disabled={parsing || !rawDna.trim()}
+                            style={{ flex: 1, padding: "9px 14px", background: rawDna.trim() ? T.coral : T.cardBorder, border: "none", borderRadius: "6px", color: rawDna.trim() ? "#fff" : T.textMuted, fontSize: "13px", fontWeight: "700", cursor: rawDna.trim() ? "pointer" : "not-allowed", fontFamily: FF }}>
+                            {btnLabel}
+                          </button>
+                        </div>
+                        {msg && (
+                          <div style={{ marginTop: "10px" }}>
+                            <div style={{ fontSize: "13px", color: msg.startsWith("✓") || msg.startsWith("Saved") ? "#52B788" : "#F09090", fontFamily: FF }}>{msg}</div>
+                            {msg.startsWith("✓") && (
+                              <div style={{ marginTop: "8px", display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                                {["basic","voice","audience"].map(t => (
+                                  <button key={t} onClick={() => { setTab(t); setShowAIPanel(false); }} style={{ padding: "5px 10px", background: T.surface, border: "1px solid " + T.cardBorder, borderRadius: "5px", color: T.coral, fontSize: "11px", cursor: "pointer", fontFamily: FF, fontWeight: "700", letterSpacing: "1px", textTransform: "uppercase" }}>
+                                    {t === "basic" ? "Basic Info" : t === "voice" ? "Voice & Tone" : "Audience"} →
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })()}
 
-              <div style={{ padding: "16px 24px", background: T.surface, borderTop: "1px solid " + T.cardBorder, display: "flex", alignItems: "center", gap: "14px", flexShrink: 0 }}>
-                <button onClick={handleSave} disabled={saving}
-                  style={{ padding: "12px 32px", background: T.coral, border: "none", borderRadius: "6px", color: "#fff", fontSize: "15px", fontWeight: "700", cursor: saving ? "not-allowed" : "pointer", ...LS, letterSpacing: "2px", textTransform: "uppercase", opacity: saving ? 0.6 : 1 }}>
-                  {saving ? "Saving..." : "Save Show →"}
-                </button>
-                {msg && <div style={{ fontSize: "14px", color: msg.startsWith("Saved") || msg.startsWith("DNA") ? "#52B788" : "#F09090", ...LS }}>{msg}</div>}
               </div>
             </div>
           </div>
