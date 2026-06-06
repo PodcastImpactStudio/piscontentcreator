@@ -505,19 +505,6 @@ function SettingsView({ globalSettings, setGlobalSettings, saveGlobalSettings, g
                 )}
               </div>
             </div>
-            <div style={{ background: T.card, border: "1px solid " + T.cardBorder, borderRadius: "12px", marginBottom: "16px" }}>
-              <div style={{ padding: "20px 24px", display: "flex", alignItems: "center", gap: "12px" }}>
-                <span style={{ fontSize: "22px" }}>🔮</span>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: "15px", fontWeight: "700", color: T.text }}>Anthropic (Claude)</div>
-                  <div style={{ fontSize: "13px", color: T.textMuted, fontStyle: "italic" }}>Powers all AI content generation.</div>
-                </div>
-                <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
-                  <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#52B788" }} />
-                  <span style={{ fontSize: "12px", color: T.textMuted }}>Active</span>
-                </div>
-              </div>
-            </div>
           </div>
         )}
 
@@ -582,15 +569,31 @@ function SettingsView({ globalSettings, setGlobalSettings, saveGlobalSettings, g
           </div>
         )}
 
-        {activeSection === "team" && (
+        {activeSection === "team" && (()=>{
+          const ROLES = ["Owner","Admin","Editor","Host"];
+          const roleColors = { Owner:{bg:T.coralSoft,border:T.coralMid,text:T.coral}, Admin:{bg:"#1C1C2E22",border:"#1C1C2E44",text:"#4A4A8A"}, Editor:{bg:"#52B78818",border:"#52B78844",text:"#52B788"}, Host:{bg:"#E67E2218",border:"#E67E2244",text:"#E67E22"}, Viewer:{bg:T.card,border:T.cardBorder,text:T.textMuted} };
+          const roleDesc = { Owner:"Full access — billing, settings, all shows", Admin:"Manage shows, DNA, team & settings", Editor:"Create content, use all tools", Host:"View and generate content for their show" };
+          const seatLimit = accountType === "solo" ? 3 : 10;
+          const atLimit = team.length >= seatLimit;
+          return(
           <div style={{ maxWidth: "680px" }}>
             <div style={{ marginBottom: "28px" }}>
               <div style={{ fontSize: "28px", fontWeight: "600", color: T.text, marginBottom: "6px", fontFamily: PF }}>Team</div>
               <div style={{ fontSize: "15px", color: T.textMuted, fontStyle: "italic" }}>Manage who has access to this workspace.</div>
             </div>
+            {/* Role guide */}
+            <div style={{ background: T.surface, border: "1px solid " + T.cardBorder, borderRadius: "10px", padding: "14px 18px", marginBottom: "16px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+              {ROLES.map(r => r !== "Owner" && (
+                <div key={r} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <span style={{ fontSize: "11px", padding: "2px 8px", background: roleColors[r]?.bg, border: "1px solid " + roleColors[r]?.border, borderRadius: "20px", color: roleColors[r]?.text, fontWeight: "700", whiteSpace: "nowrap" }}>{r}</span>
+                  <span style={{ fontSize: "12px", color: T.textMuted, fontFamily: FF }}>{roleDesc[r]}</span>
+                </div>
+              ))}
+            </div>
             <div style={{ background: T.card, border: "1px solid " + T.cardBorder, borderRadius: "12px", overflow: "hidden" }}>
-              <div style={{ padding: "16px 24px", borderBottom: "1px solid " + T.cardBorder }}>
+              <div style={{ padding: "14px 24px", borderBottom: "1px solid " + T.cardBorder, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div style={{ fontSize: "15px", fontWeight: "700", color: T.text }}>Team Members</div>
+                <div style={{ fontSize: "12px", color: atLimit ? T.coral : T.textMuted, fontWeight: atLimit ? "700" : "400", fontFamily: FF }}>{team.length} / {seatLimit} seats · {accountType === "solo" ? "Solo plan" : "Studio plan"}</div>
               </div>
               <div style={{ padding: "0 24px" }}>
                 {teamLoading ? (
@@ -603,7 +606,7 @@ function SettingsView({ globalSettings, setGlobalSettings, saveGlobalSettings, g
                           <input value={editForm.name} onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))} placeholder="Full name" style={{ ...inp, flex: 1, minWidth: "130px" }} />
                           <input value={editForm.email} onChange={e => setEditForm(f => ({ ...f, email: e.target.value }))} placeholder="Email" style={{ ...inp, flex: 2, minWidth: "180px" }} />
                           <select value={editForm.role} onChange={e => setEditForm(f => ({ ...f, role: e.target.value }))} style={{ ...inp, cursor: "pointer" }} disabled={editForm.role === "Owner"}>
-                            <option>Owner</option><option>Editor</option><option>Viewer</option>
+                            <option>Owner</option><option>Admin</option><option>Editor</option><option>Host</option>
                           </select>
                         </div>
                         <div style={{ display: "flex", gap: "8px" }}>
@@ -618,7 +621,7 @@ function SettingsView({ globalSettings, setGlobalSettings, saveGlobalSettings, g
                           <div style={{ fontSize: "14px", fontWeight: "600", color: T.text }}>{member.name}</div>
                           <div style={{ fontSize: "13px", color: T.textMuted }}>{member.email}</div>
                         </div>
-                        <span style={{ fontSize: "11px", padding: "3px 10px", background: member.role === "Owner" ? T.coralSoft : T.card, border: "1px solid " + (member.role === "Owner" ? T.coralMid : T.cardBorder), borderRadius: "20px", color: member.role === "Owner" ? T.coral : T.textMuted }}>{member.role}</span>
+                        <span style={{ fontSize: "11px", padding: "3px 10px", background: roleColors[member.role]?.bg||T.card, border: "1px solid " + (roleColors[member.role]?.border||T.cardBorder), borderRadius: "20px", color: roleColors[member.role]?.text||T.textMuted, fontWeight: "700" }}>{member.role}</span>
                         <button onClick={() => { setEditingIdx(i); setEditForm({ ...member }); setAddingMember(false); }} style={{ padding: "5px 12px", background: "transparent", border: "1px solid " + T.cardBorder, borderRadius: "6px", color: T.textMuted, fontSize: "12px", cursor: "pointer" }}>Edit</button>
                         {member.role !== "Owner" && <button onClick={() => saveTeam(team.filter((_, idx) => idx !== i))} style={{ padding: "5px 10px", background: "transparent", border: "1px solid #D94F4F44", borderRadius: "6px", color: "#F09090", fontSize: "12px", cursor: "pointer" }}>✕</button>}
                       </div>
@@ -635,8 +638,9 @@ function SettingsView({ globalSettings, setGlobalSettings, saveGlobalSettings, g
                     <div style={{ display: "flex", gap: "8px", marginBottom: "8px", flexWrap: "wrap" }}>
                       <input value={newMember.email} onChange={e => setNewMember(m => ({ ...m, email: e.target.value }))} placeholder="Email address" style={{ ...inp, flex: 2, minWidth: "200px" }} />
                       <select value={newMember.role} onChange={e => setNewMember(m => ({ ...m, role: e.target.value }))} style={{ ...inp, cursor: "pointer", flex: 1, minWidth: "120px" }}>
-                        <option value="editor">Editor</option>
-                        <option value="viewer">Viewer</option>
+                        <option value="Admin">Admin</option>
+                        <option value="Editor">Editor</option>
+                        <option value="Host">Host</option>
                       </select>
                     </div>
                     {inviteMsg && <div style={{ fontSize: "13px", color: inviteMsg.startsWith("✓") ? "#52B788" : "#F09090", marginBottom: "8px" }}>{inviteMsg}</div>}
@@ -647,13 +651,18 @@ function SettingsView({ globalSettings, setGlobalSettings, saveGlobalSettings, g
                       <button onClick={() => { setAddingMember(false); setNewMember({ email: "", role: "editor" }); setInviteMsg(""); }} style={{ padding: "8px 14px", background: "transparent", border: "1px solid " + T.cardBorder, borderRadius: "6px", color: T.textMuted, fontSize: "13px", cursor: "pointer" }}>Cancel</button>
                     </div>
                   </div>
+                ) : atLimit ? (
+                  <div style={{ textAlign: "center", fontSize: "13px", color: T.coral, fontFamily: FF, padding: "4px 0" }}>
+                    Seat limit reached ({seatLimit} / {seatLimit}) — upgrade to add more team members.
+                  </div>
                 ) : (
                   <button onClick={() => { setAddingMember(true); setEditingIdx(null); }} style={{ width: "100%", padding: "9px", background: "transparent", border: "1px dashed " + T.cardBorder, borderRadius: "6px", color: T.textMuted, fontSize: "13px", cursor: "pointer" }}>+ Invite Team Member</button>
                 )}
               </div>
             </div>
           </div>
-        )}
+          );
+        })()}
 
         {activeSection === "codes" && (
           <AccessCodesSection supabase={supabase} T={T} PF={PF} FF={FF} inp={inp} />
