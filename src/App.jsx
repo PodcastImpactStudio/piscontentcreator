@@ -1133,7 +1133,10 @@ export default function App(){
   const clr=d?.clr||T.coral;
   const ci={welcome:0,configure:1,"clips-setup":2,input:2,generating:2,result:2,"prep-format":1,"prep-details":2}[step]||0;
 
-  useEffect(()=>{loadShows().then(s=>{setShows(s);setLoadingShows(false);const keys=Object.keys(s);if(keys.length===1)setShow(keys[0]);});},[]);
+  useEffect(()=>{
+    if(!authReady)return;
+    loadShows().then(s=>{setShows(s);setLoadingShows(false);const keys=Object.keys(s);if(keys.length===1)setShow(keys[0]);});
+  },[authReady,orgId]);
   useEffect(()=>{
     if(!showUserMenu)return;
     function handleClick(e){if(userMenuRef.current&&!userMenuRef.current.contains(e.target))setShowUserMenu(false);}
