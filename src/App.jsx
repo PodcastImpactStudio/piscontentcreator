@@ -1133,7 +1133,7 @@ export default function App(){
   const clr=d?.clr||T.coral;
   const ci={welcome:0,configure:1,"clips-setup":2,input:2,generating:2,result:2,"prep-format":1,"prep-details":2}[step]||0;
 
-  useEffect(()=>{loadShows().then(s=>{setShows(s);setLoadingShows(false);});},[]);
+  useEffect(()=>{loadShows().then(s=>{setShows(s);setLoadingShows(false);const keys=Object.keys(s);if(keys.length===1)setShow(keys[0]);});},[]);
   useEffect(()=>{
     if(!showUserMenu)return;
     function handleClick(e){if(userMenuRef.current&&!userMenuRef.current.contains(e.target))setShowUserMenu(false);}
@@ -1551,41 +1551,37 @@ PRE-RECORDING CHECKLIST
       <HelpWidget onWhatsNew={()=>setShowWhatsNew(true)} onHelpGuide={()=>setShowHelpGuide(true)}/>
 
       {/* ── SIDEBAR ── */}
-      <div style={{width:"240px",minWidth:"240px",height:"100vh",background:"#1A1A1A",display:"flex",flexDirection:"column",position:"sticky",top:0,flexShrink:0,borderRight:"1px solid #2A2A2A",overflowY:"auto"}}>
+      <div style={{width:"240px",minWidth:"240px",height:"100vh",background:"#222222",display:"flex",flexDirection:"column",position:"sticky",top:0,flexShrink:0,borderRight:"1px solid #2E2E2E",overflowY:"auto"}}>
 
         {/* Logo */}
-        <div style={{padding:"20px 20px 12px"}}>
-          <img src="/logo-nav.png" alt="Podcast Impact Content Studio" style={{height:"44px",objectFit:"contain"}}/>
+        <div style={{padding:"24px 20px 20px",display:"flex",alignItems:"center",justifyContent:"center",borderBottom:"1px solid #2E2E2E"}}>
+          <img src="/logo-nav.png" alt="Podcast Impact Content Studio" style={{height:"120px",objectFit:"contain",width:"100%"}}/>
         </div>
 
-        <div style={{height:"1px",background:"#2A2A2A",margin:"0 16px"}}/>
-
-        {/* Show selector */}
-        <div style={{padding:"16px 16px 8px"}}>
-          <div style={{fontSize:"11px",letterSpacing:"2px",textTransform:"uppercase",color:"#6B6B6B",marginBottom:"8px",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600"}}>SHOW</div>
-          <select
-            className="sidebar-show-select"
-            value={show||""}
-            onChange={e=>{
-              const val=e.target.value;
-              setShow(val||null);
-              if(val&&mode&&step==="welcome"){
-                setErr("");setRaw("");setSecs([]);
-                if(mode==="prep")setStep("prep-format");
-                else if(mode==="editor")setStep("input");
-                else setStep("configure");
-              }
-            }}
-            style={{width:"100%",background:"#252525",border:`1px solid ${showSelectorHighlight?"#C41230":"#3A3A3A"}`,borderRadius:"6px",color:show?"#FFFFFF":"#6B6B6B",fontSize:"13px",padding:"8px 10px",fontFamily:"'DM Sans', system-ui, sans-serif",cursor:"pointer",outline:"none",transition:"border-color .2s",boxShadow:showSelectorHighlight?"0 0 0 2px #C4123040":"none"}}>
-            <option value="">Select a show...</option>
-            {Object.entries(shows).sort(([,a],[,b])=>a.name.localeCompare(b.name)).map(([k,s])=>(
-              <option key={k} value={k}>{s.name}</option>
-            ))}
-          </select>
-          {showSelectorHighlight&&<div style={{fontSize:"11px",color:"#C41230",marginTop:"4px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Select a show first</div>}
-        </div>
-
-        <div style={{height:"1px",background:"#2A2A2A",margin:"8px 16px"}}/>
+        {/* Show selector — only shown for multi-show accounts */}
+        {(()=>{const showList=Object.entries(shows).sort(([,a],[,b])=>a.name.localeCompare(b.name));
+          if(showList.length===0)return null;
+          if(showList.length===1)return(
+            <div style={{padding:"14px 16px",borderBottom:"1px solid #2E2E2E"}}>
+              <div style={{fontSize:"11px",letterSpacing:"2px",textTransform:"uppercase",color:"#6B6B6B",marginBottom:"4px",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600"}}>SHOW</div>
+              <div style={{fontSize:"13px",color:"#FFFFFF",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600",padding:"2px 0"}}>{showList[0][1].name}</div>
+            </div>
+          );
+          return(
+            <div style={{padding:"14px 16px",borderBottom:"1px solid #2E2E2E"}}>
+              <div style={{fontSize:"11px",letterSpacing:"2px",textTransform:"uppercase",color:"#6B6B6B",marginBottom:"6px",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600"}}>SHOW</div>
+              <select
+                className="sidebar-show-select"
+                value={show||""}
+                onChange={e=>{const val=e.target.value;setShow(val||null);if(val&&mode&&step==="welcome"){setErr("");setRaw("");setSecs([]);if(mode==="prep")setStep("prep-format");else if(mode==="editor")setStep("input");else setStep("configure");}}}
+                style={{width:"100%",background:"#2E2E2E",border:`1px solid ${showSelectorHighlight?"#C41230":"#3A3A3A"}`,borderRadius:"6px",color:show?"#FFFFFF":"#6B6B6B",fontSize:"13px",padding:"8px 10px",fontFamily:"'DM Sans', system-ui, sans-serif",cursor:"pointer",outline:"none",transition:"border-color .2s",boxShadow:showSelectorHighlight?"0 0 0 2px #C4123040":"none"}}>
+                <option value="">Select a show...</option>
+                {showList.map(([k,s])=><option key={k} value={k}>{s.name}</option>)}
+              </select>
+              {showSelectorHighlight&&<div style={{fontSize:"11px",color:"#C41230",marginTop:"4px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Select a show first</div>}
+            </div>
+          );
+        })()}
 
         {/* Nav sections */}
         <nav style={{flex:1,padding:"4px 0"}}>
@@ -1666,15 +1662,15 @@ PRE-RECORDING CHECKLIST
 
         {/* Top bar — 48px, breadcrumb + back/start over */}
         <div style={{height:"48px",background:T.surface,borderBottom:`1px solid ${T.cardBorder}`,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 32px",flexShrink:0}}>
-          <div style={{fontSize:"12px",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1px"}}>
-            {step==="welcome"&&<span style={{color:T.textMuted}}>Dashboard</span>}
-            {step==="configure"&&<span>{d?.name&&<span style={{color:T.coral,marginRight:"8px"}}>{d.name}</span>}<span style={{color:T.textMuted}}>Configure</span></span>}
-            {step==="clips-setup"&&<span>{d?.name&&<span style={{color:T.coral,marginRight:"8px"}}>{d.name}</span>}<span style={{color:T.textMuted}}>Clips Setup</span></span>}
-            {step==="input"&&<span>{d?.name&&<span style={{color:T.coral,marginRight:"8px"}}>{d.name}</span>}<span style={{color:T.textMuted}}>Transcript</span></span>}
-            {step==="generating"&&<span style={{color:T.textMuted}}>Generating...</span>}
-            {step==="result"&&<span>{d?.name&&<span style={{color:T.coral,marginRight:"8px"}}>{d.name}</span>}<span style={{color:T.textMuted}}>Results</span></span>}
-            {step==="prep-format"&&<span>{d?.name&&<span style={{color:T.coral,marginRight:"8px"}}>{d.name}</span>}<span style={{color:T.textMuted}}>Episode Format</span></span>}
-            {step==="prep-details"&&<span>{d?.name&&<span style={{color:T.coral,marginRight:"8px"}}>{d.name}</span>}<span style={{color:T.textMuted}}>Episode Details</span></span>}
+          <div style={{fontSize:"12px",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1px",display:"flex",alignItems:"center",gap:"6px"}}>
+            {step!=="welcome"&&d?.name&&<><span style={{color:T.coral,fontWeight:"600"}}>{d.name}</span><span style={{color:T.cardBorder}}>›</span></>}
+            {step==="configure"&&<span>Configure</span>}
+            {step==="clips-setup"&&<span>Clips Setup</span>}
+            {step==="input"&&<span>Transcript</span>}
+            {step==="generating"&&<span>Generating...</span>}
+            {step==="result"&&<span>Results</span>}
+            {step==="prep-format"&&<span>Select Format</span>}
+            {step==="prep-details"&&<span>Episode Details</span>}
           </div>
           {/* Progress + nav buttons */}
           <div style={{display:"flex",alignItems:"center",gap:"12px"}}>
@@ -1724,20 +1720,28 @@ PRE-RECORDING CHECKLIST
                   </div>
                 )
               ):(
-                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill, minmax(200px, 1fr))",gap:"12px"}}>
+                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill, minmax(260px, 1fr))",gap:"16px"}}>
                   {[
-                    {id:"full",name:"Content Package",desc:"Show notes, social, email, blog — everything from one transcript"},
-                    {id:"clips",name:"Short-Form Content",desc:"Optimized titles, captions and hashtags for Reels, TikTok and YouTube Shorts"},
-                    {id:"editor",name:"Editor Companion",desc:"Hook recs, clip timestamps and a coaching brief for your editor"},
-                    {id:"prep",name:"Episode Prep",desc:"Pre-episode research, questions, run-of-show and coaching notes"},
+                    {id:"full",  category:"CREATE",    name:"Content Package",    desc:"Show notes, social captions, email newsletter, and blog post — generated from one transcript in your show's voice.",  headerGrad:"linear-gradient(145deg,#C41230 0%,#7A0015 100%)"},
+                    {id:"clips", category:"CREATE",    name:"Short-Form Content",  desc:"SEO-optimized titles, captions, and hashtags for YouTube Shorts, Instagram Reels, and TikTok.",                     headerGrad:"linear-gradient(145deg,#8B0000 0%,#3D0000 100%)"},
+                    {id:"editor",category:"EDITORIAL", name:"Editor Companion",    desc:"Hook recommendations, clip timestamps, pacing notes, and a structured editing brief for your editor.",              headerGrad:"linear-gradient(145deg,#1C1C2E 0%,#0D0D1A 100%)"},
+                    {id:"prep",  category:"PLANNING",  name:"Episode Prep",        desc:"Pre-episode research, discussion questions, run-of-show, and coaching notes tailored to your show's format.",       headerGrad:"linear-gradient(145deg,#1C1C1C 0%,#0A0A0A 100%)"},
                   ].map(card=>(
                     <div key={card.id}
                       onClick={()=>handleSidebarNav(card.id)}
-                      style={{background:T.card,border:`1px solid ${T.cardBorder}`,borderRadius:"12px",padding:"24px 20px",cursor:"pointer",transition:"all .15s"}}
-                      onMouseEnter={e=>{e.currentTarget.style.border=`1px solid ${T.coral}55`;e.currentTarget.style.boxShadow="0 4px 20px rgba(196,18,48,.08)";}}
-                      onMouseLeave={e=>{e.currentTarget.style.border=`1px solid ${T.cardBorder}`;e.currentTarget.style.boxShadow="none";}}>
-                      <div style={{fontSize:"16px",fontWeight:"700",color:T.text,marginBottom:"8px",fontFamily:PF}}>{card.name}</div>
-                      <div style={{fontSize:"13px",color:T.textMuted,lineHeight:"1.6",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{card.desc}</div>
+                      style={{background:T.card,border:"2px solid #C41230",borderRadius:"14px",cursor:"pointer",transition:"all .2s",overflow:"hidden",boxShadow:"0 2px 12px rgba(196,18,48,.08)"}}
+                      onMouseEnter={e=>{e.currentTarget.style.boxShadow="0 8px 32px rgba(196,18,48,.18)";e.currentTarget.style.transform="translateY(-2px)";}}
+                      onMouseLeave={e=>{e.currentTarget.style.boxShadow="0 2px 12px rgba(196,18,48,.08)";e.currentTarget.style.transform="translateY(0)";}}>
+                      {/* Visual header */}
+                      <div style={{height:"110px",background:card.headerGrad,display:"flex",flexDirection:"column",justifyContent:"flex-end",padding:"16px 20px"}}>
+                        <div style={{fontSize:"10px",letterSpacing:"2.5px",textTransform:"uppercase",color:"rgba(255,255,255,0.5)",fontFamily:"'DM Sans',system-ui,sans-serif",fontWeight:"600",marginBottom:"6px"}}>{card.category}</div>
+                        <div style={{fontSize:"18px",fontWeight:"700",color:"#FFFFFF",fontFamily:PF,lineHeight:"1.2"}}>{card.name}</div>
+                      </div>
+                      {/* Body */}
+                      <div style={{padding:"18px 20px 22px"}}>
+                        <div style={{fontSize:"13px",color:T.textSecondary,lineHeight:"1.7",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{card.desc}</div>
+                        <div style={{marginTop:"16px",fontSize:"12px",color:T.coral,fontWeight:"700",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1px",textTransform:"uppercase"}}>Get Started →</div>
+                      </div>
                     </div>
                   ))}
                 </div>
