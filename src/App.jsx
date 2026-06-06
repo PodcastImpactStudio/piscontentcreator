@@ -1427,7 +1427,7 @@ PRE-RECORDING CHECKLIST
     }
     else if(step==="result"){setStep("input");}
     else if(step==="prep-format"){setStep("welcome");}
-    else if(step==="prep-details"){setStep("prep-format");}
+    else if(step==="prep-details"){const hasFmts=d?.episodeFormats?.length>0;setStep(hasFmts?"prep-format":"welcome");}
   }
 
   const lbl={fontSize:"15px",letterSpacing:"2px",textTransform:"uppercase",color:T.textMuted,marginBottom:"10px",display:"block",fontFamily:"'DM Sans', system-ui, sans-serif"};
@@ -1509,8 +1509,12 @@ PRE-RECORDING CHECKLIST
     }
     if(Object.keys(shows).length===0&&isAdmin){setShowAdmin(true);return;}
     setMode(newMode);
-    setErr("");setRaw("");setSecs([]);
-    if(newMode==="prep")setStep("prep-format");
+    setErr("");setRaw("");setSecs([]);setSelectedFormat(null);
+    if(newMode==="prep"){
+      // Skip format selection if show has no formats configured
+      const hasFmts=shows[show]?.episodeFormats?.length>0;
+      setStep(hasFmts?"prep-format":"prep-details");
+    }
     else if(newMode==="editor")setStep("input");
     else setStep("configure");
   }
