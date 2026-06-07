@@ -1324,26 +1324,6 @@ ${epfPasteText.substring(0, 8000)}`;
           <img src="/logo-nav.png" alt="Podcast Impact Content Studio" style={{ height: "120px", objectFit: "contain", width: "100%" }} />
         </div>
 
-        {/* Show selector */}
-        {showKeys.length > 0 && (
-          <div style={{ padding: "14px 16px", borderBottom: "1px solid #2E2E2E" }}>
-            <div style={{ fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase", color: "#6B6B6B", marginBottom: showKeys.length === 1 ? "4px" : "6px", fontFamily: "'DM Sans', system-ui, sans-serif", fontWeight: "600" }}>SHOW</div>
-            {showKeys.length === 1 ? (
-              <div style={{ fontSize: "13px", color: "#FFFFFF", fontFamily: "'DM Sans', system-ui, sans-serif", fontWeight: "600", padding: "2px 0" }}>{shows[showKeys[0]].name}</div>
-            ) : (
-              <select
-                value={selKey && selKey !== "__new__" ? selKey : ""}
-                onChange={e => { const val = e.target.value; if (val) selectShow(val); }}
-                style={{ width: "100%", background: "#2E2E2E", border: "1px solid #3A3A3A", borderRadius: "6px", color: selKey && selKey !== "__new__" ? "#FFFFFF" : "#6B6B6B", fontSize: "13px", padding: "8px 10px", fontFamily: "'DM Sans', system-ui, sans-serif", cursor: "pointer", outline: "none" }}>
-                <option value="">Select a show...</option>
-                {[...Object.entries(shows)].sort(([,a],[,b]) => a.name.localeCompare(b.name)).map(([k, s]) => (
-                  <option key={k} value={k}>{s.name}</option>
-                ))}
-              </select>
-            )}
-            <button onClick={startNew} style={{ width: "100%", marginTop: "8px", padding: "8px 10px", background: "#C41230", border: "none", borderRadius: "6px", color: "#fff", fontSize: "13px", fontWeight: "700", cursor: "pointer", fontFamily: "'DM Sans', system-ui, sans-serif", letterSpacing: "1px", textTransform: "uppercase" }}>+ Add Show</button>
-          </div>
-        )}
 
         {/* Nav sections */}
         <nav style={{ flex: 1, padding: "4px 0" }}>
