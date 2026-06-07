@@ -1529,25 +1529,12 @@ PRE-RECORDING CHECKLIST
     }
   }
 
-  const sidebarSections=[
-    {label:"CREATE",items:[
-      {id:"full",name:"Content Package",desc:"Full content from one transcript"},
-      {id:"clips",name:"Short-Form Content",desc:"Clips for YouTube, Reels, TikTok"},
-    ]},
-    {label:"EDITORIAL",items:[
-      {id:"editor",name:"Editor Companion",desc:"Hook recs, clip timestamps, editing brief"},
-    ]},
-    {label:"PLANNING",items:[
-      {id:"prep",name:"Episode Prep",desc:"Pre-episode research and outline"},
-    ]},
-  ];
-
   const displayName=userProfile?.name||(currentUser?.email?.split("@")[0]||"");
   const userInitial=(userProfile?.name||currentUser?.email||"?").charAt(0).toUpperCase();
 
   return(
     <div style={{minHeight:"100vh",width:"100%",background:T.bg,color:T.text,display:"flex",flexDirection:"row"}}>
-      <style>{`*{box-sizing:border-box}@keyframes spin{to{transform:rotate(360deg)}}@keyframes pulse{0%,100%{opacity:.3}50%{opacity:1}}@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}textarea::placeholder,input::placeholder{color:${T.textMuted}}button:hover{opacity:.85}::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#3A3A3A;border-radius:2px}a{transition:opacity .2s}a:hover{opacity:.7}.sidebar-nav-item:hover{background:#252525}.sidebar-show-select:focus{outline:2px solid #C41230;border-color:#C41230}`}</style>
+      <style>{`*{box-sizing:border-box}@keyframes spin{to{transform:rotate(360deg)}}@keyframes pulse{0%,100%{opacity:.3}50%{opacity:1}}@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}textarea::placeholder,input::placeholder{color:${T.textMuted}}button:hover{opacity:.85}::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#3A3A3A;border-radius:2px}a{transition:opacity .2s}a:hover{opacity:.7}.sidebar-nav-item:hover{background:#252525}.sidebar-show-select:focus{outline:2px solid #C41230;border-color:#C41230}@media(max-width:900px){.welcome-cards{grid-template-columns:repeat(2,1fr)!important}}@media(max-width:560px){.welcome-cards{grid-template-columns:1fr!important}}`}</style>
 
       {showProfile&&currentUser&&<Profile user={currentUser} onClose={()=>setShowProfile(false)} onSignOut={handleSignOut}/>}
       {showAdmin&&<AdminPanel shows={shows} orgId={orgId} accountType={accountType} userEmail={currentUser?.email} userName={userProfile?.name||(currentUser?.email?.split("@")[0]||"")} onSignOut={handleSignOut} onClose={()=>setShowAdmin(false)} onSaved={async()=>{await refreshShows();if(!onboardingComplete)await markOnboardingComplete();}}/>}
@@ -1564,8 +1551,6 @@ PRE-RECORDING CHECKLIST
       {/* HELP & GUIDE */}
       {showHelpGuide&&<HelpGuideModal onClose={()=>setShowHelpGuide(false)}/>}
 
-      {/* HELP WIDGET — fixed bottom right */}
-      <HelpWidget onWhatsNew={()=>setShowWhatsNew(true)} onHelpGuide={()=>setShowHelpGuide(true)}/>
 
       {/* ── SIDEBAR ── */}
       <div style={{width:"240px",minWidth:"240px",height:"100vh",background:"#222222",display:"flex",flexDirection:"column",position:"sticky",top:0,flexShrink:0,borderRight:"1px solid #2E2E2E",overflowY:"auto"}}>
@@ -1587,34 +1572,29 @@ PRE-RECORDING CHECKLIST
         )}
 
         {/* Nav sections */}
-        <nav style={{flex:1,padding:"4px 0"}}>
-          {sidebarSections.map(section=>(
-            <div key={section.label} style={{marginBottom:"4px"}}>
-              <div style={{fontSize:"11px",letterSpacing:"2px",textTransform:"uppercase",color:"#6B6B6B",padding:"10px 16px 4px",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600"}}>{section.label}</div>
-              {section.items.map(item=>{
-                const isActive=mode===item.id&&step!=="welcome";
-                return(
-                  <button
-                    key={item.id}
-                    className="sidebar-nav-item"
-                    onClick={()=>handleSidebarNav(item.id)}
-                    style={{width:"100%",padding:"9px 16px",background:isActive?"#252525":"transparent",border:"none",borderLeft:isActive?"3px solid #C41230":"3px solid transparent",color:isActive?"#C41230":"#FFFFFF",fontSize:"14px",fontWeight:isActive?"600":"400",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",transition:"all .1s",display:"block"}}>
-                    {item.name}
-                  </button>
-                );
-              })}
-            </div>
+        {/* Spacer */}
+        <div style={{flex:1}}/>
+
+        {/* Bottom: help links + settings + user */}
+        <div style={{borderTop:"1px solid #2E2E2E",padding:"8px 0"}}>
+          {[
+            {label:"Share Feedback", action:()=>{ window.location.href="mailto:info@podimpactstudio.com?subject=PIS Content Creator Feedback"; }},
+            {label:"What's New", action:()=>setShowWhatsNew(true)},
+            {label:"Help & Guide", action:()=>setShowHelpGuide(true)},
+          ].map(item=>(
+            <button key={item.label} onClick={item.action}
+              className="sidebar-nav-item"
+              style={{width:"100%",padding:"9px 16px",background:"transparent",border:"none",borderLeft:"3px solid transparent",color:"#8A8A8A",fontSize:"13px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",display:"block"}}>
+              {item.label}
+            </button>
           ))}
-        </nav>
-
-        <div style={{height:"1px",background:"#2A2A2A",margin:"0 16px"}}/>
-
-        {/* Bottom: settings + user */}
-        <div style={{padding:"8px 0 16px"}}>
+        </div>
+        <div style={{height:"1px",background:"#2E2E2E",margin:"0 16px"}}/>
+        <div style={{padding:"8px 0 4px"}}>
           <button
             className="sidebar-nav-item"
             onClick={()=>isAdmin?setShowAdmin(true):setShowProfile(true)}
-            style={{width:"100%",padding:"9px 16px",background:"transparent",border:"none",borderLeft:"3px solid transparent",color:"#FFFFFF",fontSize:"14px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",display:"block"}}>
+            style={{width:"100%",padding:"9px 16px",background:"transparent",border:"none",borderLeft:"3px solid transparent",color:"#FFFFFF",fontSize:"13px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",display:"block"}}>
             Settings
           </button>
           <div style={{padding:"8px 16px 0"}}>
@@ -1694,11 +1674,11 @@ PRE-RECORDING CHECKLIST
           <div style={{maxWidth:"900px",margin:"0 auto",width:"100%"}}>
 
             {/* WELCOME SCREEN */}
-            {step==="welcome"&&<div style={{animation:"fadeUp .4s ease"}}>
-              <div style={{marginBottom:"48px"}}>
-                <h1 style={{fontSize:"40px",fontWeight:"700",color:T.text,margin:"0 0 8px",letterSpacing:"-0.5px",fontFamily:PF,lineHeight:"1.2"}}>
+            {step==="welcome"&&<div style={{animation:"fadeUp .4s ease",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",minHeight:"80vh",textAlign:"center"}}>
+              <div style={{marginBottom:"40px"}}>
+                <h1 style={{fontSize:"38px",fontWeight:"700",color:T.text,margin:"0 0 8px",letterSpacing:"-0.5px",fontFamily:PF,lineHeight:"1.2"}}>
                   Welcome back{displayName?`, ${displayName.split(" ")[0]}`:""}.</h1>
-                <p style={{fontSize:"17px",color:T.textMuted,margin:0,fontFamily:"'DM Sans', system-ui, sans-serif"}}>What are you creating today?</p>
+                <p style={{fontSize:"16px",color:T.textMuted,margin:0,fontFamily:"'DM Sans', system-ui, sans-serif"}}>What are you creating today?</p>
               </div>
               {loadingShows?(
                 <div style={{textAlign:"center",padding:"60px",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"2px",fontSize:"12px"}}>LOADING SHOWS...</div>
@@ -1723,27 +1703,25 @@ PRE-RECORDING CHECKLIST
                   </div>
                 )
               ):(
-                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill, minmax(260px, 1fr))",gap:"16px"}}>
+                <div className="welcome-cards" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"14px",width:"100%"}}>
                   {[
-                    {id:"full",  category:"CREATE",    name:"Content Package",    desc:"Show notes, social captions, email newsletter, and blog post — generated from one transcript in your show's voice.",  headerGrad:"linear-gradient(145deg,#C41230 0%,#7A0015 100%)"},
-                    {id:"clips", category:"CREATE",    name:"Short-Form Content",  desc:"SEO-optimized titles, captions, and hashtags for YouTube Shorts, Instagram Reels, and TikTok.",                     headerGrad:"linear-gradient(145deg,#8B0000 0%,#3D0000 100%)"},
-                    {id:"editor",category:"EDITORIAL", name:"Editor Companion",    desc:"Hook recommendations, clip timestamps, pacing notes, and a structured editing brief for your editor.",              headerGrad:"linear-gradient(145deg,#1C1C2E 0%,#0D0D1A 100%)"},
-                    {id:"prep",  category:"PLANNING",  name:"Episode Prep",        desc:"Pre-episode research, discussion questions, run-of-show, and coaching notes tailored to your show's format.",       headerGrad:"linear-gradient(145deg,#1C1C1C 0%,#0A0A0A 100%)"},
+                    {id:"full",  category:"CREATE",    name:"Content Package",    desc:"Show notes, social, email, and blog post from one transcript.",  headerGrad:"linear-gradient(145deg,#C41230 0%,#7A0015 100%)"},
+                    {id:"clips", category:"CREATE",    name:"Short-Form Content",  desc:"Titles, captions and hashtags for Reels, TikTok and Shorts.",    headerGrad:"linear-gradient(145deg,#8B0000 0%,#3D0000 100%)"},
+                    {id:"editor",category:"EDITORIAL", name:"Editor Companion",    desc:"Hook recs, clip timestamps and editing brief for your editor.",   headerGrad:"linear-gradient(145deg,#1C1C2E 0%,#0D0D1A 100%)"},
+                    {id:"prep",  category:"PLANNING",  name:"Episode Prep",        desc:"Research, questions and run-of-show for your next episode.",      headerGrad:"linear-gradient(145deg,#1C1C1C 0%,#0A0A0A 100%)"},
                   ].map(card=>(
                     <div key={card.id}
                       onClick={()=>handleSidebarNav(card.id)}
-                      style={{background:T.card,border:"2px solid #C41230",borderRadius:"14px",cursor:"pointer",transition:"all .2s",overflow:"hidden",boxShadow:"0 2px 12px rgba(196,18,48,.08)"}}
-                      onMouseEnter={e=>{e.currentTarget.style.boxShadow="0 8px 32px rgba(196,18,48,.18)";e.currentTarget.style.transform="translateY(-2px)";}}
-                      onMouseLeave={e=>{e.currentTarget.style.boxShadow="0 2px 12px rgba(196,18,48,.08)";e.currentTarget.style.transform="translateY(0)";}}>
-                      {/* Visual header */}
-                      <div style={{height:"110px",background:card.headerGrad,display:"flex",flexDirection:"column",justifyContent:"flex-end",padding:"16px 20px"}}>
-                        <div style={{fontSize:"10px",letterSpacing:"2.5px",textTransform:"uppercase",color:"rgba(255,255,255,0.5)",fontFamily:"'DM Sans',system-ui,sans-serif",fontWeight:"600",marginBottom:"6px"}}>{card.category}</div>
-                        <div style={{fontSize:"18px",fontWeight:"700",color:"#FFFFFF",fontFamily:PF,lineHeight:"1.2"}}>{card.name}</div>
+                      style={{background:T.card,border:"2px solid #C41230",borderRadius:"12px",cursor:"pointer",transition:"all .2s",overflow:"hidden",boxShadow:"0 2px 10px rgba(196,18,48,.07)"}}
+                      onMouseEnter={e=>{e.currentTarget.style.boxShadow="0 8px 28px rgba(196,18,48,.18)";e.currentTarget.style.transform="translateY(-2px)";}}
+                      onMouseLeave={e=>{e.currentTarget.style.boxShadow="0 2px 10px rgba(196,18,48,.07)";e.currentTarget.style.transform="translateY(0)";}}>
+                      <div style={{height:"90px",background:card.headerGrad,display:"flex",flexDirection:"column",justifyContent:"flex-end",padding:"12px 16px"}}>
+                        <div style={{fontSize:"10px",letterSpacing:"2px",textTransform:"uppercase",color:"rgba(255,255,255,0.45)",fontFamily:"'DM Sans',system-ui,sans-serif",fontWeight:"600",marginBottom:"4px"}}>{card.category}</div>
+                        <div style={{fontSize:"15px",fontWeight:"700",color:"#FFFFFF",fontFamily:PF,lineHeight:"1.2"}}>{card.name}</div>
                       </div>
-                      {/* Body */}
-                      <div style={{padding:"18px 20px 22px"}}>
-                        <div style={{fontSize:"13px",color:T.textSecondary,lineHeight:"1.7",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{card.desc}</div>
-                        <div style={{marginTop:"16px",fontSize:"12px",color:T.coral,fontWeight:"700",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1px",textTransform:"uppercase"}}>Get Started →</div>
+                      <div style={{padding:"14px 16px 18px"}}>
+                        <div style={{fontSize:"12px",color:T.textSecondary,lineHeight:"1.65",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{card.desc}</div>
+                        <div style={{marginTop:"12px",fontSize:"11px",color:T.coral,fontWeight:"700",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1px",textTransform:"uppercase"}}>Get Started →</div>
                       </div>
                     </div>
                   ))}
