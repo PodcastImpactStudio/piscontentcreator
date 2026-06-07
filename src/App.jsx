@@ -1645,12 +1645,12 @@ PRE-RECORDING CHECKLIST
 
         {/* Top bar — 48px, breadcrumb + back/start over */}
         <div style={{height:"48px",background:T.surface,borderBottom:`1px solid ${T.cardBorder}`,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 32px",flexShrink:0}}>
-          <div style={{fontSize:"12px",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1px",display:"flex",alignItems:"center",gap:"6px"}}>
-            {step!=="welcome"&&d?.name&&<><span style={{color:T.coral,fontWeight:"600"}}>{d.name}</span><span style={{color:T.cardBorder}}>›</span></>}
+          <div style={{fontSize:"12px",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1.5px",textTransform:"uppercase"}}>
+            {step==="show-select"&&<span>Select Show</span>}
             {step==="configure"&&<span>Configure</span>}
             {step==="clips-setup"&&<span>Clips Setup</span>}
             {step==="input"&&<span>Transcript</span>}
-            {step==="generating"&&<span>Generating...</span>}
+            {step==="generating"&&<span>Generating</span>}
             {step==="result"&&<span>Results</span>}
             {step==="prep-format"&&<span>Select Format</span>}
             {step==="prep-details"&&<span>Episode Details</span>}
