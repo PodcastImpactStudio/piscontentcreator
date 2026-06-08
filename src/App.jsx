@@ -1103,6 +1103,8 @@ export default function App(){
   const[showAdmin,setShowAdmin]=useState(false);
   const[showAdminGate,setShowAdminGate]=useState(false);
   const[isAdmin,setIsAdmin]=useState(false);
+  const[isClient,setIsClient]=useState(false);
+  const[clientConfig,setClientConfig]=useState(null); // {assignedShow, allowedModes, scheduleUrl}
   const[currentUser,setCurrentUser]=useState(null);
   const[authReady,setAuthReady]=useState(false);
   const[showProfile,setShowProfile]=useState(false);
@@ -1339,6 +1341,21 @@ PRE-RECORDING CHECKLIST
       const adminEmails = ["tamar@podcastimpactstudio.com", "tamarroutly@gmail.com"];
       const isAdminUser = data?.role === "admin" || adminEmails.includes(user.email?.toLowerCase());
       setIsAdmin(isAdminUser);
+      // Check client role
+      const isClientUser = (data?.role || "").toLowerCase() === "client";
+      setIsClient(isClientUser);
+      if (isClientUser) {
+        try {
+          const { data: sData } = await supabase.from("settings").select("value").eq("key", "global").single();
+          const teamList = sData?.value?.team || [];
+          const myEntry = teamList.find(m => m.email?.toLowerCase() === user.email?.toLowerCase());
+          const assignedShow = myEntry?.assignedShow || null;
+          const allowedModes = myEntry?.allowedModes || ["prep"];
+          const scheduleUrl = sData?.value?.scheduleUrl || "";
+          setClientConfig({ assignedShow, allowedModes, scheduleUrl });
+          if (assignedShow) setShow(assignedShow);
+        } catch {}
+      }
       // Load onboarding state
       if (myOrgId) {
         const { data: orgData } = await supabase.from("organizations")
@@ -1360,6 +1377,8 @@ PRE-RECORDING CHECKLIST
     setCurrentUser(null);
     setAuthReady(false);
     setIsAdmin(false);
+    setIsClient(false);
+    setClientConfig(null);
     setUserProfile(null);
     setOrgId(null);
     setOrgName("");
@@ -1566,7 +1585,7 @@ PRE-RECORDING CHECKLIST
             <div style={{fontSize:"10px",letterSpacing:"2px",textTransform:"uppercase",color:"#6B6B6B",marginBottom:"4px",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600"}}>SHOW</div>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:"8px"}}>
               <div style={{fontSize:"13px",color:"#FFFFFF",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{shows[show].name}</div>
-              {Object.keys(shows).length>1&&<button onClick={()=>{setShow(null);setMode(null);setStep("welcome");}} style={{background:"none",border:"none",color:"#6B6B6B",fontSize:"11px",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",flexShrink:0,padding:"2px 0"}} title="Change show">change</button>}
+              {!isClient&&Object.keys(shows).length>1&&<button onClick={()=>{setShow(null);setMode(null);setStep("welcome");}} style={{background:"none",border:"none",color:"#6B6B6B",fontSize:"11px",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",flexShrink:0,padding:"2px 0"}} title="Change show">change</button>}
             </div>
           </div>
         )}
@@ -1577,6 +1596,14 @@ PRE-RECORDING CHECKLIST
 
         {/* Bottom: help links + settings + user */}
         <div style={{borderTop:"1px solid #2E2E2E",padding:"8px 0"}}>
+          {/* View Schedule — clients only, when scheduleUrl is configured */}
+          {isClient&&clientConfig?.scheduleUrl&&(
+            <a href={clientConfig.scheduleUrl} target="_blank" rel="noopener noreferrer"
+              className="sidebar-nav-item"
+              style={{width:"100%",padding:"9px 16px",background:"transparent",border:"none",borderLeft:"3px solid transparent",color:"#52B788",fontSize:"13px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",display:"block",textDecoration:"none",fontWeight:"600"}}>
+              📅 View Schedule
+            </a>
+          )}
           {[
             {label:"Share Feedback", action:()=>{ window.location.href="mailto:info@podimpactstudio.com?subject=PIS Content Creator Feedback"; }},
             {label:"What's New", action:()=>setShowWhatsNew(true)},
@@ -1702,14 +1729,20 @@ PRE-RECORDING CHECKLIST
                     <p style={{fontSize:"16px",color:T.textMuted}}>Your admin hasn't added any shows yet. Check back soon!</p>
                   </div>
                 )
-              ):(
-                <div className="welcome-cards" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"14px",width:"100%"}}>
-                  {[
-                    {id:"full",  category:"CREATE",    name:"Content Package",    desc:"Show notes, social, email, and blog post from one transcript.",  headerGrad:"linear-gradient(145deg,#C41230 0%,#7A0015 100%)"},
-                    {id:"clips", category:"CREATE",    name:"Short-Form Content",  desc:"Titles, captions and hashtags for Reels, TikTok and Shorts.",    headerGrad:"linear-gradient(145deg,#8B0000 0%,#3D0000 100%)"},
-                    {id:"editor",category:"EDITORIAL", name:"Editor Companion",    desc:"Hook recs, clip timestamps and editing brief for your editor.",   headerGrad:"linear-gradient(145deg,#1C1C2E 0%,#0D0D1A 100%)"},
-                    {id:"prep",  category:"PLANNING",  name:"Episode Prep",        desc:"Research, questions and run-of-show for your next episode.",      headerGrad:"linear-gradient(145deg,#1C1C1C 0%,#0A0A0A 100%)"},
-                  ].map(card=>(
+              ):(()=>{
+                const ALL_CARDS=[
+                  {id:"full",  category:"CREATE",    name:"Content Package",    desc:"Show notes, social, email, and blog post from one transcript.",  headerGrad:"linear-gradient(145deg,#C41230 0%,#7A0015 100%)"},
+                  {id:"clips", category:"CREATE",    name:"Short-Form Content",  desc:"Titles, captions and hashtags for Reels, TikTok and Shorts.",    headerGrad:"linear-gradient(145deg,#8B0000 0%,#3D0000 100%)"},
+                  {id:"editor",category:"EDITORIAL", name:"Editor Companion",    desc:"Hook recs, clip timestamps and editing brief for your editor.",   headerGrad:"linear-gradient(145deg,#1C1C2E 0%,#0D0D1A 100%)"},
+                  {id:"prep",  category:"PLANNING",  name:"Episode Prep",        desc:"Build a complete episode outline with hooks, bridges, and permission slips.",      headerGrad:"linear-gradient(145deg,#1C1C1C 0%,#0A0A0A 100%)"},
+                ];
+                const visibleCards = isClient && clientConfig?.allowedModes
+                  ? ALL_CARDS.filter(c => clientConfig.allowedModes.includes(c.id))
+                  : ALL_CARDS;
+                const colCount = Math.min(visibleCards.length, 4);
+                return(
+                <div className="welcome-cards" style={{display:"grid",gridTemplateColumns:`repeat(${colCount},1fr)`,gap:"14px",width:"100%"}}>
+                  {visibleCards.map(card=>(
                     <div key={card.id}
                       onClick={()=>handleSidebarNav(card.id)}
                       style={{background:T.card,border:"2px solid #C41230",borderRadius:"12px",cursor:"pointer",transition:"all .2s",overflow:"hidden",boxShadow:"0 2px 10px rgba(196,18,48,.07)"}}
@@ -1726,7 +1759,8 @@ PRE-RECORDING CHECKLIST
                     </div>
                   ))}
                 </div>
-              )}
+                );
+              })()}
             </div>}
 
             {/* SHOW SELECT — shown after clicking a card when multiple shows exist */}
