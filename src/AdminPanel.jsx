@@ -1517,13 +1517,19 @@ ${epfPasteText.substring(0, 8000)}`;
                   </button>
                 ))}
               </div>
+              <div style={{ borderTop: "1px solid " + T.cardBorder, padding: "10px" }}>
+                <button onClick={startNew}
+                  style={{ width: "100%", padding: "9px 14px", background: T.coral, border: "none", borderRadius: "6px", color: "#fff", fontSize: "13px", fontWeight: "700", cursor: "pointer", fontFamily: FF, letterSpacing: "0.5px" }}>
+                  + Add Show
+                </button>
+              </div>
             </div>
             {/* Empty main area */}
             <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
               <div style={{ textAlign: "center", color: T.textMuted }}>
                 <div style={{ fontSize: "40px", marginBottom: "16px", opacity: 0.4 }}>◈</div>
                 <div style={{ fontSize: "15px", ...LS, letterSpacing: "1px", color: T.textSecondary, marginBottom: "6px" }}>Select a show to edit</div>
-                <div style={{ fontSize: "13px", color: T.textMuted, fontFamily: FF }}>or use "+ Add Show" in the sidebar to create a new one</div>
+                <div style={{ fontSize: "13px", color: T.textMuted, fontFamily: FF }}>or click <strong style={{ color: T.coral }}>+ Add Show</strong> below the list to create a new one</div>
               </div>
             </div>
           </div>
@@ -1545,6 +1551,12 @@ ${epfPasteText.substring(0, 8000)}`;
                 <button
                   style={{ width: "100%", padding: "10px 14px", background: T.coralSoft, border: "none", borderLeft: "3px solid " + T.coral, color: T.coral, fontSize: "13px", cursor: "pointer", textAlign: "left", fontFamily: FF, fontWeight: "700", display: "block" }}>
                   New Show
+                </button>
+              </div>
+              <div style={{ borderTop: "1px solid " + T.cardBorder, padding: "10px" }}>
+                <button onClick={startNew}
+                  style={{ width: "100%", padding: "9px 14px", background: T.coral, border: "none", borderRadius: "6px", color: "#fff", fontSize: "13px", fontWeight: "700", cursor: "pointer", fontFamily: FF, letterSpacing: "0.5px" }}>
+                  + Add Show
                 </button>
               </div>
             </div>
@@ -1631,6 +1643,12 @@ ${epfPasteText.substring(0, 8000)}`;
                     New Show
                   </button>
                 )}
+              </div>
+              <div style={{ borderTop: "1px solid " + T.cardBorder, padding: "10px" }}>
+                <button onClick={startNew}
+                  style={{ width: "100%", padding: "9px 14px", background: T.coral, border: "none", borderRadius: "6px", color: "#fff", fontSize: "13px", fontWeight: "700", cursor: "pointer", fontFamily: FF, letterSpacing: "0.5px" }}>
+                  + Add Show
+                </button>
               </div>
             </div>
 
