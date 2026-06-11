@@ -32,9 +32,22 @@ const MODES = [
 const PF = "'DM Sans', system-ui, sans-serif";
 
 function strip(t){if(!t)return "";const B=String.fromCharCode(96);const r1=new RegExp(B+"{3}[\\s\\S]*?"+B+"{3}","g");const r2=new RegExp(B+"([^"+B+"]+)"+B,"g");return t.replace(/^#{1,6}\s+/gm,"").replace(/\*\*\*(.*?)\*\*\*/g,"$1").replace(/\*\*(.*?)\*\*/g,"$1").replace(/\*(.*?)\*/g,"$1").replace(/__(.*?)__/g,"$1").replace(r1,"").replace(r2,"$1").replace(/^\s*[-*+]\s+/gm,"- ").replace(/\[([^\]]+)\]\([^)]+\)/g,"$1").replace(/^>\s+/gm,"").replace(/^---+$/gm,"").replace(/\n{3,}/g,"\n\n").trim();}
-function parse(raw){const ps=[{id:"titles",r:[/SEO TITLE/i]},{id:"shownotes",r:[/SHOW NOTES/i]},{id:"spotify-creators",r:[/SPOTIFY FOR CREATORS/i]},{id:"editor-hooks",r:[/INTRO HOOK REC/i]},{id:"editor-clips",r:[/SOCIAL (MEDIA )?CLIP REC/i,/SOCIAL CLIP REC/i]},{id:"editor-notes",r:[/EDITOR NOTES/i]},{id:"youtube",r:[/YOUTUBE DESC/i]},{id:"youtube-quiz",r:[/YOUTUBE QUIZ/i]},{id:"social",r:[/SOCIAL MEDIA(?! CLIP)/i]},{id:"quotes",r:[/QUOTE CARDS/i,/PULL QUOTES/i]},{id:"poll-questions",r:[/POLL QUESTIONS/i]},{id:"story-slides",r:[/STORY SLIDES/i]},{id:"engagement-prompts",r:[/ENGAGEMENT PROMPTS/i]},{id:"takeaway-graphics",r:[/KEY TAKEAWAY GRAPHICS/i]},{id:"guestkit",r:[/GUEST SHARE/i]},{id:"email",r:[/EMAIL NEWS/i,/^(?!.*(PATREON|CIRCLE|MIGHTY|KAJABI|SKOOL|FACEBOOK GROUP)).*NEWSLETTER/i]},{id:"blog",r:[/BLOG ART/i,/BLOG POST/i]},{id:"community-companion",r:[/COMPANION POST/i]},{id:"community-prompts",r:[/COMMUNITY FEED PROMPTS/i,/DISCUSSION PROMPTS/i]},{id:"community-polls",r:[/POLL IDEAS/i,/(?:PATREON|CIRCLE|MIGHTY|KAJABI|SKOOL|FACEBOOK) POLL/i]},{id:"community-starters",r:[/CONVERSATION STARTERS/i]},{id:"clips",r:[/^\d+\.\s*CLIPS/i,/^\d+\.\s*SHORTS/i,/^\d+\.\s*REELS/i]}];const c=strip(raw),lines=c.split("\n"),secs=[];let ti=null,id="intro",buf=[];for(const l of lines){let h=false;for(const p of ps){if(p.r.some(r=>r.test(l))){if(buf.length)secs.push({id,title:ti||"Overview",content:buf.join("\n").trim()});ti=l.replace(/^\d+\.\s*/,"").trim();id=p.id;buf=[];h=true;break;}}if(!h)buf.push(l);}if(buf.length)secs.push({id,title:ti||"Content",content:buf.join("\n").trim()});return secs.filter(s=>s.content.length>0);}
+function parse(raw){const ps=[
+  // Episode Prep sections (checked first — more specific)
+  {id:"prep-package",    r:[/EPISODE PREP PACKAGE/i]},
+  {id:"prep-hook",       r:[/^HOOK\b/i,/^HOOK\s*\(/i]},
+  {id:"prep-bridge",     r:[/^BRIDGE\b/i,/^BRIDGE\s*\(/i]},
+  {id:"prep-permission", r:[/PERMISSION SLIP CLOSE/i]},
+  {id:"prep-structure",  r:[/^EPISODE STRUCTURE/i]},
+  {id:"prep-research",   r:[/^GUEST RESEARCH/i]},
+  {id:"prep-questions",  r:[/TAILORED INTERVIEW QUESTIONS/i,/^TAILORED QUESTIONS/i]},
+  {id:"prep-clips",      r:[/^CLIP PRIORITIES/i]},
+  {id:"prep-checklist",  r:[/PRE-RECORDING CHECKLIST/i]},
+  // Full content sections
+  {id:"titles",r:[/SEO TITLE/i]},{id:"shownotes",r:[/SHOW NOTES/i]},{id:"spotify-creators",r:[/SPOTIFY FOR CREATORS/i]},{id:"editor-hooks",r:[/INTRO HOOK REC/i]},{id:"editor-clips",r:[/SOCIAL (MEDIA )?CLIP REC/i,/SOCIAL CLIP REC/i]},{id:"editor-notes",r:[/EDITOR NOTES/i]},{id:"youtube",r:[/YOUTUBE DESC/i]},{id:"youtube-quiz",r:[/YOUTUBE QUIZ/i]},{id:"social",r:[/SOCIAL MEDIA(?! CLIP)/i]},{id:"quotes",r:[/QUOTE CARDS/i,/PULL QUOTES/i]},{id:"poll-questions",r:[/POLL QUESTIONS/i]},{id:"story-slides",r:[/STORY SLIDES/i]},{id:"engagement-prompts",r:[/ENGAGEMENT PROMPTS/i]},{id:"takeaway-graphics",r:[/KEY TAKEAWAY GRAPHICS/i]},{id:"guestkit",r:[/GUEST SHARE/i]},{id:"email",r:[/EMAIL NEWS/i,/^(?!.*(PATREON|CIRCLE|MIGHTY|KAJABI|SKOOL|FACEBOOK GROUP)).*NEWSLETTER/i]},{id:"blog",r:[/BLOG ART/i,/BLOG POST/i]},{id:"community-companion",r:[/COMPANION POST/i]},{id:"community-prompts",r:[/COMMUNITY FEED PROMPTS/i,/DISCUSSION PROMPTS/i]},{id:"community-polls",r:[/POLL IDEAS/i,/(?:PATREON|CIRCLE|MIGHTY|KAJABI|SKOOL|FACEBOOK) POLL/i]},{id:"community-starters",r:[/CONVERSATION STARTERS/i]},{id:"clips",r:[/^\d+\.\s*CLIPS/i,/^\d+\.\s*SHORTS/i,/^\d+\.\s*REELS/i]}
+];const c=strip(raw),lines=c.split("\n"),secs=[];let ti=null,id="intro",buf=[];for(const l of lines){let h=false;for(const p of ps){if(p.r.some(r=>r.test(l))){if(buf.length)secs.push({id,title:ti||"Overview",content:buf.join("\n").trim()});ti=l.replace(/^\d+\.\s*/,"").trim();id=p.id;buf=[];h=true;break;}}if(!h)buf.push(l);}if(buf.length)secs.push({id,title:ti||"Content",content:buf.join("\n").trim()});return secs.filter(s=>s.content.length>0);}
 
-const SM={titles:{l:"SEO Titles",i:"🎯"},shownotes:{l:"Show Notes",i:"📝"},"spotify-creators":{l:"Spotify for Creators",i:"🎵"},youtube:{l:"YouTube",i:"▶️"},"youtube-quiz":{l:"YouTube Quiz Card",i:"🧩"},"editor-hooks":{l:"Intro Hook Recommendations",i:"🎬"},"editor-clips":{l:"Social Clip Recommendations",i:"✂️"},"editor-notes":{l:"Editor Notes",i:"📋"},social:{l:"Social Media",i:"📱"},quotes:{l:"Quote Cards",i:"💬"},"poll-questions":{l:"Poll Questions",i:"📊"},"story-slides":{l:"Story Slides",i:"🎞️"},"engagement-prompts":{l:"Engagement Prompts",i:"💡"},"takeaway-graphics":{l:"Key Takeaway Graphics",i:"✨"},guestkit:{l:"Guest Kit",i:"🎁"},email:{l:"Newsletter",i:"📧"},blog:{l:"Blog",i:"📰"},"patreon-companion":{l:"Patreon Companion Post",i:"📝"},"patreon-discussion":{l:"Patreon Discussion Prompts",i:"💬"},"patreon-poll":{l:"Patreon Poll",i:"📊"},"patreon-newsletter":{l:"Patreon Newsletter",i:"📧"},"community-companion":{l:"Community Companion Post",i:"📝"},"community-prompts":{l:"Community Feed Prompts",i:"💬"},"community-polls":{l:"Community Polls",i:"📊"},"community-starters":{l:"Conversation Starters",i:"✨"},clips:{l:"Clips & Shorts",i:"✂️"},intro:{l:"Overview",i:"📋"}};
+const SM={"prep-package":{l:"Episode Overview",i:"📋"},"prep-hook":{l:"Hook",i:"🎣"},"prep-bridge":{l:"Bridge",i:"🌉"},"prep-permission":{l:"Permission Slip Close",i:"🔓"},"prep-structure":{l:"Episode Structure",i:"📐"},"prep-research":{l:"Guest Research",i:"🔍"},"prep-questions":{l:"Tailored Interview Questions",i:"❓"},"prep-clips":{l:"Clip Priorities",i:"✂️"},"prep-checklist":{l:"Pre-Recording Checklist",i:"✅"},titles:{l:"SEO Titles",i:"🎯"},shownotes:{l:"Show Notes",i:"📝"},"spotify-creators":{l:"Spotify for Creators",i:"🎵"},youtube:{l:"YouTube",i:"▶️"},"youtube-quiz":{l:"YouTube Quiz Card",i:"🧩"},"editor-hooks":{l:"Intro Hook Recommendations",i:"🎬"},"editor-clips":{l:"Social Clip Recommendations",i:"✂️"},"editor-notes":{l:"Editor Notes",i:"📋"},social:{l:"Social Media",i:"📱"},quotes:{l:"Quote Cards",i:"💬"},"poll-questions":{l:"Poll Questions",i:"📊"},"story-slides":{l:"Story Slides",i:"🎞️"},"engagement-prompts":{l:"Engagement Prompts",i:"💡"},"takeaway-graphics":{l:"Key Takeaway Graphics",i:"✨"},guestkit:{l:"Guest Kit",i:"🎁"},email:{l:"Newsletter",i:"📧"},blog:{l:"Blog",i:"📰"},"patreon-companion":{l:"Patreon Companion Post",i:"📝"},"patreon-discussion":{l:"Patreon Discussion Prompts",i:"💬"},"patreon-poll":{l:"Patreon Poll",i:"📊"},"patreon-newsletter":{l:"Patreon Newsletter",i:"📧"},"community-companion":{l:"Community Companion Post",i:"📝"},"community-prompts":{l:"Community Feed Prompts",i:"💬"},"community-polls":{l:"Community Polls",i:"📊"},"community-starters":{l:"Conversation Starters",i:"✨"},clips:{l:"Clips & Shorts",i:"✂️"},intro:{l:"Overview",i:"📋"}};
 const ED=[{id:"titles",l:"SEO Titles"},{id:"shownotes",l:"Show Notes"},{id:"youtube",l:"YouTube"},{id:"social",l:"Social Media"},{id:"guestkit",l:"Guest Kit",g:true},{id:"email",l:"Newsletter"},{id:"blog",l:"Blog"},{id:"quotes",l:"Quotes"},{id:"patreon-companion",l:"Patreon Companion Post",pm:true},{id:"patreon-discussion",l:"Patreon Discussion Prompts",pm:true},{id:"patreon-poll",l:"Patreon Poll",pm:true},{id:"patreon-newsletter",l:"Patreon Newsletter",pm:true},{id:"clips",l:"Clips & Shorts",cm:true}];
 
 function stripHtml(html) {
@@ -1288,24 +1301,53 @@ EPISODE STRUCTURE
 
 ---
 
-TAILORED QUESTIONS
-[The format's standing questions rewritten specifically for ${epGuest || epTopic || "this episode"}. Labeled by segment.]
+GUEST RESEARCH${epGuest ? ` — ${epGuest}` : ""}
+Source: ${epGuestUrl ? epGuestUrl : "No URL provided — base only on topic description below."}
+⚠️ ACCURACY: Only include what was explicitly provided or can be reasonably inferred from the topic. Flag anything uncertain with [UNVERIFIED — please check manually]. Never invent credentials, book titles, company names, or statistics.
+
+Known Expertise: [What this guest/topic is known for, based strictly on the information provided above. If no URL given, draw only from the topic description. Use [UNVERIFIED — please check manually] for anything not confirmed.]
+Potential Gaps or Blind Spots: [Areas where their perspective may be limited or where a probing question would add depth. Flag if inferred.]
+Listener Relevance: [How their specific expertise directly addresses ${onePerson.name ? onePerson.name + "'s" : "the ONE person's"} 2AM question${onePerson.question2AM ? ` ("${onePerson.question2AM}")` : ""}. Be specific — connect their work to the wound.]
+
+---
+
+TAILORED INTERVIEW QUESTIONS
+[Questions crafted to connect ${epGuest ? epGuest + "'s expertise" : "this topic"} → ${onePerson.name || "the ONE person"}'s specific needs. Every question should serve the listener, not just the guest.]
+
+OPENING — Establish credibility and hook the listener in
+- [Question that connects the guest's origin story to a moment ${onePerson.name || "the listener"} will immediately recognize — not a resume walkthrough]
+- [Question that surfaces a "I didn't have it figured out either" moment — makes the guest relatable before they become the authority]
+
+CORE QUESTIONS — Bridge expertise to the ONE Person's wound
+- [Question that addresses "${onePerson.question2AM || "their 2AM question"}" directly through this guest's specific lens]
+- [Question that names the core wound ("${onePerson.wound || "the underlying fear"}") indirectly — invites the guest to give the listener language for what they're feeling]
+- [Question about the specific method, mindset shift, or moment the listener can walk away with and use today]
+
+DEPTH QUESTIONS — For strong rapport or extended time
+- ["What do most people get wrong about [topic]?" — surfaces nuance and positions guest as correcting a myth]
+- [A gentle contrarian challenge: "Some people would argue the opposite — what would you say to them?" Use only if it would genuinely serve the listener.]
+
+SETUP QUESTIONS — Plant seeds for the Permission Slip Close
+- [A question that leads the guest to give the listener implicit permission — something like "What would you tell someone who feels like they're not ready yet?"]
+- [Final question: what do you most want ${onePerson.name || "the listener"} to walk away knowing, feeling, or doing?]
 
 ---
 
 CLIP PRIORITIES
-[3–5 moments most likely to resonate with ${onePerson.name || "the ONE person"}. Include one "NEVER CLIP WITHOUT CONTEXT" note.]
+[3–5 moments most likely to resonate with ${onePerson.name || "the ONE person"}. Note the estimated timestamp range if predictable from the structure. Include one "NEVER CLIP WITHOUT CONTEXT" moment.]
 
 ---
 
 PRE-RECORDING CHECKLIST
-[5–8 items specific to this episode and format]`;
+[5–8 items specific to this episode and format. Include any guest prep items, tech checks, and one reminder tied to the ONE Person.]`;
 
       const j = await claudeAPI({ model: "claude-sonnet-4-20250514", max_tokens: 6000, system: systemPrompt, messages: [{ role: "user", content: "Generate the complete Episode Prep Package now." }] });
       const t = j.content?.filter(i => i.type === "text").map(i => i.text).join("\n") || "";
       if (!t.trim()) { setErr("No content generated. Please try again."); setStep("prep-details"); return; }
-      setRaw(strip(t));
-      setSecs([{ id: "full", title: "Episode Prep Package", content: strip(t) }]);
+      const stripped = strip(t);
+      setRaw(stripped);
+      const parsed = parse(stripped);
+      setSecs(parsed.length > 1 ? parsed : [{ id: "full", title: "Episode Prep Package", content: stripped }]);
       setStep("result");
     } catch(e) { setErr(e.message); setStep("prep-details"); }
     finally { setBusy(false); }
