@@ -106,8 +106,12 @@ const TIMEZONES = [
 
 // ── LOGIN SCREEN ──────────────────────────────────────────────────────────────
 function LandingScreen({ onSignup, onLogin }) {
-  const { T } = useTheme();
   const FF = "'DM Sans', system-ui, sans-serif";
+  // Deep red palette — matches the logo's dark crimson
+  const DR  = "#7A0019";   // deep red primary
+  const DRS = "#7A001912"; // soft tint
+  const DRM = "#7A001930"; // mid tint
+  const DRH = "#9B0020";   // hover (slightly lighter)
 
   const plans = [
     {
@@ -115,7 +119,7 @@ function LandingScreen({ onSignup, onLogin }) {
       price: "$19.99",
       period: "/month",
       desc: "Perfect for independent podcasters who want professional-grade content without the complexity.",
-      features: ["Up to 3 shows", "1 seat", "All content types", "Google Drive export", "Add-ons at $4.99/show or seat"],
+      features: ["Up to 3 shows", "1 seat", "All content types", "Google Drive export"],
       cta: "Join the Beta",
       highlight: false,
     },
@@ -124,77 +128,119 @@ function LandingScreen({ onSignup, onLogin }) {
       price: "$69",
       period: "/month",
       desc: "Built for podcast production companies managing multiple shows and teams.",
-      features: ["Up to 10 shows", "5 team seats", "All content types", "Google Drive export", "Add-ons at $4.99/show or seat"],
+      features: ["Up to 10 shows", "5 team seats", "All content types", "Google Drive export"],
       cta: "Join the Beta",
       highlight: true,
     },
   ];
 
   return (
-    <div style={{ minHeight: "100vh", background: T.bg, fontFamily: FF }}>
-      {/* Header */}
-      <div style={{ padding: "20px 40px", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid " + T.cardBorder, background: T.surface }}>
-        <img src="/logo-nav.png" alt="Podcast Impact Content Studio" style={{ height: "100px", objectFit: "contain" }} />
-        <button onClick={onLogin} style={{ padding: "9px 20px", background: "transparent", border: "1px solid " + T.cardBorder, borderRadius: "6px", color: T.textSecondary, fontSize: "14px", cursor: "pointer", fontFamily: FF, fontWeight: "600" }}>Sign In</button>
+    <div style={{ minHeight: "100vh", background: "#F7F3EE", fontFamily: FF }}>
+
+      {/* ── Header ── */}
+      <div style={{ background: "#111111", padding: "0 48px", height: "72px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <img src="/logo-nav.png" alt="Podcast Impact Content Studio" style={{ height: "80px", objectFit: "contain" }} />
+        <button
+          onClick={onLogin}
+          onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.08)"; }}
+          onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
+          style={{ padding: "8px 22px", background: "transparent", border: "1px solid rgba(255,255,255,0.25)", borderRadius: "6px", color: "rgba(255,255,255,0.85)", fontSize: "14px", cursor: "pointer", fontFamily: FF, fontWeight: "500", transition: "background .15s" }}>
+          Sign In
+        </button>
       </div>
 
-      {/* Hero */}
-      <div style={{ textAlign: "center", padding: "72px 24px 56px" }}>
-        <div style={{ display: "inline-block", background: T.coralSoft, border: "1px solid " + T.coralMid, borderRadius: "20px", padding: "5px 16px", fontSize: "12px", color: T.coral, fontWeight: "700", letterSpacing: "2px", textTransform: "uppercase", marginBottom: "24px" }}>Beta — Limited Spots Available</div>
-        <h1 style={{ fontSize: "clamp(36px, 6vw, 64px)", fontWeight: "800", color: T.text, margin: "0 0 16px", lineHeight: "1.1", letterSpacing: "-1px" }}>
+      {/* ── Hero — dark, full-bleed ── */}
+      <div style={{ background: "linear-gradient(160deg, #111111 0%, #1C0008 60%, #2A000E 100%)", padding: "96px 24px 100px", textAlign: "center" }}>
+        {/* Beta badge */}
+        <div style={{ display: "inline-block", border: "1px solid rgba(122,0,25,0.6)", background: "rgba(122,0,25,0.18)", borderRadius: "20px", padding: "5px 18px", fontSize: "11px", color: "#E8A0A8", fontWeight: "700", letterSpacing: "2.5px", textTransform: "uppercase", marginBottom: "36px" }}>
+          Beta — Limited Spots Available
+        </div>
+
+        <h1 style={{ fontSize: "clamp(38px, 6vw, 68px)", fontWeight: "800", color: "#FFFFFF", margin: "0 0 18px", lineHeight: "1.08", letterSpacing: "-1.5px", maxWidth: "820px", marginLeft: "auto", marginRight: "auto" }}>
           Your show's DNA.<br />
-          <span style={{ color: T.coral }}>Your content. Automatically.</span>
+          <span style={{ color: "#C8364A" }}>Your content. Automatically.</span>
         </h1>
-        <p style={{ fontSize: "18px", color: T.textSecondary, maxWidth: "580px", margin: "0 auto 40px", lineHeight: "1.7" }}>
-          Podcast Impact Content Studio uses the unique DNA of your show — your voice, your audience, your platforms — to generate a full content package from every episode. No complex prompts. No starting from scratch. Just paste a transcript and go.
+
+        <p style={{ fontSize: "18px", color: "rgba(255,255,255,0.62)", maxWidth: "560px", margin: "0 auto 48px", lineHeight: "1.75", fontWeight: "400" }}>
+          Enter your show's voice, audience, and platforms once. Then paste any transcript and get a complete content package — show notes, social, email, blog — all in your show's voice.
         </p>
-        <button onClick={onSignup} style={{ padding: "16px 40px", background: T.coral, border: "none", borderRadius: "8px", color: "#fff", fontSize: "17px", fontWeight: "700", cursor: "pointer", fontFamily: FF, letterSpacing: "0.5px" }}>
+
+        <button
+          onClick={onSignup}
+          onMouseEnter={e => { e.currentTarget.style.background = DRH; e.currentTarget.style.boxShadow = "0 8px 32px rgba(122,0,25,0.5)"; }}
+          onMouseLeave={e => { e.currentTarget.style.background = DR; e.currentTarget.style.boxShadow = "0 4px 20px rgba(122,0,25,0.4)"; }}
+          style={{ padding: "16px 44px", background: DR, border: "none", borderRadius: "8px", color: "#fff", fontSize: "17px", fontWeight: "700", cursor: "pointer", fontFamily: FF, letterSpacing: "0.3px", boxShadow: "0 4px 20px rgba(122,0,25,0.4)", transition: "all .2s" }}>
           Create Your Account →
         </button>
-        <div style={{ marginTop: "14px", fontSize: "14px", color: T.textMuted }}>Access code required · No credit card during beta</div>
+
+        <div style={{ marginTop: "16px", fontSize: "13px", color: "rgba(255,255,255,0.35)", letterSpacing: "0.3px" }}>
+          Access code required · No credit card during beta
+        </div>
       </div>
 
-      {/* How it works */}
-      <div style={{ maxWidth: "860px", margin: "0 auto", padding: "0 24px 64px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px" }}>
+      {/* ── How it works ── */}
+      <div style={{ background: "#F7F3EE", padding: "72px 24px" }}>
+        <div style={{ textAlign: "center", marginBottom: "48px" }}>
+          <div style={{ fontSize: "11px", fontWeight: "700", letterSpacing: "3px", textTransform: "uppercase", color: DR, marginBottom: "12px" }}>How It Works</div>
+          <h2 style={{ fontSize: "clamp(26px, 4vw, 38px)", fontWeight: "700", color: "#1A1A1A", margin: 0, letterSpacing: "-0.5px" }}>Three steps. One content package.</h2>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "20px", maxWidth: "900px", margin: "0 auto" }}>
           {[
             { n: "01", title: "Set Up Your Show DNA", desc: "Tell us about your show once — voice, audience, platforms, boilerplate. We remember everything." },
             { n: "02", title: "Paste Your Transcript", desc: "Drop in any episode transcript. We handle the rest — no formatting needed." },
-            { n: "03", title: "Get Your Content Package", desc: "Show notes, YouTube description, social posts, newsletter, blog post — all in your show's voice." },
+            { n: "03", title: "Get Your Content Package", desc: "Show notes, YouTube, social, newsletter, blog — all generated in your show's exact voice." },
           ].map(s => (
-            <div key={s.n} style={{ background: T.card, border: "1px solid " + T.cardBorder, borderRadius: "12px", padding: "28px 24px" }}>
-              <div style={{ fontSize: "13px", color: T.coral, fontWeight: "700", letterSpacing: "2px", marginBottom: "12px" }}>{s.n}</div>
-              <div style={{ fontSize: "17px", fontWeight: "700", color: T.text, marginBottom: "10px", lineHeight: "1.3" }}>{s.title}</div>
-              <div style={{ fontSize: "14px", color: T.textSecondary, lineHeight: "1.7" }}>{s.desc}</div>
+            <div key={s.n} style={{ background: "#FFFFFF", border: "1px solid #E5DDD4", borderRadius: "12px", padding: "32px 28px" }}>
+              <div style={{ fontSize: "12px", color: DR, fontWeight: "800", letterSpacing: "2px", marginBottom: "16px", fontFamily: FF }}>{s.n}</div>
+              <div style={{ fontSize: "17px", fontWeight: "700", color: "#1A1A1A", marginBottom: "10px", lineHeight: "1.35", fontFamily: "'DM Serif Display', Georgia, serif" }}>{s.title}</div>
+              <div style={{ fontSize: "14px", color: "#5A4F46", lineHeight: "1.75" }}>{s.desc}</div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Pricing */}
-      <div style={{ background: T.surface, borderTop: "1px solid " + T.cardBorder, padding: "64px 24px" }}>
-        <div style={{ textAlign: "center", marginBottom: "48px" }}>
-          <h2 style={{ fontSize: "36px", fontWeight: "700", color: T.text, margin: "0 0 12px" }}>Simple, transparent pricing</h2>
-          <p style={{ fontSize: "16px", color: T.textSecondary, margin: 0 }}>Free during beta — pricing takes effect when we launch publicly.</p>
+      {/* ── What you get strip ── */}
+      <div style={{ background: "#111111", padding: "48px 24px" }}>
+        <div style={{ maxWidth: "860px", margin: "0 auto", display: "flex", flexWrap: "wrap", gap: "10px", justifyContent: "center" }}>
+          {["Show Notes","YouTube Description","Social Captions","Email Newsletter","Blog Post","Quote Cards","Episode Prep","Guest Research","Short-Form Content"].map(item => (
+            <div key={item} style={{ padding: "8px 18px", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "20px", fontSize: "13px", color: "rgba(255,255,255,0.75)", fontWeight: "500" }}>{item}</div>
+          ))}
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "24px", maxWidth: "760px", margin: "0 auto" }}>
+        <div style={{ textAlign: "center", marginTop: "20px", fontSize: "13px", color: "rgba(255,255,255,0.3)", letterSpacing: "1px" }}>Everything generated from one transcript. Nothing left to write.</div>
+      </div>
+
+      {/* ── Pricing ── */}
+      <div style={{ background: "#F7F3EE", padding: "80px 24px" }}>
+        <div style={{ textAlign: "center", marginBottom: "52px" }}>
+          <div style={{ fontSize: "11px", fontWeight: "700", letterSpacing: "3px", textTransform: "uppercase", color: DR, marginBottom: "12px" }}>Pricing</div>
+          <h2 style={{ fontSize: "clamp(26px, 4vw, 38px)", fontWeight: "700", color: "#1A1A1A", margin: "0 0 12px", letterSpacing: "-0.5px" }}>Simple, transparent pricing</h2>
+          <p style={{ fontSize: "15px", color: "#6B5E52", margin: 0 }}>Free during beta — pricing takes effect at public launch.</p>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "24px", maxWidth: "740px", margin: "0 auto" }}>
           {plans.map(p => (
-            <div key={p.name} style={{ background: T.card, border: "2px solid " + (p.highlight ? T.coral : T.cardBorder), borderRadius: "16px", padding: "36px 32px", position: "relative" }}>
-              {p.highlight && <div style={{ position: "absolute", top: "-14px", left: "50%", transform: "translateX(-50%)", background: T.coral, color: "#fff", fontSize: "11px", fontWeight: "700", letterSpacing: "2px", padding: "4px 16px", borderRadius: "20px", textTransform: "uppercase", whiteSpace: "nowrap" }}>Most Popular</div>}
-              <div style={{ fontSize: "13px", color: T.coral, fontWeight: "700", letterSpacing: "2px", textTransform: "uppercase", marginBottom: "8px" }}>{p.name}</div>
+            <div key={p.name} style={{ background: p.highlight ? "#111111" : "#FFFFFF", border: "1px solid " + (p.highlight ? DR : "#E5DDD4"), borderRadius: "16px", padding: "40px 36px", position: "relative" }}>
+              {p.highlight && (
+                <div style={{ position: "absolute", top: "-14px", left: "50%", transform: "translateX(-50%)", background: DR, color: "#fff", fontSize: "10px", fontWeight: "800", letterSpacing: "2.5px", padding: "5px 18px", borderRadius: "20px", textTransform: "uppercase", whiteSpace: "nowrap" }}>Most Popular</div>
+              )}
+              <div style={{ fontSize: "11px", color: p.highlight ? "#E8A0A8" : DR, fontWeight: "800", letterSpacing: "3px", textTransform: "uppercase", marginBottom: "12px" }}>{p.name}</div>
               <div style={{ display: "flex", alignItems: "baseline", gap: "4px", marginBottom: "12px" }}>
-                <span style={{ fontSize: "42px", fontWeight: "800", color: T.text }}>{p.price}</span>
-                <span style={{ fontSize: "15px", color: T.textMuted }}>{p.period}</span>
+                <span style={{ fontSize: "44px", fontWeight: "800", color: p.highlight ? "#FFFFFF" : "#1A1A1A", letterSpacing: "-2px" }}>{p.price}</span>
+                <span style={{ fontSize: "15px", color: p.highlight ? "rgba(255,255,255,0.45)" : "#8A7A6E" }}>{p.period}</span>
               </div>
-              <div style={{ fontSize: "14px", color: T.textSecondary, marginBottom: "24px", lineHeight: "1.6" }}>{p.desc}</div>
-              <div style={{ borderTop: "1px solid " + T.cardBorder, paddingTop: "20px", marginBottom: "28px" }}>
+              <div style={{ fontSize: "14px", color: p.highlight ? "rgba(255,255,255,0.55)" : "#5A4F46", marginBottom: "28px", lineHeight: "1.65" }}>{p.desc}</div>
+              <div style={{ borderTop: "1px solid " + (p.highlight ? "rgba(255,255,255,0.1)" : "#E5DDD4"), paddingTop: "24px", marginBottom: "32px" }}>
                 {p.features.map(f => (
-                  <div key={f} style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px", fontSize: "14px", color: T.text }}>
-                    <span style={{ color: T.coral, fontWeight: "700", fontSize: "16px" }}>✓</span>{f}
+                  <div key={f} style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "12px", fontSize: "14px", color: p.highlight ? "rgba(255,255,255,0.8)" : "#1A1A1A" }}>
+                    <span style={{ color: p.highlight ? "#E8A0A8" : DR, fontWeight: "700", fontSize: "15px", flexShrink: 0 }}>✓</span>
+                    {f}
                   </div>
                 ))}
               </div>
-              <button onClick={onSignup} style={{ width: "100%", padding: "14px", background: p.highlight ? T.coral : "transparent", border: "2px solid " + T.coral, borderRadius: "8px", color: p.highlight ? "#fff" : T.coral, fontSize: "15px", fontWeight: "700", cursor: "pointer", fontFamily: FF }}>
+              <button
+                onClick={onSignup}
+                onMouseEnter={e => { e.currentTarget.style.background = p.highlight ? DRH : DR; e.currentTarget.style.color = "#fff"; }}
+                onMouseLeave={e => { e.currentTarget.style.background = p.highlight ? DR : "transparent"; e.currentTarget.style.color = p.highlight ? "#fff" : DR; }}
+                style={{ width: "100%", padding: "15px", background: p.highlight ? DR : "transparent", border: "1.5px solid " + DR, borderRadius: "8px", color: p.highlight ? "#fff" : DR, fontSize: "15px", fontWeight: "700", cursor: "pointer", fontFamily: FF, transition: "all .15s" }}>
                 {p.cta}
               </button>
             </div>
@@ -202,13 +248,16 @@ function LandingScreen({ onSignup, onLogin }) {
         </div>
       </div>
 
-      {/* Footer */}
-      <div style={{ padding: "24px", textAlign: "center", borderTop: "1px solid " + T.cardBorder, fontSize: "13px", color: T.textMuted }}>
-        © {new Date().getFullYear()} Podcast Impact Studio ·{" "}
-        <span style={{ cursor: "pointer", textDecoration: "underline" }} onClick={onLogin}>Sign in</span>
-        {" · "}
-        <a href="/privacy.html" target="_blank" rel="noopener" style={{ color: T.textMuted, textDecoration: "underline" }}>Privacy Policy</a>
+      {/* ── Footer ── */}
+      <div style={{ background: "#111111", padding: "28px 24px", textAlign: "center" }}>
+        <div style={{ fontSize: "13px", color: "rgba(255,255,255,0.3)" }}>
+          © {new Date().getFullYear()} Podcast Impact Studio ·{" "}
+          <span style={{ cursor: "pointer", color: "rgba(255,255,255,0.45)", textDecoration: "underline" }} onClick={onLogin}>Sign in</span>
+          {" · "}
+          <a href="/privacy.html" target="_blank" rel="noopener" style={{ color: "rgba(255,255,255,0.45)", textDecoration: "underline" }}>Privacy Policy</a>
+        </div>
       </div>
+
     </div>
   );
 }
