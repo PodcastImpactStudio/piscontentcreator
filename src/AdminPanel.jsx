@@ -17,7 +17,7 @@ async function claudeAPI(body) {
 const T = {
   bg: "#F5F0E8", surface: "#FDFAF5", card: "#FFFFFF", cardBorder: "#E2D9CC",
   text: "#1A1A1A", textSecondary: "#4A3F35", textMuted: "#6B5E52",
-  coral: "#C41230", coralSoft: "#C4123010", coralMid: "#C4123028",
+  coral: "#7A0019", coralSoft: "#7A001910", coralMid: "#7A001928",
 };
 const FF = "'DM Sans', system-ui, sans-serif";
 const PF = "'DM Sans', system-ui, sans-serif";
@@ -1438,13 +1438,21 @@ ${epfPasteText.substring(0, 8000)}`;
         </div>
 
 
+        {/* Back to Studio — top of sidebar, always visible */}
+        <div style={{ padding: "12px 16px", borderBottom: "1px solid #2E2E2E" }}>
+          <button onClick={onClose}
+            style={{ width: "100%", padding: "9px 14px", background: T.coral, border: "none", borderRadius: "6px", color: "#fff", fontSize: "13px", fontWeight: "700", cursor: "pointer", fontFamily: "'DM Sans', system-ui, sans-serif", textAlign: "center", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}>
+            ← Back to Studio
+          </button>
+        </div>
+
         {/* Nav sections */}
         <nav style={{ flex: 1, padding: "4px 0" }}>
           <div style={{ marginBottom: "4px" }}>
             <div style={{ fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase", color: "#6B6B6B", padding: "10px 16px 4px", fontFamily: "'DM Sans', system-ui, sans-serif", fontWeight: "600" }}>MANAGE</div>
             <button className="sidebar-nav-item"
               onClick={() => setAdminView("shows")}
-              style={{ width: "100%", padding: "9px 16px", background: adminView === "shows" ? "#252525" : "transparent", border: "none", borderLeft: adminView === "shows" ? "3px solid #C41230" : "3px solid transparent", color: adminView === "shows" ? "#C41230" : "#FFFFFF", fontSize: "14px", fontWeight: adminView === "shows" ? "600" : "400", cursor: "pointer", textAlign: "left", fontFamily: "'DM Sans', system-ui, sans-serif", transition: "all .1s", display: "block" }}>
+              style={{ width: "100%", padding: "9px 16px", background: adminView === "shows" ? "#252525" : "transparent", border: "none", borderLeft: adminView === "shows" ? "3px solid #7A0019" : "3px solid transparent", color: adminView === "shows" ? "#7A0019" : "#FFFFFF", fontSize: "14px", fontWeight: adminView === "shows" ? "600" : "400", cursor: "pointer", textAlign: "left", fontFamily: "'DM Sans', system-ui, sans-serif", transition: "all .1s", display: "block" }}>
               Show DNA Manager
             </button>
           </div>
@@ -1452,7 +1460,7 @@ ${epfPasteText.substring(0, 8000)}`;
             <div style={{ fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase", color: "#6B6B6B", padding: "10px 16px 4px", fontFamily: "'DM Sans', system-ui, sans-serif", fontWeight: "600" }}>CONFIGURE</div>
             <button className="sidebar-nav-item"
               onClick={() => setAdminView("settings")}
-              style={{ width: "100%", padding: "9px 16px", background: adminView === "settings" ? "#252525" : "transparent", border: "none", borderLeft: adminView === "settings" ? "3px solid #C41230" : "3px solid transparent", color: adminView === "settings" ? "#C41230" : "#FFFFFF", fontSize: "14px", fontWeight: adminView === "settings" ? "600" : "400", cursor: "pointer", textAlign: "left", fontFamily: "'DM Sans', system-ui, sans-serif", transition: "all .1s", display: "block" }}>
+              style={{ width: "100%", padding: "9px 16px", background: adminView === "settings" ? "#252525" : "transparent", border: "none", borderLeft: adminView === "settings" ? "3px solid #7A0019" : "3px solid transparent", color: adminView === "settings" ? "#7A0019" : "#FFFFFF", fontSize: "14px", fontWeight: adminView === "settings" ? "600" : "400", cursor: "pointer", textAlign: "left", fontFamily: "'DM Sans', system-ui, sans-serif", transition: "all .1s", display: "block" }}>
               Settings
             </button>
           </div>
@@ -1468,7 +1476,7 @@ ${epfPasteText.substring(0, 8000)}`;
         {/* Bottom: user + actions */}
         <div style={{ padding: "12px 16px 20px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "12px" }}>
-            <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: "#C41230", color: "#fff", fontSize: "14px", fontWeight: "700", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{adminUserInitial}</div>
+            <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: T.coral, color: "#fff", fontSize: "14px", fontWeight: "700", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{adminUserInitial}</div>
             <div style={{ flex: 1, overflow: "hidden" }}>
               <div style={{ fontSize: "13px", color: "#FFFFFF", fontWeight: "600", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontFamily: "'DM Sans', system-ui, sans-serif" }}>{adminUserName}</div>
               <div style={{ fontSize: "11px", color: "#6B6B6B", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontFamily: "'DM Sans', system-ui, sans-serif", marginTop: "1px" }}>{userEmail}</div>

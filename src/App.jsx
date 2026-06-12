@@ -20,7 +20,7 @@ async function claudeAPI(body) {
 const T = {
   bg: "#F5F0E8", surface: "#FDFAF5", card: "#FFFFFF", cardBorder: "#E2D9CC",
   text: "#1A1A1A", textSecondary: "#4A3F35", textMuted: "#6B5E52",
-  coral: "#C41230", coralSoft: "#C4123010", coralMid: "#C4123028", red: "#C41230",
+  coral: "#7A0019", coralSoft: "#7A001910", coralMid: "#7A001928", red: "#7A0019",
 };
 
 const MODES = [
@@ -396,7 +396,7 @@ ${sections}`;
 
 function revSys(show){const d=show;if(!d)return "";return `Content strategist for ${d.name}. PLAIN TEXT only. ALL CAPS headers. - bullets.\nVoice: ${d.voice?.traits||""} | Phrases: ${(d.voice?.phrases||[]).join(" | ")}\nUSE: ${d.voice?.use||""} | AVOID: ${d.voice?.avoid||""}\nBoilerplate: ${d.bp||""}\nOnly revise the requested section.`;}
 
-function linkifyLine(line){return line.replace(/(https?:\/\/[^\s,)"]+|www\.[^\s,)"]+|[a-zA-Z0-9][a-zA-Z0-9\-]*\.(?:com|org|net|io|co)(?:\/[^\s,)"]*)?)/g,url=>{const href=url.startsWith("http")?url:"https://"+url;return`<a href="${href}" style="color:#FF3131">${url}</a>`;});}
+function linkifyLine(line){return line.replace(/(https?:\/\/[^\s,)"]+|www\.[^\s,)"]+|[a-zA-Z0-9][a-zA-Z0-9\-]*\.(?:com|org|net|io|co)(?:\/[^\s,)"]*)?)/g,url=>{const href=url.startsWith("http")?url:"https://"+url;return`<a href="${href}" style="color:#7A0019">${url}</a>`;});}
 
 const TOP_SECTIONS=/^(\d+\.\s*)?(SEO TITLE|SHOW NOTES|SPOTIFY FOR CREATORS|INTRO HOOK|SOCIAL CLIP|EDITOR NOTES|YOUTUBE DESC|SOCIAL MEDIA|QUOTE CARDS|POLL QUESTIONS|STORY SLIDES|ENGAGEMENT PROMPTS|KEY TAKEAWAY GRAPHICS|GUEST SHARE|EMAIL NEWS|NEWSLETTER|BLOG (ARTICLE|POST)|PATREON (COMPANION|DISCUSSION|POLL|EXCLUSIVE|POSTS|NEWSLETTER)|CLIPS|SHORTS|REELS)/i;
 const SUB_HEADERS=/^(KEY TAKEAWAYS|NOTABLE QUOTE|TIMESTAMPS|HASHTAGS|KEYWORDS|INSTAGRAM|FACEBOOK|TIKTOK|LINKEDIN|X \(TWITTER\)|QUOTE CARDS|THANK YOU|EPISODE BLURB|SUGGESTED SOCIAL|SUBJECT LINE|PREVIEW TEXT|SOBER SHOT|ELLEVATED ACHIEVERS TAKEAWAY|IN THIS EPISODE|LINKS & RESOURCES|NOTABLE RESOURCES|CONNECT WITH|ABOUT|MUSIC CREDITS|DISCLAIMER)/i;
@@ -1632,7 +1632,17 @@ PRE-RECORDING CHECKLIST
           </div>
         )}
 
-        {/* Nav sections */}
+        {/* Admin Settings — visible to admins only */}
+        {isAdmin&&(
+          <div style={{padding:"10px 16px",borderBottom:"1px solid #2E2E2E"}}>
+            <button onClick={()=>setShowAdmin(true)}
+              className="sidebar-nav-item"
+              style={{width:"100%",padding:"9px 14px",background:T.coralSoft,border:"1px solid "+T.coralMid,borderRadius:"6px",color:T.coral,fontSize:"13px",fontWeight:"700",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",display:"flex",alignItems:"center",gap:"8px"}}>
+              <span>⚙</span><span>Admin Settings</span>
+            </button>
+          </div>
+        )}
+
         {/* Spacer */}
         <div style={{flex:1}}/>
 
@@ -1671,7 +1681,7 @@ PRE-RECORDING CHECKLIST
               <button
                 onClick={()=>setShowUserMenu(v=>!v)}
                 style={{width:"100%",padding:"8px 0",background:"transparent",border:"none",cursor:"pointer",display:"flex",alignItems:"center",gap:"10px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>
-                <div style={{width:"30px",height:"30px",borderRadius:"50%",background:"#C41230",color:"#fff",fontSize:"13px",fontWeight:"700",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{userInitial}</div>
+                <div style={{width:"30px",height:"30px",borderRadius:"50%",background:T.coral,color:"#fff",fontSize:"13px",fontWeight:"700",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{userInitial}</div>
                 <div style={{flex:1,overflow:"hidden",textAlign:"left"}}>
                   <div style={{fontSize:"13px",color:"#FFFFFF",fontWeight:"500",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{displayName||currentUser?.email}</div>
                 </div>
