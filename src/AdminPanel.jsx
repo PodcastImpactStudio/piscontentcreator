@@ -302,30 +302,90 @@ function BoilerplateEditor({ value, onChange }) {
 
 
 const PRESET_FORMATS = [
-  // SOLO
-  { category:"SOLO — JUST THE HOST", name:"Belief Autopsy", type:"Solo Monologue", desc:"Dissect a belief you used to hold — not a hot take, a real excavation. Ends with a permission slip.", example:"'The belief that made me terrible at saying no — and what it cost me'", structure:"HOOK (0:00–1:30)\nOpen with the belief as it used to sound in your head. Say it out loud.\n\nTHE EXCAVATION (1:30–12:00)\nWhere did you get it? What did it cost you? When did it start to crack?\n\nTHE SHIFT (12:00–18:00)\nWhat happened that changed things? What do you believe now?\n\nPERMISSION SLIP CLOSE (18:00–20:00)\nGive your ONE person explicit permission to release that belief too." },
-  { category:"SOLO — JUST THE HOST", name:"Real-Time Reflection", type:"Solo Monologue", desc:"You're actively in something messy right now and talking through it live. Unresolved is the point.", example:"'I don't know what I'm doing with my business right now — that's what we're talking about today'", structure:"HOOK (0:00–1:30)\nName exactly where you are right now. No resolution yet.\n\nTHE MESS (1:30–14:00)\nWalk through what's happening in real time. Resist wrapping it up.\n\nWHAT YOU KNOW SO FAR (14:00–18:00)\nWhat are you learning in it, even without the answer yet?\n\nPERMISSION SLIP CLOSE (18:00–20:00)\nGive the ONE person permission to also not have it figured out." },
-  { category:"SOLO — JUST THE HOST", name:"Permission Slip Episode", type:"Solo Monologue", desc:"Give your ONE person explicit permission to do or feel the thing they've been secretly wanting.", example:"'You're allowed to stop explaining yourself to people who've already decided'", structure:"HOOK (0:00–1:30)\nState the permission slip right up front. Say it plain.\n\nWHY THEY NEED IT (1:30–8:00)\nName the pressure. Who told them they couldn't? What belief is in the way?\n\nYOUR STORY (8:00–15:00)\nThe moment you gave yourself this permission — what happened before and after.\n\nPERMISSION SLIP CLOSE (15:00–20:00)\nGive it again, slower, like you mean it." },
-  { category:"SOLO — JUST THE HOST", name:"Framework Deep-Dive", type:"Solo Monologue", desc:"Unpack your signature process or methodology. Not a pitch — genuinely useful on its own.", example:"'The four questions I ask before I take on any new client'", structure:"HOOK (0:00–1:30)\nThe problem this framework solves. Why most people get it wrong.\n\nTHE FRAMEWORK (1:30–18:00)\nWalk through each step with examples, stories, and the nuance behind it.\n\nBRIDGE (18:00–20:00)\nYour personal connection to why this works — the moment that made you build it.\n\nPERMISSION SLIP CLOSE (20:00–22:00)\nGive the ONE person permission to try it imperfectly." },
-  // INTERVIEW
-  { category:"INTERVIEW — GUESTS", name:"The Standard Interview", type:"Guest Interview", desc:"Guest brings expertise or story. Your job: get past the polished answer to the human underneath.", example:"'My guest helps women leave bad jobs — and almost didn't leave hers'", structure:"HOOK (0:00–1:30)\nHost opens with the wound your guest speaks to — before they're even introduced.\n\nGUEST INTRO (1:30–3:00)\nShort, human intro. Not their resume.\n\nTHE EXPERTISE (3:00–25:00)\nThe work, the method, the insight — pressed deeper than surface answers.\n\nTHE PERSONAL STORY (25:00–38:00)\nWhat made them care about this? Where's the wound?\n\nBRIDGE (38:00–42:00)\nHost personal connection to the guest's work.\n\nPERMISSION SLIP CLOSE (42:00–45:00)\nGuest or host gives the ONE person a permission slip." },
-  { category:"INTERVIEW — GUESTS", name:"The Reverse Interview", type:"Guest Interview", desc:"Guest interviews YOU. Works brilliantly to model vulnerability before asking it of others.", example:"'I got interviewed by my favourite coach — here's what came out'", structure:"SETUP (0:00–2:00)\nHost explains why they agreed to be interviewed and what they hope comes out.\n\nTHE INTERVIEW (2:00–40:00)\nGuest asks. Host answers honestly. No redirect, no control.\n\nHOST DEBRIEF (40:00–45:00)\nHost steps out of the interview and reflects on what surprised them.\n\nPERMISSION SLIP CLOSE (45:00–47:00)\nHost gives the ONE person permission to let someone else ask the questions." },
-  { category:"INTERVIEW — GUESTS", name:"Expert + Real Talk", type:"Guest Interview", desc:"Two parts: the expertise, then the personal story that made them care about it.", example:"'She wrote the book on burnout recovery — here's her burnout story'", structure:"HOOK (0:00–1:30)\nThe topic and why it matters to the ONE person right now.\n\nTHE EXPERTISE PORTION (1:30–22:00)\nFramework, research, method — with real examples pressed out of them.\n\nTHE PIVOT (22:00–24:00)\nHost: 'Now tell me the story that made you care about this.'\n\nTHE PERSONAL STORY (24:00–38:00)\nThe guest's wound, turning point, or lived experience.\n\nBRIDGE + PERMISSION SLIP CLOSE (38:00–42:00)\nHost personal connection + permission slip for the ONE person." },
-  { category:"INTERVIEW — GUESTS", name:"The Peer Conversation", type:"Guest Interview", desc:"Two people at the same stage having a real conversation — not a Q&A. Neither is the expert.", example:"'Me and my business coach on the thing neither of us wants to admit is hard'", structure:"SETUP (0:00–2:00)\nHost frames who they're talking to and why this conversation matters right now.\n\nTHE REAL CONVERSATION (2:00–40:00)\nNo hierarchy. Neither is the expert. Both are figuring it out. Let it breathe.\n\nWHAT WE'RE TAKING FROM THIS (40:00–44:00)\nBoth name one thing they're walking away with.\n\nPERMISSION SLIP CLOSE (44:00–46:00)\nJoint or individual permission slip for the ONE person." },
-  // COACHING
-  { category:"COACHING & DEMO FORMATS", name:"Live Coaching Session", type:"Guest Interview", desc:"Take a guest through your actual methodology in real time. Value is watching the process.", example:"'Watch me take a client through the belief audit — live, unedited'", structure:"HOOK (0:00–1:30)\nHost explains what methodology they're using and what the ONE person will watch happen.\n\nCONTEXT SETTING (1:30–4:00)\nBrief guest intro — enough to understand the starting point, nothing more.\n\nLIVE COACHING (4:00–38:00)\nThe actual methodology, live. Host stays in coach mode. No performance.\n\nDEBRIEF (38:00–44:00)\nHost steps out of coach role and names what they observed and why it matters.\n\nPERMISSION SLIP CLOSE (44:00–46:00)\nGive the ONE person permission to want that for themselves." },
-  { category:"COACHING & DEMO FORMATS", name:"The Hot Seat", type:"Guest Interview", desc:"Ask a guest ONE question and press them until they answer it for real. No filler.", example:"'What's the belief you're still protecting? — 20 minutes, a real answer'", structure:"SETUP (0:00–1:30)\nHost states the ONE question that will be asked. No preamble.\n\nTHE HOT SEAT (1:30–22:00)\nHost asks. Guest answers. Host presses. No redirect until the real answer comes out.\n\nWHAT CAME OUT (22:00–25:00)\nHost names what they heard underneath the answer.\n\nPERMISSION SLIP CLOSE (25:00–27:00)\nGive the ONE person permission to sit in the hot seat with themselves." },
-  { category:"COACHING & DEMO FORMATS", name:"Coaching + Debrief", type:"Guest Interview", desc:"Two-part episode: short live coaching moment, then you step out and reflect on what you noticed.", example:"'I coached [name] on air — here's what I saw that she couldn't see yet'", structure:"HOOK (0:00–1:30)\nWhat question or block brought this person to the coaching chair.\n\nLIVE COACHING (1:30–20:00)\nShort, focused coaching exchange. One real moment of movement.\n\nTHE DEBRIEF (20:00–35:00)\nHost steps out of coach role. What did they see? What pattern is this?\n\nMETA-LESSON (35:00–40:00)\nWhat the ONE person can apply from watching this exchange.\n\nPERMISSION SLIP CLOSE (40:00–42:00)" },
-  { category:"COACHING & DEMO FORMATS", name:"The Offer Demo", type:"Solo Monologue", desc:"Walk your ONE person through a distilled version of your paid process. Real standalone value.", example:"'I'm taking you through the first 30 minutes of my signature process — right now'", structure:"HOOK (0:00–1:30)\nName the transformation this process creates. Why most people never get there.\n\nTHE PROCESS (1:30–30:00)\nWalk through the actual steps — distilled, not dumbed down. Give real value.\n\nWHAT THIS UNLOCKS (30:00–35:00)\nWhat becomes possible for the ONE person when they do this work.\n\nBRIDGE (35:00–38:00)\nHost personal story of going through this.\n\nPERMISSION SLIP CLOSE (38:00–40:00)" },
-  // REPURPOSED
-  { category:"REPURPOSED & RESPONSE FORMATS", name:"Guest Clip + Reaction", type:"Solo Monologue", desc:"Pull the best 3–5 minutes from a recent guest interview and record a solo reaction.", example:"'This one thing [guest] said stopped me cold — here's why'", structure:"HOOK (0:00–1:00)\nName the moment that stopped you. Why this specific thing.\n\nTHE CLIP (1:00–6:00)\nPlay the 3–5 minute moment from the original episode.\n\nREACTION (6:00–18:00)\nHost responds: what they heard, what it triggered, what it changed.\n\nWHY THIS MATTERS (18:00–22:00)\nThe broader point for the ONE person.\n\nPERMISSION SLIP CLOSE (22:00–24:00)" },
-  { category:"REPURPOSED & RESPONSE FORMATS", name:"Listener Question Episode", type:"Solo Monologue", desc:"Your ONE person sends in their actual question and you answer it for everyone.", example:"'You asked: how do I stop people-pleasing when my income depends on it?'", structure:"HOOK (0:00–1:30)\nRead the listener's exact words. Say their name. Make them real.\n\nWHY THIS QUESTION (1:30–4:00)\nWhy THIS question matters to more than just the person who asked.\n\nTHE ANSWER (4:00–20:00)\nReally answer it. Don't hedge. Use stories, examples, nuance.\n\nWHAT THIS REVEALS (20:00–24:00)\nThe belief or pattern underneath the question.\n\nPERMISSION SLIP CLOSE (24:00–26:00)" },
-  { category:"REPURPOSED & RESPONSE FORMATS", name:"The Follow-Up", type:"Solo Monologue", desc:"Revisit an old episode, guest, or story with new info or perspective. Signals growth.", example:"'I said something in episode 12 that I've been thinking about since — and I was wrong'", structure:"HOOK (0:00–1:30)\nName the original episode or moment. Why you're coming back to it.\n\nTHE ORIGINAL (1:30–5:00)\nWhat you said, what happened, what the response was.\n\nWHAT'S CHANGED (5:00–20:00)\nNew information, new perspective, what you understand now that you didn't then.\n\nTHE LESSON (20:00–25:00)\nWhat this means for the ONE person going forward.\n\nPERMISSION SLIP CLOSE (25:00–27:00)" },
-  { category:"REPURPOSED & RESPONSE FORMATS", name:"What I Got Wrong", type:"Solo Monologue", desc:"Publicly revise advice you gave or a belief you held. Gold for the ONE person afraid to change their mind.", example:"'I used to tell people to always have a plan B — I don't believe that anymore'", structure:"HOOK (0:00–1:30)\nState what you got wrong. Flat out. No softening.\n\nWHAT I USED TO BELIEVE (1:30–8:00)\nWhere that belief came from. How long you held it. Who taught it to you.\n\nTHE MOMENT IT CRACKED (8:00–16:00)\nWhat happened. The specific moment or experience.\n\nWHAT I BELIEVE NOW (16:00–22:00)\nThe revised belief. What changed and why.\n\nPERMISSION SLIP CLOSE (22:00–24:00)\nGive the ONE person permission to change their mind too." },
-  // SERIES
-  { category:"SERIES & SPECIAL FORMATS", name:"The Origin Episode", type:"Solo Monologue", desc:"Your WHY. The moment that made you care. Required first episode for every show.", example:"'Why I built this show — and who I'm actually building it for'", structure:"HOOK (0:00–1:30)\nStart with the ONE person. Who is this show for and what do you want it to do for them.\n\nTHE ORIGIN STORY (1:30–15:00)\nThe moment that made you care about this topic. The wound. The turning point.\n\nWHY THIS SHOW (15:00–20:00)\nWhat you believe about how podcasts can change something. What you're here to do.\n\nTHE INVITATION (20:00–23:00)\nWho this is for. Who it's not for. What they can expect if they stay.\n\nPERMISSION SLIP CLOSE (23:00–25:00)\nGive them permission to be exactly where they are right now." },
-  { category:"SERIES & SPECIAL FORMATS", name:"The Case Study Episode", type:"Guest Interview", desc:"Share a real client or community story. Specificity is everything — name the before, the moment, the after.", example:"'How one conversation changed the direction of [client]'s business'", structure:"HOOK (0:00–1:30)\nThe after — what changed — without giving away how.\n\nTHE BEFORE (1:30–8:00)\nWhat was life like before? Use their exact words if you can.\n\nTHE MOMENT (8:00–18:00)\nWhat happened. The turning point. What was said or done.\n\nTHE AFTER (18:00–25:00)\nWhat their life looks like now. Specific. Named. Real.\n\nWHAT THIS MEANS FOR YOU (25:00–29:00)\nHost connects the case study to the ONE person's situation.\n\nPERMISSION SLIP CLOSE (29:00–31:00)" },
-  { category:"SERIES & SPECIAL FORMATS", name:"Seasonal / Theme Arc", type:"Custom", desc:"3–5 episodes that build on each other toward a conclusion. Gives the ONE person a reason to listen in sequence.", example:"'Five weeks, five beliefs — the ones I had to dismantle to build my business'", structure:"SERIES HOOK (Ep 1, 0:00–2:00)\nIntroduce the arc: what's being explored over multiple episodes and why now.\n\nTHIS EPISODE'S PIECE (2:00–20:00)\nOne focused piece of the larger puzzle. Complete on its own but richer in context.\n\nCONNECTION TO THE ARC (20:00–24:00)\nHow this episode fits the bigger picture. What comes next.\n\nPERMISSION SLIP CLOSE (24:00–26:00)" },
+  // ── SOLO ──────────────────────────────────────────────────────────────────────
+  {
+    category: "SOLO",
+    name: "Solo Episode",
+    type: "Solo Monologue",
+    desc: "Teach, share, or explore a topic solo. Your go-to format for frameworks, lessons, and opinion pieces.",
+    example: "'The four questions I ask before I take on any new client'",
+    structure: "HOOK (0:00–1:30)\nOpen with the problem your listener is sitting in right now. Make them feel seen before you say a word about the solution.\n\nBRIDGE (1:30–3:00)\nYour personal connection to this topic — the moment it became real for you.\n\nTHE CONTENT (3:00–18:00)\nWalk through your teaching, framework, or point of view. Use stories and examples — not just theory.\n\nTHE TAKEAWAY (18:00–20:00)\nThe one thing you want your listener to do, think, or feel differently after this.\n\nPERMISSION SLIP CLOSE (20:00–22:00)\nGive them permission to try it imperfectly.",
+  },
+  {
+    category: "SOLO",
+    name: "Belief Deep-Dive",
+    type: "Solo Monologue",
+    desc: "Examine a belief you used to hold — where it came from, what it cost you, and what replaced it.",
+    example: "'The belief that made me terrible at saying no — and what it cost me'",
+    structure: "HOOK (0:00–1:30)\nOpen with the belief as it used to sound in your head. Say it out loud.\n\nTHE EXCAVATION (1:30–12:00)\nWhere did you get it? What did it cost you? When did it start to crack?\n\nTHE SHIFT (12:00–18:00)\nWhat happened that changed things? What do you believe now?\n\nPERMISSION SLIP CLOSE (18:00–20:00)\nGive your listener explicit permission to release that belief too.",
+  },
+  {
+    category: "SOLO",
+    name: "Permission Slip Episode",
+    type: "Solo Monologue",
+    desc: "Give your listener explicit permission to do or feel the thing they've been secretly wanting.",
+    example: "'You're allowed to stop explaining yourself to people who've already decided'",
+    structure: "HOOK (0:00–1:30)\nState the permission slip right up front. Say it plain.\n\nWHY THEY NEED IT (1:30–8:00)\nName the pressure. Who told them they couldn't? What belief is in the way?\n\nYOUR STORY (8:00–15:00)\nThe moment you gave yourself this permission — what happened before and after.\n\nPERMISSION SLIP CLOSE (15:00–20:00)\nGive it again, slower, like you mean it.",
+  },
+  // ── INTERVIEW ─────────────────────────────────────────────────────────────────
+  {
+    category: "INTERVIEW",
+    name: "Guest Interview",
+    type: "Guest Interview",
+    desc: "Your guest brings expertise or story. Your job: get past the polished answer to the human underneath.",
+    example: "'My guest helps women leave bad jobs — and almost didn't leave hers'",
+    structure: "HOOK (0:00–1:30)\nOpen with the wound your guest speaks to — before they're even introduced.\n\nGUEST INTRO (1:30–3:00)\nShort, human intro. Not their resume.\n\nTHE EXPERTISE (3:00–25:00)\nThe work, the method, the insight — pressed deeper than surface answers.\n\nTHE PERSONAL STORY (25:00–38:00)\nWhat made them care about this? Where's the wound?\n\nBRIDGE (38:00–42:00)\nHost personal connection to the guest's work.\n\nPERMISSION SLIP CLOSE (42:00–45:00)\nGuest or host gives the listener a permission slip.",
+  },
+  {
+    category: "INTERVIEW",
+    name: "Expert + Story",
+    type: "Guest Interview",
+    desc: "Two acts: the expertise, then the personal story that made them care about it.",
+    example: "'She wrote the book on burnout recovery — here's her burnout story'",
+    structure: "HOOK (0:00–1:30)\nThe topic and why it matters to your listener right now.\n\nTHE EXPERTISE (1:30–22:00)\nFramework, research, method — with real examples pressed out of them.\n\nTHE PIVOT (22:00–24:00)\nHost: 'Now tell me the story that made you care about this.'\n\nTHE PERSONAL STORY (24:00–38:00)\nThe guest's wound, turning point, or lived experience.\n\nBRIDGE + PERMISSION SLIP CLOSE (38:00–42:00)\nHost personal connection + permission slip for the listener.",
+  },
+  // ── COACHING ──────────────────────────────────────────────────────────────────
+  {
+    category: "COACHING",
+    name: "Live Coaching Session",
+    type: "Guest Interview",
+    desc: "Take a guest through your actual methodology in real time. The value is watching the process unfold.",
+    example: "'Watch me take a client through the belief audit — live, unedited'",
+    structure: "HOOK (0:00–1:30)\nExplain what methodology you're using and what your listener will watch happen.\n\nCONTEXT SETTING (1:30–4:00)\nBrief guest intro — enough to understand the starting point, nothing more.\n\nLIVE COACHING (4:00–38:00)\nThe actual methodology, live. Stay in coach mode. No performance.\n\nDEBRIEF (38:00–44:00)\nStep out of coach role and name what you observed and why it matters.\n\nPERMISSION SLIP CLOSE (44:00–46:00)\nGive your listener permission to want that for themselves.",
+  },
+  {
+    category: "COACHING",
+    name: "Hot Seat",
+    type: "Guest Interview",
+    desc: "Ask a guest one question and press them until they answer it for real. No filler, no redirect.",
+    example: "'What's the belief you're still protecting? — 20 minutes, a real answer'",
+    structure: "SETUP (0:00–1:30)\nState the one question that will be asked. No preamble.\n\nTHE HOT SEAT (1:30–22:00)\nAsk. They answer. Press. No redirect until the real answer comes out.\n\nWHAT CAME OUT (22:00–25:00)\nName what you heard underneath the answer.\n\nPERMISSION SLIP CLOSE (25:00–27:00)\nGive your listener permission to sit in the hot seat with themselves.",
+  },
+  {
+    category: "COACHING",
+    name: "Listener Q&A",
+    type: "Solo Monologue",
+    desc: "Your listener sends in their actual question and you answer it for everyone.",
+    example: "'You asked: how do I stop people-pleasing when my income depends on it?'",
+    structure: "HOOK (0:00–1:30)\nRead the listener's exact words. Say their name. Make them real.\n\nWHY THIS QUESTION (1:30–4:00)\nWhy this question matters to more than just the person who asked.\n\nTHE ANSWER (4:00–20:00)\nReally answer it. Don't hedge. Use stories, examples, nuance.\n\nWHAT THIS REVEALS (20:00–24:00)\nThe belief or pattern underneath the question.\n\nPERMISSION SLIP CLOSE (24:00–26:00)",
+  },
+  // ── SPECIAL ───────────────────────────────────────────────────────────────────
+  {
+    category: "SPECIAL",
+    name: "Origin Episode",
+    type: "Solo Monologue",
+    desc: "Your WHY. The moment that made you care. Every show needs this one.",
+    example: "'Why I built this show — and who I'm actually building it for'",
+    structure: "HOOK (0:00–1:30)\nStart with your listener. Who is this show for and what do you want it to do for them.\n\nTHE ORIGIN STORY (1:30–15:00)\nThe moment that made you care about this topic. The wound. The turning point.\n\nWHY THIS SHOW (15:00–20:00)\nWhat you believe about how this work can change something. What you're here to do.\n\nTHE INVITATION (20:00–23:00)\nWho this is for. Who it's not for. What they can expect if they stay.\n\nPERMISSION SLIP CLOSE (23:00–25:00)\nGive them permission to be exactly where they are right now.",
+  },
+  {
+    category: "SPECIAL",
+    name: "Case Study",
+    type: "Guest Interview",
+    desc: "A real client or community story. The before, the turning point, the after. Specificity is everything.",
+    example: "'How one conversation changed the direction of [client]'s business'",
+    structure: "HOOK (0:00–1:30)\nThe after — what changed — without giving away how.\n\nTHE BEFORE (1:30–8:00)\nWhat was life like before? Use their exact words if you can.\n\nTHE MOMENT (8:00–18:00)\nWhat happened. The turning point. What was said or done.\n\nTHE AFTER (18:00–25:00)\nWhat life looks like now. Specific. Named. Real.\n\nWHAT THIS MEANS FOR YOU (25:00–29:00)\nConnect the case study to your listener's situation.\n\nPERMISSION SLIP CLOSE (29:00–31:00)",
+  },
 ];
 
 const GDRIVE_KEY = "pis_gdrive_connection";
