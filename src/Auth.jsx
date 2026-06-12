@@ -527,7 +527,7 @@ function SignupScreen({ onSwitch, onAuthenticated }) {
               We sent a confirmation link to <strong style={{ color: T.text }}>{email}</strong>.<br />
               Click the link in that email to activate your account, then come back here and sign in.
             </div>
-            <div style={{ background: "#FF313112", border: "1px solid #FF313130", borderRadius: "10px", padding: "16px 20px", marginBottom: "28px", textAlign: "left" }}>
+            <div style={{ background: T.coralSoft, border: "1px solid " + T.coralMid, borderRadius: "10px", padding: "16px 20px", marginBottom: "28px", textAlign: "left" }}>
               <div style={{ fontSize: "13px", fontWeight: "700", color: T.coral, letterSpacing: "1px", textTransform: "uppercase", fontFamily: "'DM Sans', system-ui, sans-serif", marginBottom: "8px" }}>Didn't get the email?</div>
               <div style={{ fontSize: "13px", color: T.textSecondary, fontFamily: "'DM Sans', system-ui, sans-serif", lineHeight: "1.6" }}>
                 Check your spam or junk folder. The email comes from <em>noreply@mail.app.supabase.io</em>

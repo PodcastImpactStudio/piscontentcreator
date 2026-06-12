@@ -22,10 +22,10 @@ export const LIGHT_THEME = {
   text: "#1A1A1A",
   textSecondary: "#4A3F35",
   textMuted: "#6B5E52",
-  coral: "#C41230",
-  coralSoft: "#C4123010",
-  coralMid: "#C4123028",
-  red: "#C41230",
+  coral: "#7A0019",
+  coralSoft: "#7A001910",
+  coralMid: "#7A001928",
+  red: "#7A0019",
 };
 
 export const ThemeContext = createContext({ T: LIGHT_THEME, theme: "light", toggleTheme: () => {} });
