@@ -149,19 +149,19 @@ function LandingScreen({ onSignup, onLogin }) {
         </button>
       </div>
 
-      {/* ── Hero — dark, full-bleed ── */}
-      <div style={{ background: "linear-gradient(160deg, #111111 0%, #1C0008 60%, #2A000E 100%)", padding: "96px 24px 100px", textAlign: "center" }}>
+      {/* ── Hero ── */}
+      <div style={{ background: "#F7F3EE", padding: "96px 24px 100px", textAlign: "center" }}>
         {/* Beta badge */}
-        <div style={{ display: "inline-block", border: "1px solid rgba(122,0,25,0.6)", background: "rgba(122,0,25,0.18)", borderRadius: "20px", padding: "5px 18px", fontSize: "11px", color: "#E8A0A8", fontWeight: "700", letterSpacing: "2.5px", textTransform: "uppercase", marginBottom: "36px" }}>
+        <div style={{ display: "inline-block", border: "1px solid rgba(122,0,25,0.35)", background: "rgba(122,0,25,0.08)", borderRadius: "20px", padding: "5px 18px", fontSize: "11px", color: DR, fontWeight: "700", letterSpacing: "2.5px", textTransform: "uppercase", marginBottom: "36px" }}>
           Beta — Limited Spots Available
         </div>
 
-        <h1 style={{ fontSize: "clamp(38px, 6vw, 68px)", fontWeight: "800", color: "#FFFFFF", margin: "0 0 18px", lineHeight: "1.08", letterSpacing: "-1.5px", maxWidth: "820px", marginLeft: "auto", marginRight: "auto" }}>
+        <h1 style={{ fontSize: "clamp(38px, 6vw, 68px)", fontWeight: "800", color: "#1A1A1A", margin: "0 0 18px", lineHeight: "1.08", letterSpacing: "-1.5px", maxWidth: "820px", marginLeft: "auto", marginRight: "auto" }}>
           Your show's DNA.<br />
-          <span style={{ color: "#C8364A" }}>Your content. Automatically.</span>
+          <span style={{ color: DR }}>Your content. Automatically.</span>
         </h1>
 
-        <p style={{ fontSize: "18px", color: "rgba(255,255,255,0.62)", maxWidth: "560px", margin: "0 auto 48px", lineHeight: "1.75", fontWeight: "400" }}>
+        <p style={{ fontSize: "18px", color: "#4A3F35", maxWidth: "560px", margin: "0 auto 48px", lineHeight: "1.75", fontWeight: "400" }}>
           Enter your show's voice, audience, and platforms once. Then paste any transcript and get a complete content package — show notes, social, email, blog — all in your show's voice.
         </p>
 
@@ -173,7 +173,7 @@ function LandingScreen({ onSignup, onLogin }) {
           Create Your Account →
         </button>
 
-        <div style={{ marginTop: "16px", fontSize: "13px", color: "rgba(255,255,255,0.35)", letterSpacing: "0.3px" }}>
+        <div style={{ marginTop: "16px", fontSize: "13px", color: "#8B7D72", letterSpacing: "0.3px" }}>
           Access code required · No credit card during beta
         </div>
       </div>
