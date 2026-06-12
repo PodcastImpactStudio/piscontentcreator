@@ -42,12 +42,13 @@ function parse(raw){const ps=[
   {id:"prep-research",   r:[/^GUEST RESEARCH/i]},
   {id:"prep-questions",  r:[/TAILORED INTERVIEW QUESTIONS/i,/^TAILORED QUESTIONS/i]},
   {id:"prep-clips",      r:[/^CLIP PRIORITIES/i]},
+  {id:"prep-titles",     r:[/SUGGESTED EPISODE TITLES/i,/^SEO.*TITLES/i]},
   {id:"prep-checklist",  r:[/PRE-RECORDING CHECKLIST/i]},
   // Full content sections
   {id:"titles",r:[/SEO TITLE/i]},{id:"shownotes",r:[/SHOW NOTES/i]},{id:"spotify-creators",r:[/SPOTIFY FOR CREATORS/i]},{id:"editor-hooks",r:[/INTRO HOOK REC/i]},{id:"editor-clips",r:[/SOCIAL (MEDIA )?CLIP REC/i,/SOCIAL CLIP REC/i]},{id:"editor-notes",r:[/EDITOR NOTES/i]},{id:"youtube",r:[/YOUTUBE DESC/i]},{id:"youtube-quiz",r:[/YOUTUBE QUIZ/i]},{id:"social",r:[/SOCIAL MEDIA(?! CLIP)/i]},{id:"quotes",r:[/QUOTE CARDS/i,/PULL QUOTES/i]},{id:"poll-questions",r:[/POLL QUESTIONS/i]},{id:"story-slides",r:[/STORY SLIDES/i]},{id:"engagement-prompts",r:[/ENGAGEMENT PROMPTS/i]},{id:"takeaway-graphics",r:[/KEY TAKEAWAY GRAPHICS/i]},{id:"guestkit",r:[/GUEST SHARE/i]},{id:"email",r:[/EMAIL NEWS/i,/^(?!.*(PATREON|CIRCLE|MIGHTY|KAJABI|SKOOL|FACEBOOK GROUP)).*NEWSLETTER/i]},{id:"blog",r:[/BLOG ART/i,/BLOG POST/i]},{id:"community-companion",r:[/COMPANION POST/i]},{id:"community-prompts",r:[/COMMUNITY FEED PROMPTS/i,/DISCUSSION PROMPTS/i]},{id:"community-polls",r:[/POLL IDEAS/i,/(?:PATREON|CIRCLE|MIGHTY|KAJABI|SKOOL|FACEBOOK) POLL/i]},{id:"community-starters",r:[/CONVERSATION STARTERS/i]},{id:"clips",r:[/^\d+\.\s*CLIPS/i,/^\d+\.\s*SHORTS/i,/^\d+\.\s*REELS/i]}
 ];const c=strip(raw),lines=c.split("\n"),secs=[];let ti=null,id="intro",buf=[];for(const l of lines){let h=false;for(const p of ps){if(p.r.some(r=>r.test(l))){if(buf.length)secs.push({id,title:ti||"Overview",content:buf.join("\n").trim()});ti=l.replace(/^\d+\.\s*/,"").trim();id=p.id;buf=[];h=true;break;}}if(!h)buf.push(l);}if(buf.length)secs.push({id,title:ti||"Content",content:buf.join("\n").trim()});return secs.filter(s=>s.content.length>0);}
 
-const SM={"prep-package":{l:"Episode Overview",i:"📋"},"prep-hook":{l:"Hook",i:"🎣"},"prep-bridge":{l:"Bridge",i:"🌉"},"prep-permission":{l:"Permission Slip Close",i:"🔓"},"prep-structure":{l:"Episode Structure",i:"📐"},"prep-research":{l:"Guest Research",i:"🔍"},"prep-questions":{l:"Tailored Interview Questions",i:"❓"},"prep-clips":{l:"Clip Priorities",i:"✂️"},"prep-checklist":{l:"Pre-Recording Checklist",i:"✅"},titles:{l:"SEO Titles",i:"🎯"},shownotes:{l:"Show Notes",i:"📝"},"spotify-creators":{l:"Spotify for Creators",i:"🎵"},youtube:{l:"YouTube",i:"▶️"},"youtube-quiz":{l:"YouTube Quiz Card",i:"🧩"},"editor-hooks":{l:"Intro Hook Recommendations",i:"🎬"},"editor-clips":{l:"Social Clip Recommendations",i:"✂️"},"editor-notes":{l:"Editor Notes",i:"📋"},social:{l:"Social Media",i:"📱"},quotes:{l:"Quote Cards",i:"💬"},"poll-questions":{l:"Poll Questions",i:"📊"},"story-slides":{l:"Story Slides",i:"🎞️"},"engagement-prompts":{l:"Engagement Prompts",i:"💡"},"takeaway-graphics":{l:"Key Takeaway Graphics",i:"✨"},guestkit:{l:"Guest Kit",i:"🎁"},email:{l:"Newsletter",i:"📧"},blog:{l:"Blog",i:"📰"},"patreon-companion":{l:"Patreon Companion Post",i:"📝"},"patreon-discussion":{l:"Patreon Discussion Prompts",i:"💬"},"patreon-poll":{l:"Patreon Poll",i:"📊"},"patreon-newsletter":{l:"Patreon Newsletter",i:"📧"},"community-companion":{l:"Community Companion Post",i:"📝"},"community-prompts":{l:"Community Feed Prompts",i:"💬"},"community-polls":{l:"Community Polls",i:"📊"},"community-starters":{l:"Conversation Starters",i:"✨"},clips:{l:"Clips & Shorts",i:"✂️"},intro:{l:"Overview",i:"📋"}};
+const SM={"prep-package":{l:"Episode Overview",i:"📋"},"prep-hook":{l:"Hook",i:"🎣"},"prep-bridge":{l:"Bridge",i:"🌉"},"prep-permission":{l:"Permission Slip Close",i:"🔓"},"prep-structure":{l:"Episode Structure",i:"📐"},"prep-research":{l:"Guest Research",i:"🔍"},"prep-questions":{l:"Tailored Interview Questions",i:"❓"},"prep-clips":{l:"Clip Priorities",i:"✂️"},"prep-titles":{l:"SEO Episode Titles",i:"🎯"},"prep-checklist":{l:"Pre-Recording Checklist",i:"✅"},titles:{l:"SEO Titles",i:"🎯"},shownotes:{l:"Show Notes",i:"📝"},"spotify-creators":{l:"Spotify for Creators",i:"🎵"},youtube:{l:"YouTube",i:"▶️"},"youtube-quiz":{l:"YouTube Quiz Card",i:"🧩"},"editor-hooks":{l:"Intro Hook Recommendations",i:"🎬"},"editor-clips":{l:"Social Clip Recommendations",i:"✂️"},"editor-notes":{l:"Editor Notes",i:"📋"},social:{l:"Social Media",i:"📱"},quotes:{l:"Quote Cards",i:"💬"},"poll-questions":{l:"Poll Questions",i:"📊"},"story-slides":{l:"Story Slides",i:"🎞️"},"engagement-prompts":{l:"Engagement Prompts",i:"💡"},"takeaway-graphics":{l:"Key Takeaway Graphics",i:"✨"},guestkit:{l:"Guest Kit",i:"🎁"},email:{l:"Newsletter",i:"📧"},blog:{l:"Blog",i:"📰"},"patreon-companion":{l:"Patreon Companion Post",i:"📝"},"patreon-discussion":{l:"Patreon Discussion Prompts",i:"💬"},"patreon-poll":{l:"Patreon Poll",i:"📊"},"patreon-newsletter":{l:"Patreon Newsletter",i:"📧"},"community-companion":{l:"Community Companion Post",i:"📝"},"community-prompts":{l:"Community Feed Prompts",i:"💬"},"community-polls":{l:"Community Polls",i:"📊"},"community-starters":{l:"Conversation Starters",i:"✨"},clips:{l:"Clips & Shorts",i:"✂️"},intro:{l:"Overview",i:"📋"}};
 const ED=[{id:"titles",l:"SEO Titles"},{id:"shownotes",l:"Show Notes"},{id:"youtube",l:"YouTube"},{id:"social",l:"Social Media"},{id:"guestkit",l:"Guest Kit",g:true},{id:"email",l:"Newsletter"},{id:"blog",l:"Blog"},{id:"quotes",l:"Quotes"},{id:"patreon-companion",l:"Patreon Companion Post",pm:true},{id:"patreon-discussion",l:"Patreon Discussion Prompts",pm:true},{id:"patreon-poll",l:"Patreon Poll",pm:true},{id:"patreon-newsletter",l:"Patreon Newsletter",pm:true},{id:"clips",l:"Clips & Shorts",cm:true}];
 
 function stripHtml(html) {
@@ -1232,15 +1233,20 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
       const onePerson = d?.epPrep?.onePerson || {};
       const permSlips = d?.epPrep?.permissionSlips || [];
       const storyMission = d?.epPrep?.storyMission || "";
+      const listenerPersona = d?.aud?.who || "";
+      // If structured ONE PERSON fields are empty but a Listener Persona exists, extract from it
+      const hasOnePerson = onePerson.name || onePerson.question2AM || onePerson.wound;
       const systemPrompt = `You are generating a complete Episode Prep Package for ${d?.name}.
 
 SHOW VOICE: ${d?.voice?.traits || ""} | ${d?.voice?.energy || ""}
-AUDIENCE: ${d?.aud?.who || ""}
+AUDIENCE: ${listenerPersona}
 
 THE ONE PERSON:
 Name: ${onePerson.name || "[not set]"}
 2AM Question: ${onePerson.question2AM || "[not set]"}
 Core Wound: ${onePerson.wound || "[not set]"}
+${!hasOnePerson && listenerPersona ? `
+IMPORTANT — ONE PERSON CONTEXT: The structured ONE PERSON fields are not yet filled in, but the Listener Persona above contains detailed audience info. Extract a first name, a specific 2AM Question, and a Core Wound from that persona description and use them throughout this prep package. Label each extracted value with [From Listener Persona] so the user knows to review it.` : ""}
 
 STORY-MISSION CONNECTION (use verbatim in Bridge — never invent):
 ${storyMission || "[not set — note this in output]"}
@@ -1338,10 +1344,15 @@ CLIP PRIORITIES
 
 ---
 
+SUGGESTED EPISODE TITLES (SEO)
+[5 title options. Optimized for podcast search and YouTube SEO. Each title should be specific, benefit-forward, and 50–70 characters. Mix formats: question, how-to, outcome-driven, and curiosity-gap. DO NOT include the show name in titles — titles only. Mark the strongest option RECOMMENDED.]
+
+---
+
 PRE-RECORDING CHECKLIST
 [5–8 items specific to this episode and format. Include any guest prep items, tech checks, and one reminder tied to the ONE Person.]`;
 
-      const j = await claudeAPI({ model: "claude-sonnet-4-20250514", max_tokens: 6000, system: systemPrompt, messages: [{ role: "user", content: "Generate the complete Episode Prep Package now." }] });
+      const j = await claudeAPI({ model: "claude-sonnet-4-20250514", max_tokens: 7000, system: systemPrompt, messages: [{ role: "user", content: "Generate the complete Episode Prep Package now." }] });
       const t = j.content?.filter(i => i.type === "text").map(i => i.text).join("\n") || "";
       if (!t.trim()) { setErr("No content generated. Please try again."); setStep("prep-details"); return; }
       const stripped = strip(t);
