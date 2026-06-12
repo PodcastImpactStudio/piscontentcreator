@@ -1265,7 +1265,7 @@ EPISODE DETAILS:
 Guest/Topic: ${epTopic || "[not specified]"}
 ${epGuest ? `Guest Name: ${epGuest}` : ""}
 ${epGuestUrl ? `Guest URL/Handle: ${epGuestUrl}` : ""}
-One Takeaway: ${epTakeaway || "[not specified]"}
+One Takeaway: ${epTakeaway || "[not specified — suggest the single most listener-relevant takeaway from this guest/topic in the Episode Overview, labeled SUGGESTED TAKEAWAY]"}
 ${epMoments ? `Key Moments/Angles: ${epMoments}` : ""}
 ${epPanelists ? `Additional Panelists: ${epPanelists}` : ""}
 
@@ -1288,17 +1288,17 @@ Generated: ${new Date().toLocaleDateString()}
 ---
 
 HOOK (~30 seconds / ~75 words)
-[Opens with ${onePerson.name || "the ONE person"}'s moment. Never starts with host name or show name. Ends with show name. Based on the ONE person's 2AM question and this episode's specific relevance.]
+Write the actual hook script the host will record. Paint the listener's specific moment in vivid second-person ("You're...") or cinematic present tense ("She's staring at her laptop...") — NEVER use the listener archetype name or the host's name. Make the listener feel immediately seen. End with the show name. Root it in the 2AM question and this specific episode's angle.
 
 ---
 
 BRIDGE (60–90 seconds)
-[Host's personal connection to this episode topic. Extracted from Story-Mission Connection above — never invented. Flag anything inferred.]
+[Host's personal connection to this episode topic — write as a scripted bridge the host can read and personalize. Extract from Story-Mission Connection if provided. If not provided, write a placeholder frame the host can fill in: "I remember the first time I [relevant moment]..." — clearly mark with [HOST: personalize this section].]
 
 ---
 
 PERMISSION SLIP CLOSE (30–45 seconds)
-[2–3 slips from the Permission Slip Bank relevant to this episode. Direct address to ${onePerson.name || "the ONE person"} by name. Ends with EXACT sign-off line — verbatim.]
+Write the actual permission slip script the host will record. Address the listener directly as "you" — never use their archetype name. 2–3 slips from the Permission Slip Bank relevant to this episode. End with EXACT sign-off line verbatim.
 
 ---
 
@@ -1498,7 +1498,7 @@ PRE-RECORDING CHECKLIST
       else if(mode==="clips")setStep("clips-setup");
       else setStep("configure");
     }
-    else if(step==="result"){setStep("input");}
+    else if(step==="result"){if(mode==="prep")setStep("prep-details");else setStep("input");}
     else if(step==="prep-format"){setStep(Object.keys(shows).length>1?"show-select":"welcome");}
     else if(step==="prep-details"){const hasFmts=d?.episodeFormats?.length>0;setStep(hasFmts?"prep-format":(Object.keys(shows).length>1?"show-select":"welcome"));}
   }

@@ -1170,10 +1170,11 @@ ${rawDna.substring(0, 10000)}`;
           "VOICE_USE: language to use\nVOICE_AVOID: language to avoid\n" +
           "AUD_WHO: audience persona\nAUD_PAINS: pain points separated by |\nAUD_LANG: language they use\n" +
           "ONE_NAME: single ideal listener first name\nONE_2AM: question keeping them up at 2AM\nONE_WOUND: deeper fear or wound underneath that question\n" +
-          "STORY_MISSION: host's personal story connection to this show's mission\n" +
-          "PERMISSION_SLIPS: 2-3 permission-giving statements this show offers, separated by |\n" +
+          "STORY_MISSION: host's personal story or connection to this show's mission. If not explicitly stated in the document, draft a plausible one based on the show's topic, audience, and voice — begin with [DRAFT] so the host knows to personalize it.\n" +
+          "PERMISSION_SLIPS: 2-3 short permission-giving statements this show offers its listeners, separated by |. Example: 'You are allowed to rest without earning it first'. If not found in the document, generate 2-3 plausible ones based on the audience pain points and wound — begin each with [DRAFT].\n" +
           "HASHTAGS: default hashtags\nRULES: content rules\n" +
           "BOILERPLATE: full boilerplate text including all links and disclaimers\n\n" +
+          "IMPORTANT: For STORY_MISSION and PERMISSION_SLIPS specifically — if they are not in the document, do NOT leave them blank. Generate a best-guess draft and mark it [DRAFT].\n\n" +
           "SHOW DNA:\n" + rawDna.substring(0, 8000);
 
         const j = await claudeAPI({ model: "claude-sonnet-4-20250514", max_tokens: 4000, messages: [{ role: "user", content: prompt }] });
@@ -1187,7 +1188,7 @@ ${rawDna.substring(0, 10000)}`;
           name: getField("NAME", text) || prev?.name || "",
           tag: getField("TAG", text) || prev?.tag || "",
           hosts: getField("HOSTS", text) || prev?.hosts || "",
-          clr: getField("COLOR", text) || prev?.clr || "#C41230",
+          clr: getField("COLOR", text) || prev?.clr || "#7A0019",
           platforms: {
             ...DEFAULT_PLATFORMS,
             podcast: podcastPlatforms.length ? podcastPlatforms : DEFAULT_PLATFORMS.podcast,
