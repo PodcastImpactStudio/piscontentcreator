@@ -1764,11 +1764,11 @@ PRE-RECORDING CHECKLIST
           <div style={{maxWidth:"900px",margin:"0 auto",width:"100%"}}>
 
             {/* WELCOME SCREEN */}
-            {step==="welcome"&&<div style={{animation:"fadeUp .4s ease",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",minHeight:"80vh",textAlign:"center"}}>
-              <div style={{marginBottom:"40px"}}>
-                <h1 style={{fontSize:"38px",fontWeight:"700",color:T.text,margin:"0 0 8px",letterSpacing:"-0.5px",fontFamily:PF,lineHeight:"1.2"}}>
+            {step==="welcome"&&<div style={{animation:"fadeUp .4s ease",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",minHeight:"80vh",padding:"40px 24px",textAlign:"center"}}>
+              <div style={{marginBottom:"48px"}}>
+                <h1 style={{fontSize:"42px",fontWeight:"700",color:T.text,margin:"0 0 10px",letterSpacing:"-1px",fontFamily:PF,lineHeight:"1.15"}}>
                   Welcome back{displayName?`, ${displayName.split(" ")[0]}`:""}.</h1>
-                <p style={{fontSize:"16px",color:T.textMuted,margin:0,fontFamily:"'DM Sans', system-ui, sans-serif"}}>What are you creating today?</p>
+                <p style={{fontSize:"17px",color:T.textMuted,margin:0,fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"400"}}>What are you creating today?</p>
               </div>
               {loadingShows?(
                 <div style={{textAlign:"center",padding:"60px",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"2px",fontSize:"12px"}}>LOADING SHOWS...</div>
@@ -1794,30 +1794,36 @@ PRE-RECORDING CHECKLIST
                 )
               ):(()=>{
                 const ALL_CARDS=[
-                  {id:"full",  category:"CREATE",    name:"Content Package",    desc:"Show notes, social, email, and blog post from one transcript.",  headerGrad:"linear-gradient(145deg,#C41230 0%,#7A0015 100%)"},
-                  {id:"clips", category:"CREATE",    name:"Short-Form Content",  desc:"Titles, captions and hashtags for Reels, TikTok and Shorts.",    headerGrad:"linear-gradient(145deg,#8B0000 0%,#3D0000 100%)"},
-                  {id:"editor",category:"EDITORIAL", name:"Editor Companion",    desc:"Hook recs, clip timestamps and editing brief for your editor.",   headerGrad:"linear-gradient(145deg,#1C1C2E 0%,#0D0D1A 100%)"},
-                  {id:"prep",  category:"PLANNING",  name:"Episode Prep",        desc:"Build a complete episode outline with hooks, bridges, and permission slips.",      headerGrad:"linear-gradient(145deg,#1C1C1C 0%,#0A0A0A 100%)"},
+                  {id:"full",  category:"CREATE",    name:"Content Package",     desc:"Turn any transcript into show notes, social posts, email newsletter, and blog — all written in your show's voice.",           headerBg:"linear-gradient(150deg,#7A0019 0%,#4A0010 100%)", accent:"#7A0019", icon:"📦"},
+                  {id:"clips", category:"CREATE",    name:"Short-Form Content",  desc:"Generate SEO titles, captions, and hashtags for YouTube Shorts, Instagram Reels, TikTok, and more.",                          headerBg:"linear-gradient(150deg,#5C1F00 0%,#2E0F00 100%)", accent:"#8B4513", icon:"✂️"},
+                  {id:"editor",category:"EDITORIAL", name:"Editor Companion",    desc:"A structured editing brief with hook recommendations, best clip moments, timestamps, and pacing guidance for your editor.",     headerBg:"linear-gradient(150deg,#1C2B3A 0%,#0A1520 100%)", accent:"#3A7BD5", icon:"🎬"},
+                  {id:"prep",  category:"PLANNING",  name:"Episode Prep",        desc:"Build a complete episode outline — scripted hook, bridge, interview questions, and permission slip — before you hit record.",  headerBg:"linear-gradient(150deg,#1A1A3E 0%,#0A0A20 100%)", accent:"#6B6BAF", icon:"📋"},
                 ];
                 const visibleCards = isClient && clientConfig?.allowedModes
                   ? ALL_CARDS.filter(c => clientConfig.allowedModes.includes(c.id))
                   : ALL_CARDS;
-                const colCount = Math.min(visibleCards.length, 4);
+                const colCount = visibleCards.length <= 2 ? visibleCards.length : 2;
                 return(
-                <div className="welcome-cards" style={{display:"grid",gridTemplateColumns:`repeat(${colCount},1fr)`,gap:"14px",width:"100%"}}>
+                <div className="welcome-cards" style={{display:"grid",gridTemplateColumns:`repeat(${colCount},1fr)`,gap:"20px",width:"100%",maxWidth:"860px"}}>
                   {visibleCards.map(card=>(
                     <div key={card.id}
                       onClick={()=>handleSidebarNav(card.id)}
-                      style={{background:T.card,border:"2px solid #C41230",borderRadius:"12px",cursor:"pointer",transition:"all .2s",overflow:"hidden",boxShadow:"0 2px 10px rgba(196,18,48,.07)"}}
-                      onMouseEnter={e=>{e.currentTarget.style.boxShadow="0 8px 28px rgba(196,18,48,.18)";e.currentTarget.style.transform="translateY(-2px)";}}
-                      onMouseLeave={e=>{e.currentTarget.style.boxShadow="0 2px 10px rgba(196,18,48,.07)";e.currentTarget.style.transform="translateY(0)";}}>
-                      <div style={{height:"90px",background:card.headerGrad,display:"flex",flexDirection:"column",justifyContent:"flex-end",padding:"12px 16px"}}>
-                        <div style={{fontSize:"10px",letterSpacing:"2px",textTransform:"uppercase",color:"rgba(255,255,255,0.45)",fontFamily:"'DM Sans',system-ui,sans-serif",fontWeight:"600",marginBottom:"4px"}}>{card.category}</div>
-                        <div style={{fontSize:"15px",fontWeight:"700",color:"#FFFFFF",fontFamily:PF,lineHeight:"1.2"}}>{card.name}</div>
+                      style={{background:T.card,border:`1px solid ${T.cardBorder}`,borderRadius:"16px",cursor:"pointer",transition:"all .22s ease",overflow:"hidden",boxShadow:"0 2px 12px rgba(0,0,0,.06)",textAlign:"left"}}
+                      onMouseEnter={e=>{e.currentTarget.style.boxShadow=`0 12px 36px rgba(0,0,0,.14)`;e.currentTarget.style.transform="translateY(-3px)";e.currentTarget.style.borderColor=card.accent;}}
+                      onMouseLeave={e=>{e.currentTarget.style.boxShadow="0 2px 12px rgba(0,0,0,.06)";e.currentTarget.style.transform="translateY(0)";e.currentTarget.style.borderColor=T.cardBorder;}}>
+                      {/* Coloured header band */}
+                      <div style={{height:"120px",background:card.headerBg,display:"flex",flexDirection:"column",justifyContent:"flex-end",padding:"18px 24px",position:"relative"}}>
+                        <div style={{position:"absolute",top:"18px",right:"20px",fontSize:"28px",opacity:0.35}}>{card.icon}</div>
+                        <div style={{fontSize:"10px",letterSpacing:"2.5px",textTransform:"uppercase",color:"rgba(255,255,255,0.5)",fontFamily:"'DM Sans',system-ui,sans-serif",fontWeight:"700",marginBottom:"6px"}}>{card.category}</div>
+                        <div style={{fontSize:"20px",fontWeight:"700",color:"#FFFFFF",fontFamily:PF,lineHeight:"1.2",letterSpacing:"-0.3px"}}>{card.name}</div>
                       </div>
-                      <div style={{padding:"14px 16px 18px"}}>
-                        <div style={{fontSize:"12px",color:T.textSecondary,lineHeight:"1.65",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{card.desc}</div>
-                        <div style={{marginTop:"12px",fontSize:"11px",color:T.coral,fontWeight:"700",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1px",textTransform:"uppercase"}}>Get Started →</div>
+                      {/* Card body */}
+                      <div style={{padding:"20px 24px 24px",display:"flex",flexDirection:"column",gap:"16px"}}>
+                        <p style={{margin:0,fontSize:"14px",color:T.textSecondary,lineHeight:"1.7",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{card.desc}</p>
+                        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                          <span style={{fontSize:"11px",color:card.accent,fontWeight:"700",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1.5px",textTransform:"uppercase"}}>Get Started</span>
+                          <div style={{width:"32px",height:"32px",borderRadius:"50%",background:`${card.accent}15`,border:`1px solid ${card.accent}30`,display:"flex",alignItems:"center",justifyContent:"center",color:card.accent,fontSize:"14px",fontWeight:"700"}}>→</div>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -1837,7 +1843,7 @@ PRE-RECORDING CHECKLIST
                 {Object.entries(shows).sort(([,a],[,b])=>a.name.localeCompare(b.name)).map(([k,s])=>(
                   <button key={k} onClick={()=>advanceToMode(mode,k)}
                     style={{width:"100%",padding:"18px 24px",background:T.card,border:`1px solid ${T.cardBorder}`,borderRadius:"12px",cursor:"pointer",textAlign:"left",transition:"all .15s",display:"flex",alignItems:"center",justifyContent:"space-between",gap:"16px"}}
-                    onMouseEnter={e=>{e.currentTarget.style.border=`2px solid ${T.coral}`;e.currentTarget.style.boxShadow=`0 4px 16px rgba(196,18,48,.1)`;}}
+                    onMouseEnter={e=>{e.currentTarget.style.border=`2px solid ${T.coral}`;e.currentTarget.style.boxShadow=`0 4px 16px rgba(122,0,25,.1)`;}}
                     onMouseLeave={e=>{e.currentTarget.style.border=`1px solid ${T.cardBorder}`;e.currentTarget.style.boxShadow="none";}}>
                     <div>
                       <div style={{fontSize:"17px",fontWeight:"700",color:T.text,fontFamily:PF,marginBottom:"3px"}}>{s.name}</div>
