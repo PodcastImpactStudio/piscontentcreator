@@ -138,8 +138,8 @@ function LandingScreen({ onSignup, onLogin }) {
     <div style={{ minHeight: "100vh", background: "#F7F3EE", fontFamily: FF }}>
 
       {/* ── Header ── */}
-      <div style={{ background: "#111111", padding: "0 48px", height: "72px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <img src="/logo-nav.png" alt="Podcast Impact Content Studio" style={{ height: "80px", objectFit: "contain" }} />
+      <div style={{ background: "#111111", padding: "0 48px", height: "96px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <img src="/logo-nav.png" alt="Podcast Impact Content Studio" style={{ height: "90px", objectFit: "contain" }} />
         <button
           onClick={onLogin}
           onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.08)"; }}
