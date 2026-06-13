@@ -400,7 +400,7 @@ function getStoredGDrive() {
   } catch { return null; }
 }
 
-function SettingsView({ globalSettings, setGlobalSettings, saveGlobalSettings, globalSettingsSaved, globalSettingsLoading, orgId, accountType, userEmail, orgData, setOrgData, saveOrgData, orgDataSaved }) {
+function SettingsView({ shows, globalSettings, setGlobalSettings, saveGlobalSettings, globalSettingsSaved, globalSettingsLoading, orgId, accountType, userEmail, orgData, setOrgData, saveOrgData, orgDataSaved }) {
   const [activeSection, setActiveSection] = useState("integrations");
   const [team, setTeam] = useState([]);
   const [teamLoading, setTeamLoading] = useState(true);
@@ -1603,7 +1603,7 @@ ${epfPasteText.substring(0, 8000)}`;
         </div>
 
         {adminView === "settings" ? (
-          <SettingsView globalSettings={globalSettings} setGlobalSettings={setGlobalSettings} saveGlobalSettings={saveGlobalSettings} globalSettingsSaved={globalSettingsSaved} globalSettingsLoading={globalSettingsLoading} orgId={orgId} accountType={accountType} userEmail={userEmail} orgData={orgData} setOrgData={setOrgData} saveOrgData={saveOrgData} orgDataSaved={orgDataSaved} />
+          <SettingsView shows={shows} globalSettings={globalSettings} setGlobalSettings={setGlobalSettings} saveGlobalSettings={saveGlobalSettings} globalSettingsSaved={globalSettingsSaved} globalSettingsLoading={globalSettingsLoading} orgId={orgId} accountType={accountType} userEmail={userEmail} orgData={orgData} setOrgData={setOrgData} saveOrgData={saveOrgData} orgDataSaved={orgDataSaved} />
         ) : (
         <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
 
