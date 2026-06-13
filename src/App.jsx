@@ -1409,6 +1409,18 @@ PRE-RECORDING CHECKLIST
           const scheduleUrl = sData?.value?.scheduleUrl || "";
           setClientConfig({ assignedShows, allowedModes, scheduleUrl });
           if (assignedShows.length === 1) setShow(assignedShows[0]);
+          // Explicitly load assigned shows by ID — needed if org-level RLS blocks the generic loadShows()
+          if (assignedShows.length > 0) {
+            try {
+              const { data: showRows } = await supabase.from("shows").select("*").in("id", assignedShows);
+              if (showRows?.length > 0) {
+                const loaded = {};
+                for (const row of showRows) { loaded[row.id] = { ...row.dna, id: row.id, fromDB: true }; }
+                setShows(loaded);
+                setLoadingShows(false);
+              }
+            } catch {}
+          }
         } catch {}
       }
       // Load onboarding state
@@ -1772,9 +1784,9 @@ PRE-RECORDING CHECKLIST
                   Welcome back{displayName?`, ${displayName.split(" ")[0]}`:""}.</h1>
                 <p style={{fontSize:"17px",color:T.textMuted,margin:0,fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"400"}}>What are you creating today?</p>
               </div>
-              {loadingShows?(
+              {loadingShows&&!(isClient&&clientConfig?.assignedShows?.length>0)?(
                 <div style={{textAlign:"center",padding:"60px",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"2px",fontSize:"12px"}}>LOADING SHOWS...</div>
-              ):Object.keys(shows).length===0?(
+              ):Object.keys(shows).length===0&&!(isClient&&clientConfig?.assignedShows?.length>0)?(
                 isAdmin?(
                   showFirstShowWizard?(
                     <FirstShowWizard
