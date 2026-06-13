@@ -406,7 +406,7 @@ function SettingsView({ globalSettings, setGlobalSettings, saveGlobalSettings, g
   const [teamLoading, setTeamLoading] = useState(true);
   const showKeys = Object.keys(shows || {});
   const [addingMember, setAddingMember] = useState(false);
-  const [newMember, setNewMember] = useState({ email: "", role: "editor", assignedShow: "", allowedModes: ["prep"] });
+  const [newMember, setNewMember] = useState({ email: "", role: "Editor", jobTitle: "Host", assignedShows: [], allowedModes: ["prep"] });
   const [editingIdx, setEditingIdx] = useState(null);
   const [editForm, setEditForm] = useState({});
   const [inviting, setInviting] = useState(false);
@@ -471,7 +471,8 @@ function SettingsView({ globalSettings, setGlobalSettings, saveGlobalSettings, g
 
   async function sendInvite() {
     if (!newMember.email.trim()) { setInviteMsg("Please enter an email address."); return; }
-    if (newMember.role === "Client" && !newMember.assignedShow) { setInviteMsg("Please assign a show for this client."); return; }
+    const isCollab = newMember.role === "Collaborator";
+    if (isCollab && newMember.assignedShows.length === 0) { setInviteMsg("Please assign at least one show."); return; }
     setInviting(true); setInviteMsg("");
     try {
       const r = await fetch("/api/invite", {
@@ -479,29 +480,28 @@ function SettingsView({ globalSettings, setGlobalSettings, saveGlobalSettings, g
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: newMember.email.trim().toLowerCase(),
-          role: newMember.role.toLowerCase(),
+          role: isCollab ? "collaborator" : newMember.role.toLowerCase(),
           orgId,
-          ...(newMember.role === "Client" ? { assignedShow: newMember.assignedShow, allowedModes: newMember.allowedModes } : {}),
+          ...(isCollab ? { assignedShows: newMember.assignedShows, allowedModes: newMember.allowedModes } : {}),
         }),
       });
       const data = await r.json();
       if (!r.ok) throw new Error(data.error || "Failed to send invite.");
-      // Save client config to team list so it's available on login
       const emailLower = newMember.email.trim().toLowerCase();
       const currentTeam = globalSettings.team || [];
       const existingIdx = currentTeam.findIndex(m => m.email?.toLowerCase() === emailLower);
       const newEntry = {
         email: emailLower,
         name: emailLower.split("@")[0],
-        role: newMember.role,
-        ...(newMember.role === "Client" ? { assignedShow: newMember.assignedShow, allowedModes: newMember.allowedModes } : {}),
+        role: isCollab ? "Collaborator" : newMember.role,
+        ...(isCollab ? { jobTitle: newMember.jobTitle, assignedShows: newMember.assignedShows, allowedModes: newMember.allowedModes } : {}),
       };
       const updatedTeam = existingIdx >= 0
         ? currentTeam.map((m, i) => i === existingIdx ? { ...m, ...newEntry } : m)
         : [...currentTeam, newEntry];
       saveTeam(updatedTeam);
       setInviteMsg("✓ Invite sent to " + newMember.email);
-      setNewMember({ email: "", role: "editor", assignedShow: "", allowedModes: ["prep"] });
+      setNewMember({ email: "", role: "Editor", jobTitle: "Host", assignedShows: [], allowedModes: ["prep"] });
       setTimeout(() => { setAddingMember(false); setInviteMsg(""); }, 2500);
     } catch (e) {
       setInviteMsg("Error: " + e.message);
@@ -674,10 +674,11 @@ function SettingsView({ globalSettings, setGlobalSettings, saveGlobalSettings, g
         )}
 
         {activeSection === "team" && (()=>{
-          const ROLES = ["Owner","Admin","Editor","Host","Client"];
-          const roleColors = { Owner:{bg:T.coralSoft,border:T.coralMid,text:T.coral}, Admin:{bg:"#1C1C2E22",border:"#1C1C2E44",text:"#4A4A8A"}, Editor:{bg:"#52B78818",border:"#52B78844",text:"#52B788"}, Host:{bg:"#E67E2218",border:"#E67E2244",text:"#E67E22"}, Client:{bg:"#3B82F618",border:"#3B82F644",text:"#3B82F6"}, Viewer:{bg:T.card,border:T.cardBorder,text:T.textMuted} };
-          const roleDesc = { Owner:"Full access — billing, settings, all shows", Admin:"Manage shows, DNA, team & settings", Editor:"Create content, use all tools", Host:"View and generate content for their show", Client:"Episode planning & selected tools for their assigned show" };
-          const CLIENT_MODES = [{id:"prep",label:"Episode Prep"},{id:"clips",label:"Clips & Shorts"},{id:"full",label:"Full Content Package"},{id:"editor",label:"Editor Brief"}];
+          const ROLES = ["Owner","Admin","Editor","Collaborator"];
+          const COLLAB_TITLES = ["Host","Admin Assistant","Editor","Social Media Scheduler","Virtual Assistant"];
+          const roleColors = { Owner:{bg:T.coralSoft,border:T.coralMid,text:T.coral}, Admin:{bg:"#1C1C2E22",border:"#1C1C2E44",text:"#4A4A8A"}, Editor:{bg:"#52B78818",border:"#52B78844",text:"#52B788"}, Collaborator:{bg:"#E67E2218",border:"#E67E2244",text:"#C47A00"}, Host:{bg:"#E67E2218",border:"#E67E2244",text:"#C47A00"}, Client:{bg:"#E67E2218",border:"#E67E2244",text:"#C47A00"} };
+          const roleDesc = { Owner:"Full access — billing, settings, all shows", Admin:"Manage shows, DNA, team & settings", Editor:"Create & export content for all shows", Collaborator:"Show-specific access — sees only their assigned show(s)" };
+          const CLIENT_MODES = [{id:"prep",label:"Episode Prep"},{id:"full",label:"Full Content Package"},{id:"clips",label:"Clips & Shorts"},{id:"editor",label:"Editor Brief"}];
           const seatLimit = accountType === "solo" ? 3 : 10;
           const atLimit = team.length >= seatLimit;
           return(
@@ -710,19 +711,36 @@ function SettingsView({ globalSettings, setGlobalSettings, saveGlobalSettings, g
                         <div style={{ display: "flex", gap: "8px", marginBottom: "8px", flexWrap: "wrap" }}>
                           <input value={editForm.name} onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))} placeholder="Full name" style={{ ...inp, flex: 1, minWidth: "130px" }} />
                           <input value={editForm.email} onChange={e => setEditForm(f => ({ ...f, email: e.target.value }))} placeholder="Email" style={{ ...inp, flex: 2, minWidth: "180px" }} />
-                          <select value={editForm.role} onChange={e => setEditForm(f => ({ ...f, role: e.target.value }))} style={{ ...inp, cursor: "pointer" }} disabled={editForm.role === "Owner"}>
-                            <option>Owner</option><option>Admin</option><option>Editor</option><option>Host</option><option>Client</option>
+                          <select value={editForm.role === "Client" || editForm.role === "Host" ? "Collaborator" : editForm.role} onChange={e => setEditForm(f => ({ ...f, role: e.target.value }))} style={{ ...inp, cursor: "pointer" }} disabled={editForm.role === "Owner"}>
+                            <option>Owner</option><option>Admin</option><option>Editor</option><option>Collaborator</option>
                           </select>
                         </div>
-                        {editForm.role === "Client" && (
-                          <div style={{ background: T.surface, border: "1px solid " + T.cardBorder, borderRadius: "8px", padding: "12px 14px", marginBottom: "8px" }}>
-                            <div style={{ fontSize: "12px", fontWeight: "700", color: "#3B82F6", letterSpacing: "1px", textTransform: "uppercase", marginBottom: "10px" }}>Client Access</div>
+                        {(editForm.role === "Collaborator" || editForm.role === "Client" || editForm.role === "Host") && (
+                          <div style={{ background: T.surface, border: "1px solid #E67E2233", borderRadius: "8px", padding: "12px 14px", marginBottom: "8px" }}>
+                            <div style={{ fontSize: "12px", fontWeight: "700", color: "#C47A00", letterSpacing: "1px", textTransform: "uppercase", marginBottom: "10px" }}>Show Access</div>
                             <div style={{ marginBottom: "10px" }}>
-                              <label style={{ fontSize: "11px", letterSpacing: "1.5px", textTransform: "uppercase", color: T.textMuted, display: "block", marginBottom: "5px" }}>Assigned Show</label>
-                              <select value={editForm.assignedShow||""} onChange={e => setEditForm(f => ({ ...f, assignedShow: e.target.value }))} style={{ ...inp, fontSize: "14px", cursor: "pointer" }}>
-                                <option value="">Select show...</option>
-                                {showKeys.map(k => <option key={k} value={k}>{shows[k]?.name || k}</option>)}
+                              <label style={{ fontSize: "11px", letterSpacing: "1.5px", textTransform: "uppercase", color: T.textMuted, display: "block", marginBottom: "5px" }}>Job Title</label>
+                              <select value={editForm.jobTitle||""} onChange={e => setEditForm(f => ({ ...f, jobTitle: e.target.value }))} style={{ ...inp, fontSize: "14px", cursor: "pointer" }}>
+                                {COLLAB_TITLES.map(t => <option key={t} value={t}>{t}</option>)}
                               </select>
+                            </div>
+                            <div style={{ marginBottom: "10px" }}>
+                              <label style={{ fontSize: "11px", letterSpacing: "1.5px", textTransform: "uppercase", color: T.textMuted, display: "block", marginBottom: "6px" }}>Assigned Shows</label>
+                              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                                {showKeys.map(k => {
+                                  const currentShows = editForm.assignedShows || (editForm.assignedShow ? [editForm.assignedShow] : []);
+                                  const checked = currentShows.includes(k);
+                                  return (
+                                    <label key={k} style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", fontSize: "13px", color: T.textSecondary }}>
+                                      <input type="checkbox" checked={checked} onChange={() => setEditForm(f => {
+                                        const cur = f.assignedShows || (f.assignedShow ? [f.assignedShow] : []);
+                                        return { ...f, assignedShows: checked ? cur.filter(x => x !== k) : [...cur, k] };
+                                      })} style={{ accentColor: "#C47A00" }} />
+                                      {shows[k]?.name || k}
+                                    </label>
+                                  );
+                                })}
+                              </div>
                             </div>
                             <div>
                               <label style={{ fontSize: "11px", letterSpacing: "1.5px", textTransform: "uppercase", color: T.textMuted, display: "block", marginBottom: "6px" }}>Tools They Can Access</label>
@@ -734,7 +752,7 @@ function SettingsView({ globalSettings, setGlobalSettings, saveGlobalSettings, g
                                       <input type="checkbox" checked={checked} onChange={() => {
                                         const modes = editForm.allowedModes || ["prep"];
                                         setEditForm(f => ({ ...f, allowedModes: checked ? modes.filter(x => x !== m.id) : [...modes, m.id] }));
-                                      }} style={{ accentColor: "#3B82F6" }} />
+                                      }} style={{ accentColor: "#C47A00" }} />
                                       {m.label}
                                     </label>
                                   );
@@ -750,18 +768,21 @@ function SettingsView({ globalSettings, setGlobalSettings, saveGlobalSettings, g
                       </div>
                     ) : (
                       <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "14px 0", borderBottom: i < team.length - 1 ? "1px solid " + T.cardBorder : "none" }}>
-                        <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: member.role === "Client" ? "#3B82F618" : T.coralSoft, border: "1px solid " + (member.role === "Client" ? "#3B82F644" : T.coralMid), display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", fontWeight: "700", color: member.role === "Client" ? "#3B82F6" : T.coral, flexShrink: 0 }}>{member.name.charAt(0)}</div>
+                        <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: T.coralSoft, border: "1px solid " + T.coralMid, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", fontWeight: "700", color: T.coral, flexShrink: 0 }}>{member.name.charAt(0)}</div>
                         <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: "14px", fontWeight: "600", color: T.text }}>{member.name}</div>
+                          <div style={{ fontSize: "14px", fontWeight: "600", color: T.text }}>{member.name}{member.jobTitle ? <span style={{ fontSize: "11px", color: "#C47A00", fontWeight: "700", background: "#E67E2218", border: "1px solid #E67E2244", borderRadius: "10px", padding: "1px 7px", marginLeft: "8px" }}>{member.jobTitle}</span> : null}</div>
                           <div style={{ fontSize: "13px", color: T.textMuted }}>{member.email}</div>
-                          {member.role === "Client" && member.assignedShow && (
-                            <div style={{ fontSize: "11px", color: "#3B82F6", marginTop: "2px", fontWeight: "600" }}>
-                              📺 {shows[member.assignedShow]?.name || member.assignedShow}
-                              {member.allowedModes?.length ? " · " + member.allowedModes.map(m => CLIENT_MODES.find(c => c.id === m)?.label || m).join(", ") : ""}
+                          {(member.role === "Collaborator" || member.role === "Client" || member.role === "Host") && (
+                            <div style={{ fontSize: "11px", color: T.textMuted, marginTop: "3px" }}>
+                              {(member.assignedShows?.length > 0
+                                ? member.assignedShows.map(k => shows[k]?.name || k)
+                                : member.assignedShow ? [shows[member.assignedShow]?.name || member.assignedShow] : []
+                              ).map((n,i) => <span key={i} style={{ marginRight: "6px", color: "#C47A00", fontWeight: "600" }}>📺 {n}</span>)}
+                              {member.allowedModes?.length ? <span style={{ color: T.textMuted }}>· {member.allowedModes.map(m => CLIENT_MODES.find(c => c.id === m)?.label || m).join(", ")}</span> : null}
                             </div>
                           )}
                         </div>
-                        <span style={{ fontSize: "11px", padding: "3px 10px", background: roleColors[member.role]?.bg||T.card, border: "1px solid " + (roleColors[member.role]?.border||T.cardBorder), borderRadius: "20px", color: roleColors[member.role]?.text||T.textMuted, fontWeight: "700" }}>{member.role}</span>
+                        <span style={{ fontSize: "11px", padding: "3px 10px", background: roleColors[member.role]?.bg||T.card, border: "1px solid " + (roleColors[member.role]?.border||T.cardBorder), borderRadius: "20px", color: roleColors[member.role]?.text||T.textMuted, fontWeight: "700" }}>{member.role === "Client" || member.role === "Host" ? "Collaborator" : member.role}</span>
                         <button onClick={() => { setEditingIdx(i); setEditForm({ ...member, allowedModes: member.allowedModes || ["prep"] }); setAddingMember(false); }} style={{ padding: "5px 12px", background: "transparent", border: "1px solid " + T.cardBorder, borderRadius: "6px", color: T.textMuted, fontSize: "12px", cursor: "pointer" }}>Edit</button>
                         {member.role !== "Owner" && <button onClick={() => saveTeam(team.filter((_, idx) => idx !== i))} style={{ padding: "5px 10px", background: "transparent", border: "1px solid #D94F4F44", borderRadius: "6px", color: "#F09090", fontSize: "12px", cursor: "pointer" }}>✕</button>}
                       </div>
@@ -777,22 +798,37 @@ function SettingsView({ globalSettings, setGlobalSettings, saveGlobalSettings, g
                     </div>
                     <div style={{ display: "flex", gap: "8px", marginBottom: "8px", flexWrap: "wrap" }}>
                       <input value={newMember.email} onChange={e => setNewMember(m => ({ ...m, email: e.target.value }))} placeholder="Email address" style={{ ...inp, flex: 2, minWidth: "200px" }} />
-                      <select value={newMember.role} onChange={e => setNewMember(m => ({ ...m, role: e.target.value }))} style={{ ...inp, cursor: "pointer", flex: 1, minWidth: "120px" }}>
+                      <select value={newMember.role} onChange={e => setNewMember(m => ({ ...m, role: e.target.value }))} style={{ ...inp, cursor: "pointer", flex: 1, minWidth: "140px" }}>
                         <option value="Admin">Admin</option>
-                        <option value="Editor">Editor</option>
-                        <option value="Host">Host</option>
-                        <option value="Client">Client (Host Portal)</option>
+                        <option value="Editor">Editor (All Shows)</option>
+                        <option value="Collaborator">Collaborator (Show Access)</option>
                       </select>
                     </div>
-                    {newMember.role === "Client" && (
-                      <div style={{ background: "#3B82F608", border: "1px solid #3B82F633", borderRadius: "8px", padding: "14px 16px", marginBottom: "10px" }}>
-                        <div style={{ fontSize: "12px", fontWeight: "700", color: "#3B82F6", letterSpacing: "1px", textTransform: "uppercase", marginBottom: "10px" }}>Client Access</div>
-                        <div style={{ marginBottom: "10px" }}>
-                          <label style={{ fontSize: "11px", letterSpacing: "1.5px", textTransform: "uppercase", color: T.textMuted, display: "block", marginBottom: "5px" }}>Assign to Show</label>
-                          <select value={newMember.assignedShow} onChange={e => setNewMember(m => ({ ...m, assignedShow: e.target.value }))} style={{ ...inp, fontSize: "14px", cursor: "pointer" }}>
-                            <option value="">Select show...</option>
-                            {showKeys.map(k => <option key={k} value={k}>{shows[k]?.name || k}</option>)}
+                    {newMember.role === "Collaborator" && (
+                      <div style={{ background: "#E67E2208", border: "1px solid #E67E2233", borderRadius: "8px", padding: "14px 16px", marginBottom: "10px" }}>
+                        <div style={{ fontSize: "12px", fontWeight: "700", color: "#C47A00", letterSpacing: "1px", textTransform: "uppercase", marginBottom: "12px" }}>Show Access</div>
+                        <div style={{ marginBottom: "12px" }}>
+                          <label style={{ fontSize: "11px", letterSpacing: "1.5px", textTransform: "uppercase", color: T.textMuted, display: "block", marginBottom: "6px" }}>Job Title</label>
+                          <select value={newMember.jobTitle} onChange={e => setNewMember(m => ({ ...m, jobTitle: e.target.value }))} style={{ ...inp, fontSize: "14px", cursor: "pointer" }}>
+                            {COLLAB_TITLES.map(t => <option key={t} value={t}>{t}</option>)}
                           </select>
+                        </div>
+                        <div style={{ marginBottom: "12px" }}>
+                          <label style={{ fontSize: "11px", letterSpacing: "1.5px", textTransform: "uppercase", color: T.textMuted, display: "block", marginBottom: "6px" }}>Assign to Show(s)</label>
+                          <div style={{ display: "flex", flexDirection: "column", gap: "7px" }}>
+                            {showKeys.map(k => {
+                              const checked = newMember.assignedShows.includes(k);
+                              return (
+                                <label key={k} style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", fontSize: "13px", color: T.textSecondary }}>
+                                  <input type="checkbox" checked={checked} onChange={() => setNewMember(prev => ({
+                                    ...prev,
+                                    assignedShows: checked ? prev.assignedShows.filter(x => x !== k) : [...prev.assignedShows, k]
+                                  }))} style={{ accentColor: "#C47A00" }} />
+                                  {shows[k]?.name || k}
+                                </label>
+                              );
+                            })}
+                          </div>
                         </div>
                         <div>
                           <label style={{ fontSize: "11px", letterSpacing: "1.5px", textTransform: "uppercase", color: T.textMuted, display: "block", marginBottom: "6px" }}>Tools They Can Access</label>
@@ -806,13 +842,13 @@ function SettingsView({ globalSettings, setGlobalSettings, saveGlobalSettings, g
                                       ...prev,
                                       allowedModes: checked ? prev.allowedModes.filter(x => x !== m.id) : [...prev.allowedModes, m.id]
                                     }));
-                                  }} style={{ accentColor: "#3B82F6" }} />
+                                  }} style={{ accentColor: "#C47A00" }} />
                                   {m.label}
                                 </label>
                               );
                             })}
                           </div>
-                          <div style={{ fontSize: "11px", color: T.textMuted, marginTop: "8px", fontStyle: "italic" }}>Episode Prep is on by default. Add more as needed.</div>
+                          <div style={{ fontSize: "11px", color: T.textMuted, marginTop: "8px", fontStyle: "italic" }}>Episode Prep is on by default. Add more tools as needed.</div>
                         </div>
                       </div>
                     )}
@@ -821,7 +857,7 @@ function SettingsView({ globalSettings, setGlobalSettings, saveGlobalSettings, g
                       <button onClick={sendInvite} disabled={inviting} style={{ padding: "8px 20px", background: T.coral, border: "none", borderRadius: "6px", color: "#fff", fontSize: "13px", fontWeight: "700", cursor: "pointer" }}>
                         {inviting ? "Sending..." : "Send Invite →"}
                       </button>
-                      <button onClick={() => { setAddingMember(false); setNewMember({ email: "", role: "editor", assignedShow: "", allowedModes: ["prep"] }); setInviteMsg(""); }} style={{ padding: "8px 14px", background: "transparent", border: "1px solid " + T.cardBorder, borderRadius: "6px", color: T.textMuted, fontSize: "13px", cursor: "pointer" }}>Cancel</button>
+                      <button onClick={() => { setAddingMember(false); setNewMember({ email: "", role: "Editor", jobTitle: "Host", assignedShows: [], allowedModes: ["prep"] }); setInviteMsg(""); }} style={{ padding: "8px 14px", background: "transparent", border: "1px solid " + T.cardBorder, borderRadius: "6px", color: T.textMuted, fontSize: "13px", cursor: "pointer" }}>Cancel</button>
                     </div>
                   </div>
                 ) : atLimit ? (

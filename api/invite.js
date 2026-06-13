@@ -11,7 +11,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { email, role, orgId, assignedShow, allowedModes } = req.body || {};
+    const { email, role, orgId, assignedShows, allowedModes } = req.body || {};
     if (!email) {
       return res.status(400).json({ error: "Email is required." });
     }
@@ -30,7 +30,7 @@ export default async function handler(req, res) {
         data: {
           role: role || "editor",
           org_id: orgId,
-          ...(assignedShow ? { assigned_show: assignedShow } : {}),
+          ...(assignedShows?.length > 0 ? { assigned_shows: assignedShows } : {}),
           ...(allowedModes ? { allowed_modes: allowedModes } : {}),
         },
       }),

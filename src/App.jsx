@@ -1394,19 +1394,21 @@ PRE-RECORDING CHECKLIST
       const adminEmails = ["tamar@podcastimpactstudio.com", "tamarroutly@gmail.com"];
       const isAdminUser = data?.role === "admin" || adminEmails.includes(user.email?.toLowerCase());
       setIsAdmin(isAdminUser);
-      // Check client role
-      const isClientUser = (data?.role || "").toLowerCase() === "client";
+      // Check collaborator role (show-specific access)
+      const COLLAB_ROLES = ["client", "collaborator", "host"];
+      const isClientUser = !isAdminUser && COLLAB_ROLES.includes((data?.role || "").toLowerCase());
       setIsClient(isClientUser);
       if (isClientUser) {
         try {
           const { data: sData } = await supabase.from("settings").select("value").eq("key", "global").single();
           const teamList = sData?.value?.team || [];
           const myEntry = teamList.find(m => m.email?.toLowerCase() === user.email?.toLowerCase());
-          const assignedShow = myEntry?.assignedShow || null;
+          // Support both new assignedShows[] and legacy assignedShow string
+          const assignedShows = myEntry?.assignedShows || (myEntry?.assignedShow ? [myEntry.assignedShow] : []);
           const allowedModes = myEntry?.allowedModes || ["prep"];
           const scheduleUrl = sData?.value?.scheduleUrl || "";
-          setClientConfig({ assignedShow, allowedModes, scheduleUrl });
-          if (assignedShow) setShow(assignedShow);
+          setClientConfig({ assignedShows, allowedModes, scheduleUrl });
+          if (assignedShows.length === 1) setShow(assignedShows[0]);
         } catch {}
       }
       // Load onboarding state
@@ -1799,7 +1801,7 @@ PRE-RECORDING CHECKLIST
                   {id:"editor",category:"EDITORIAL", name:"Editor Companion",    desc:"A structured editing brief with hook recommendations, best clip moments, timestamps, and pacing guidance for your editor.",     headerBg:"linear-gradient(150deg,#1C2B3A 0%,#0A1520 100%)", accent:"#3A7BD5", icon:"🎬"},
                   {id:"prep",  category:"PLANNING",  name:"Episode Prep",        desc:"Build a complete episode outline — scripted hook, bridge, interview questions, and permission slip — before you hit record.",  headerBg:"linear-gradient(150deg,#1A1A3E 0%,#0A0A20 100%)", accent:"#6B6BAF", icon:"📋"},
                 ];
-                const visibleCards = isClient && clientConfig?.allowedModes
+                const visibleCards = isClient && clientConfig?.allowedModes?.length > 0
                   ? ALL_CARDS.filter(c => clientConfig.allowedModes.includes(c.id))
                   : ALL_CARDS;
                 const colCount = visibleCards.length <= 2 ? visibleCards.length : 2;
@@ -1840,7 +1842,7 @@ PRE-RECORDING CHECKLIST
                 <p style={{fontSize:"16px",color:T.textMuted,margin:0,fontFamily:"'DM Sans', system-ui, sans-serif"}}>Select the podcast you're creating content for.</p>
               </div>
               <div style={{display:"flex",flexDirection:"column",gap:"8px"}}>
-                {Object.entries(shows).sort(([,a],[,b])=>a.name.localeCompare(b.name)).map(([k,s])=>(
+                {Object.entries(isClient&&clientConfig?.assignedShows?.length>0?Object.fromEntries(Object.entries(shows).filter(([k])=>clientConfig.assignedShows.includes(k))):shows).sort(([,a],[,b])=>a.name.localeCompare(b.name)).map(([k,s])=>(
                   <button key={k} onClick={()=>advanceToMode(mode,k)}
                     style={{width:"100%",padding:"18px 24px",background:T.card,border:`1px solid ${T.cardBorder}`,borderRadius:"12px",cursor:"pointer",textAlign:"left",transition:"all .15s",display:"flex",alignItems:"center",justifyContent:"space-between",gap:"16px"}}
                     onMouseEnter={e=>{e.currentTarget.style.border=`2px solid ${T.coral}`;e.currentTarget.style.boxShadow=`0 4px 16px rgba(122,0,25,.1)`;}}
