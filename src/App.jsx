@@ -1388,7 +1388,17 @@ PRE-RECORDING CHECKLIST
         .eq("id", user.id)
         .single();
       setUserProfile(data);
-      const myOrgId = data?.org_id || null;
+      // Auto-repair: if profile is missing org_id but invite metadata has it, fix it now
+      // so the subsequent show fetch (RLS uses org_id) works correctly
+      let effectiveOrgId = data?.org_id || null;
+      if (!effectiveOrgId && user.user_metadata?.org_id) {
+        const metaOrgId = user.user_metadata.org_id;
+        try {
+          await supabase.from("profiles").update({ org_id: metaOrgId }).eq("id", user.id);
+          effectiveOrgId = metaOrgId;
+        } catch {}
+      }
+      const myOrgId = effectiveOrgId;
       setOrgId(myOrgId);
       setOrgName(data?.organizations?.name || "");
       // Check admin: role in profiles OR hardcoded admin emails
