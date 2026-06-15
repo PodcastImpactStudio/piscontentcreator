@@ -61,6 +61,7 @@ function stripHtml(html) {
     .replace(/<li[^>]*>/gi, "- ")
     .replace(/<h[1-6][^>]*>/gi, "\n")
     .replace(/<\/h[1-6]>/gi, "\n")
+    .replace(/<\/a>/gi, " ")
     .replace(/<[^>]+>/g, "")
     .replace(/&amp;/g, "&")
     .replace(/&lt;/g, "<")
@@ -120,12 +121,15 @@ function buildSections(show, g, snTemplate) {
   let out = ""; let n = 1;
 
   // SHOW NOTES — always generated
-  // Inject actual boilerplate text into the template directly so Claude can't omit links
+  // Inject actual boilerplate text directly so Claude can never omit it.
+  // Always append at the end regardless of whether the Boilerplate toggle is on.
   const bpText = stripHtml(show?.bp || "");
+  const hadBpPlaceholder = snTemplate && /\[BOILERPLATE[^\]]*\]/i.test(snTemplate);
   const snWithBp = snTemplate
     ? snTemplate.replace(/\[BOILERPLATE[^\]]*\]/gi, bpText ? bpText : "")
-    : (bpText ? bpText : "");
-  out += `${n++}. SHOW NOTES\n${snWithBp}\n---\n`;
+    : "";
+  const bpAppend = bpText && !hadBpPlaceholder ? `\n\n${bpText}` : "";
+  out += `${n++}. SHOW NOTES\n${snWithBp}${bpAppend}\n---\n`;
 
   // SPOTIFY FOR CREATORS — after show notes, before YouTube
   if (podcast.includes("Spotify for Creators")) {
@@ -310,7 +314,7 @@ function sys(show, k, g, ep, mode, extras=[], clipCount=5) {
   const bp = stripHtml(d.bp||"");
   const urls = (bp.match(/https?:\/\/[^\s,)]+|www\.[^\s,)]+/g)||[]);
   const voice = d.voice||{}; const aud = d.aud||{}; const tpl = d.tpl||{};
-  const base = `You are the content strategist for ${d.name}.\n\nOUTPUT FORMAT:\n- PLAIN TEXT only. Zero markdown. No asterisks. No bold. No italic.\n- ALL section headers and sub-headers must be in ALL CAPS — every single one, no exceptions\n- This includes: KEY TAKEAWAYS, NOTABLE QUOTE, GUEST BIO, LINKS & RESOURCES, TIMESTAMPS, HASHTAGS, KEYWORDS, SUBJECT LINE, PREVIEW TEXT, and any other label\n- Separate major sections with ---\n- Bullets use - (hyphen space)\n\nCRITICAL RULES:\n1. SEO TITLES: Write the title ONLY. Do NOT add the podcast name, a dash, episode number, or any other text after the title.\n2. SHOW NOTES: The very first thing after the SHOW NOTES header must be the hook question. No podcast name, no episode info, no intro text.\n3. BULLETS: KEY TAKEAWAYS must be 3-7 bullet points, each on its own line starting with - (hyphen space). Never write takeaways as a paragraph.\n4. HEADERS: Never use Title Case for any header or label. ALL CAPS only. "Links & Resources" must be written as "LINKS & RESOURCES".\n\nShow: ${d.name} | "${d.tag}" | Host(s): ${d.hosts}\n${g?"GUEST episode — include Guest Share Kit.":"SOLO episode — skip Guest Share Kit."}${ep?` | Episode ${ep}`:""}\n\nVOICE: ${voice.traits||""} | Energy: ${voice.energy||""} | ${voice.arch||""}\nArc: ${voice.arc||""}\nPhrases: ${(voice.phrases||[]).join(" | ")}\nUSE: ${voice.use||""}\nAVOID: ${voice.avoid||""}\n\nAUDIENCE: ${aud.who||""}\nPain: ${(aud.pains||[]).join(" | ")}\nLanguage: ${aud.lang||""}\n\nPLATFORMS: ${[...ap,...extras].join(", ")} | HASHTAGS: ${d.tags||""}\n${extras.length>0?`ADDITIONAL PLATFORMS THIS EPISODE: ${extras.join(", ")} -- generate a dedicated social post for each additional platform listed.`:""}\n\n${bp ? `BOILERPLATE (YouTube only — already embedded in show notes template):\n${bp}\nCopy every URL exactly as written. Never reword, shorten, or omit any link.` : "No boilerplate for this show."}\n\nSHOW NOTES FORMAT RULE: The show notes template shown in the section instructions is the COMPLETE format. Follow it EXACTLY — do not add sections, key takeaways, guest bios, or any other content not already specified in the template. The boilerplate is already embedded in the template; copy it verbatim.\n\nTIMESTAMPS RULE: Always include timestamps in the YouTube description — generate them from the transcript. ${getTimestampsScope(d.snElements) === "both" ? "Also include timestamps in show notes." : "Do NOT include timestamps in show notes unless the show notes template specifically includes them."}\n\nRULES:\n${d.rules||""}\n\n`;
+  const base = `You are the content strategist for ${d.name}.\n\nOUTPUT FORMAT:\n- PLAIN TEXT only. Zero markdown. No asterisks. No bold. No italic.\n- ALL section headers and sub-headers must be in ALL CAPS — every single one, no exceptions\n- This includes: KEY TAKEAWAYS, NOTABLE QUOTE, GUEST BIO, LINKS & RESOURCES, TIMESTAMPS, HASHTAGS, KEYWORDS, SUBJECT LINE, PREVIEW TEXT, and any other label\n- Separate major sections with ---\n- Bullets use - (hyphen space)\n\nCRITICAL RULES:\n1. SEO TITLES: Write the title ONLY. Do NOT add the podcast name, a dash, episode number, or any other text after the title.\n2. SHOW NOTES: The very first thing after the SHOW NOTES header must be the hook question. No podcast name, no episode info, no intro text.\n3. BULLETS: KEY TAKEAWAYS must be 3-7 bullet points, each on its own line starting with - (hyphen space). Never write takeaways as a paragraph.\n4. HEADERS: Never use Title Case for any header or label. ALL CAPS only. "Links & Resources" must be written as "LINKS & RESOURCES".\n\nShow: ${d.name} | "${d.tag}" | Host(s): ${d.hosts}\n${g?"GUEST episode — include Guest Share Kit.":"SOLO episode — skip Guest Share Kit."}${ep?` | Episode ${ep}`:""}\n\nVOICE: ${voice.traits||""} | Energy: ${voice.energy||""} | ${voice.arch||""}\nArc: ${voice.arc||""}\nPhrases: ${(voice.phrases||[]).join(" | ")}\nUSE: ${voice.use||""}\nAVOID: ${voice.avoid||""}\n\nAUDIENCE: ${aud.who||""}\nPain: ${(aud.pains||[]).join(" | ")}\nLanguage: ${aud.lang||""}\n\nPLATFORMS: ${[...ap,...extras].join(", ")} | HASHTAGS: ${d.tags||""}\n${extras.length>0?`ADDITIONAL PLATFORMS THIS EPISODE: ${extras.join(", ")} -- generate a dedicated social post for each additional platform listed.`:""}\n\n${bp ? `BOILERPLATE — already embedded verbatim in the show notes and YouTube sections. Copy it exactly as it appears in the section template. Include every URL exactly as written. Never reword, shorten, or omit any part of it.` : "No boilerplate for this show."}\n\nSHOW NOTES FORMAT RULE: The show notes template shown in the section instructions is the COMPLETE format. Follow it EXACTLY — do not add sections, key takeaways, guest bios, or any other content not already specified in the template. The boilerplate text is embedded at the end of the template; copy it verbatim without changes.\n\nTIMESTAMPS RULE: Always include timestamps in the YouTube description — generate them from the transcript. ${getTimestampsScope(d.snElements) === "both" ? "Also include timestamps in show notes." : "Do NOT include timestamps in show notes unless the show notes template specifically includes them."}\n\nRULES:\n${d.rules||""}\n\n`;
   if(mode==="clips"){return base;}
   if(mode==="editor"){
     const editLevels = {
