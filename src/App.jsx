@@ -120,7 +120,12 @@ function buildSections(show, g, snTemplate) {
   let out = ""; let n = 1;
 
   // SHOW NOTES — always generated
-  out += `${n++}. SHOW NOTES\n${snTemplate || ""}\n\n[BOILERPLATE]\n---\n`;
+  // Inject actual boilerplate text into the template directly so Claude can't omit links
+  const bpText = stripHtml(show?.bp || "");
+  const snWithBp = snTemplate
+    ? snTemplate.replace(/\[BOILERPLATE[^\]]*\]/gi, bpText ? bpText : "")
+    : (bpText ? bpText : "");
+  out += `${n++}. SHOW NOTES\n${snWithBp}\n---\n`;
 
   // SPOTIFY FOR CREATORS — after show notes, before YouTube
   if (podcast.includes("Spotify for Creators")) {
@@ -164,7 +169,8 @@ Option D: [answer — 24 chars max]
 
   // YOUTUBE — if in social platforms, gets full YouTube treatment
   if (social.includes("YouTube")) {
-    out += `${n++}. YOUTUBE DESCRIPTION\n[HOOK — 1 sentence]\n\n[SUMMARY: 2-3 sentences optimized for YouTube search]\n\nTIMESTAMPS\n00:00 — Introduction\n[MM:SS] — [Topic]\n[MM:SS] — [Topic]\n[MM:SS] — [Topic]\n[MM:SS] — [Topic]\n[Add all major topics with timestamps from the transcript]\n\n[BOILERPLATE]\n\nHASHTAGS\n[8-12 hashtags with # symbol]\n\nKEYWORDS\n[8-12 comma-separated SEO keywords]\n---\n`;
+    const ytBp = stripHtml(show?.bp || "");
+    out += `${n++}. YOUTUBE DESCRIPTION\n[HOOK — 1 sentence]\n\n[SUMMARY: 2-3 sentences optimized for YouTube search]\n\nTIMESTAMPS\n00:00 — Introduction\n[MM:SS] — [Topic]\n[MM:SS] — [Topic]\n[MM:SS] — [Topic]\n[MM:SS] — [Topic]\n[Add all major topics with timestamps from the transcript]\n\n${ytBp || "[BOILERPLATE]"}\n\nHASHTAGS\n[8-12 hashtags with # symbol]\n\nKEYWORDS\n[8-12 comma-separated SEO keywords]\n---\n`;
     out += `${n++}. YOUTUBE QUIZ CARD\nWrite one multiple-choice quiz question based on a key insight from this episode. Choose a timestamp from the middle of the video where a viewer would have just learned this. Format exactly as:\n\nTIMESTAMP: [MM:SS]\nQUESTION: [The quiz question — clear, specific, pulled from the episode content]\nA) [Option]\nB) [Option]\nC) [Option]\nD) [Option]\nCORRECT ANSWER: [Letter] — [Brief explanation of why, 1 sentence]\n---\n`;
     out += `${n++}. YOUTUBE THUMBNAIL TITLES\nWrite 5 YouTube thumbnail title options for this episode. Each title must be EXACTLY 3 words — no more, no fewer. Prioritize high-contrast emotional punch, curiosity, or a bold claim. No filler words. No articles (a/an/the) unless they are the most powerful word available. No colons or punctuation within the title.\n\nFormat:\n1. [Three Word Title]\n2. [Three Word Title]\n3. [Three Word Title]\n4. [Three Word Title]\n5. [Three Word Title]\nRECOMMENDED: [number] — [one sentence explaining why it will perform best as a thumbnail]\n---\n`;
   }
@@ -304,7 +310,7 @@ function sys(show, k, g, ep, mode, extras=[], clipCount=5) {
   const bp = stripHtml(d.bp||"");
   const urls = (bp.match(/https?:\/\/[^\s,)]+|www\.[^\s,)]+/g)||[]);
   const voice = d.voice||{}; const aud = d.aud||{}; const tpl = d.tpl||{};
-  const base = `You are the content strategist for ${d.name}.\n\nOUTPUT FORMAT:\n- PLAIN TEXT only. Zero markdown. No asterisks. No bold. No italic.\n- ALL section headers and sub-headers must be in ALL CAPS — every single one, no exceptions\n- This includes: KEY TAKEAWAYS, NOTABLE QUOTE, GUEST BIO, LINKS & RESOURCES, TIMESTAMPS, HASHTAGS, KEYWORDS, SUBJECT LINE, PREVIEW TEXT, and any other label\n- Separate major sections with ---\n- Bullets use - (hyphen space)\n\nCRITICAL RULES:\n1. SEO TITLES: Write the title ONLY. Do NOT add the podcast name, a dash, episode number, or any other text after the title.\n2. SHOW NOTES: The very first thing after the SHOW NOTES header must be the hook question. No podcast name, no episode info, no intro text.\n3. BULLETS: KEY TAKEAWAYS must be 3-7 bullet points, each on its own line starting with - (hyphen space). Never write takeaways as a paragraph.\n4. HEADERS: Never use Title Case for any header or label. ALL CAPS only. "Links & Resources" must be written as "LINKS & RESOURCES".\n\nShow: ${d.name} | "${d.tag}" | Host(s): ${d.hosts}\n${g?"GUEST episode — include Guest Share Kit.":"SOLO episode — skip Guest Share Kit."}${ep?` | Episode ${ep}`:""}\n\nVOICE: ${voice.traits||""} | Energy: ${voice.energy||""} | ${voice.arch||""}\nArc: ${voice.arc||""}\nPhrases: ${(voice.phrases||[]).join(" | ")}\nUSE: ${voice.use||""}\nAVOID: ${voice.avoid||""}\n\nAUDIENCE: ${aud.who||""}\nPain: ${(aud.pains||[]).join(" | ")}\nLanguage: ${aud.lang||""}\n\nPLATFORMS: ${[...ap,...extras].join(", ")} | HASHTAGS: ${d.tags||""}\n${extras.length>0?`ADDITIONAL PLATFORMS THIS EPISODE: ${extras.join(", ")} -- generate a dedicated social post for each additional platform listed.`:""}\n\n${bp ? `BOILERPLATE — append verbatim at the end of show notes and YouTube, no label:\\\\n${bp}\\\\n\\\\nInclude all URLs exactly as written.` : "No boilerplate for this show."}\\n\\nTIMESTAMPS RULE: Always include timestamps in the YouTube description — generate them from the transcript. ${getTimestampsScope(d.snElements) === "both" ? "Also include timestamps in show notes." : "Do NOT include timestamps in show notes unless the show notes template specifically includes them."}\\n\\nRULES:\n${d.rules||""}\n\n`;
+  const base = `You are the content strategist for ${d.name}.\n\nOUTPUT FORMAT:\n- PLAIN TEXT only. Zero markdown. No asterisks. No bold. No italic.\n- ALL section headers and sub-headers must be in ALL CAPS — every single one, no exceptions\n- This includes: KEY TAKEAWAYS, NOTABLE QUOTE, GUEST BIO, LINKS & RESOURCES, TIMESTAMPS, HASHTAGS, KEYWORDS, SUBJECT LINE, PREVIEW TEXT, and any other label\n- Separate major sections with ---\n- Bullets use - (hyphen space)\n\nCRITICAL RULES:\n1. SEO TITLES: Write the title ONLY. Do NOT add the podcast name, a dash, episode number, or any other text after the title.\n2. SHOW NOTES: The very first thing after the SHOW NOTES header must be the hook question. No podcast name, no episode info, no intro text.\n3. BULLETS: KEY TAKEAWAYS must be 3-7 bullet points, each on its own line starting with - (hyphen space). Never write takeaways as a paragraph.\n4. HEADERS: Never use Title Case for any header or label. ALL CAPS only. "Links & Resources" must be written as "LINKS & RESOURCES".\n\nShow: ${d.name} | "${d.tag}" | Host(s): ${d.hosts}\n${g?"GUEST episode — include Guest Share Kit.":"SOLO episode — skip Guest Share Kit."}${ep?` | Episode ${ep}`:""}\n\nVOICE: ${voice.traits||""} | Energy: ${voice.energy||""} | ${voice.arch||""}\nArc: ${voice.arc||""}\nPhrases: ${(voice.phrases||[]).join(" | ")}\nUSE: ${voice.use||""}\nAVOID: ${voice.avoid||""}\n\nAUDIENCE: ${aud.who||""}\nPain: ${(aud.pains||[]).join(" | ")}\nLanguage: ${aud.lang||""}\n\nPLATFORMS: ${[...ap,...extras].join(", ")} | HASHTAGS: ${d.tags||""}\n${extras.length>0?`ADDITIONAL PLATFORMS THIS EPISODE: ${extras.join(", ")} -- generate a dedicated social post for each additional platform listed.`:""}\n\n${bp ? `BOILERPLATE (YouTube only — already embedded in show notes template):\n${bp}\nCopy every URL exactly as written. Never reword, shorten, or omit any link.` : "No boilerplate for this show."}\n\nSHOW NOTES FORMAT RULE: The show notes template shown in the section instructions is the COMPLETE format. Follow it EXACTLY — do not add sections, key takeaways, guest bios, or any other content not already specified in the template. The boilerplate is already embedded in the template; copy it verbatim.\n\nTIMESTAMPS RULE: Always include timestamps in the YouTube description — generate them from the transcript. ${getTimestampsScope(d.snElements) === "both" ? "Also include timestamps in show notes." : "Do NOT include timestamps in show notes unless the show notes template specifically includes them."}\n\nRULES:\n${d.rules||""}\n\n`;
   if(mode==="clips"){return base;}
   if(mode==="editor"){
     const editLevels = {
@@ -404,24 +410,27 @@ const TOP_SECTIONS=/^(\d+\.\s*)?(SEO TITLE|SHOW NOTES|SPOTIFY FOR CREATORS|INTRO
 const SUB_HEADERS=/^(KEY TAKEAWAYS|NOTABLE QUOTE|TIMESTAMPS|HASHTAGS|KEYWORDS|INSTAGRAM|FACEBOOK|TIKTOK|LINKEDIN|X \(TWITTER\)|QUOTE CARDS|THANK YOU|EPISODE BLURB|SUGGESTED SOCIAL|SUBJECT LINE|PREVIEW TEXT|SOBER SHOT|ELLEVATED ACHIEVERS TAKEAWAY|IN THIS EPISODE|LINKS & RESOURCES|NOTABLE RESOURCES|CONNECT WITH|ABOUT|MUSIC CREDITS|DISCLAIMER)/i;
 
 function dlDoc(content,filename){
+  // collapse runs of blank lines to at most one blank line
+  const collapsed=content.replace(/\n{3,}/g,"\n\n");
   const h=`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
 <head><meta charset="utf-8"><style>
-body{font-family:"Times New Roman",serif;font-size:12pt;line-height:1.6;color:#111;margin:1.25in}
-h1{font-size:16pt;font-weight:bold;color:#111;margin-top:0;margin-bottom:4pt;font-family:"Times New Roman",serif}
-.meta{font-size:10pt;color:#888;margin-bottom:20pt;font-family:"Times New Roman",serif}
-.sec{font-size:14pt;font-weight:bold;color:#111;margin-top:20pt;margin-bottom:6pt;text-transform:uppercase;font-family:"Times New Roman",serif}
-.sub{font-size:12pt;font-weight:bold;color:#111;margin-top:12pt;margin-bottom:4pt;font-family:"Times New Roman",serif}
-p{margin:3pt 0;font-size:12pt}
-a{color:#111}
-li{margin:3pt 0;font-size:12pt}
+body{font-family:"Calibri",sans-serif;font-size:11pt;line-height:1.4;color:#111;margin:.9in 1in}
+h1{font-size:15pt;font-weight:bold;color:#111;margin-top:0;margin-bottom:3pt;font-family:"Calibri",sans-serif}
+.meta{font-size:9pt;color:#888;margin-bottom:16pt;font-family:"Calibri",sans-serif;border-bottom:1pt solid #ddd;padding-bottom:8pt}
+.sec{font-size:11pt;font-weight:bold;color:#111;margin-top:18pt;margin-bottom:4pt;text-transform:uppercase;font-family:"Calibri",sans-serif;border-bottom:1pt solid #ddd;padding-bottom:2pt}
+.sub{font-size:10.5pt;font-weight:bold;color:#333;margin-top:8pt;margin-bottom:2pt;font-family:"Calibri",sans-serif}
+p{margin:1pt 0 3pt 0;font-size:11pt}
+a{color:#7A0019;text-decoration:underline}
+li{margin:2pt 0;font-size:11pt}
+.blank{margin:4pt 0;font-size:4pt;line-height:1}
 </style></head>
 <body>
 <h1>${filename}</h1>
-<div class="meta">Podcast Impact Studio · Content Creator</div>
-${content.split("\n").map(l=>{
+<div class="meta">Podcast Impact Studio &nbsp;·&nbsp; Content Creator</div>
+${collapsed.split("\n").map(l=>{
   const t=l.trim();
-  if(!t)return"<p>&nbsp;</p>";
-  if(t==="---")return"";
+  if(!t)return'<p class="blank">&nbsp;</p>';
+  if(t==="---")return'<p class="blank">&nbsp;</p>';
   if(TOP_SECTIONS.test(t))return`<div class="sec">${t}</div>`;
   if(SUB_HEADERS.test(t)&&t.split(/\s+/).length<=6)return`<div class="sub">${t}</div>`;
   if(/^[-•]\s/.test(t))return`<li>${linkifyLine(t.replace(/^[-•]\s/,""))}</li>`;

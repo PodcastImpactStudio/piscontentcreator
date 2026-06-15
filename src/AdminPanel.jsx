@@ -1692,7 +1692,7 @@ ${epfPasteText.substring(0, 8000)}`;
                   </button>
 
                   {/* Card 2 — AI from Transcripts */}
-                  <button onClick={() => { setNewShowPath("dna"); }}
+                  <button onClick={() => { setNewShowPath("transcript"); }}
                     style={{ padding: "32px 24px", background: T.card, border: "2px solid " + T.coral + "44", borderRadius: "14px", cursor: "pointer", textAlign: "center", transition: "all .2s", display: "flex", flexDirection: "column", alignItems: "center", gap: "14px", position: "relative" }}
                     onMouseEnter={e => { e.currentTarget.style.borderColor = T.coral; e.currentTarget.style.background = T.coralSoft; }}
                     onMouseLeave={e => { e.currentTarget.style.borderColor = T.coral + "44"; e.currentTarget.style.background = T.card; }}>
@@ -1708,7 +1708,7 @@ ${epfPasteText.substring(0, 8000)}`;
                   </button>
 
                   {/* Card 3 — Paste Show DNA */}
-                  <button onClick={() => setNewShowPath("dna")}
+                  <button onClick={() => setNewShowPath("paste-dna")}
                     style={{ padding: "32px 24px", background: T.card, border: "2px solid " + T.cardBorder, borderRadius: "14px", cursor: "pointer", textAlign: "center", transition: "all .2s", display: "flex", flexDirection: "column", alignItems: "center", gap: "14px" }}
                     onMouseEnter={e => { e.currentTarget.style.borderColor = T.coral; e.currentTarget.style.background = T.coralSoft; }}
                     onMouseLeave={e => { e.currentTarget.style.borderColor = T.cardBorder; e.currentTarget.style.background = T.card; }}>
@@ -1723,6 +1723,58 @@ ${epfPasteText.substring(0, 8000)}`;
                   </button>
 
                 </div>
+              </div>
+            </div>
+          </div>
+
+        ) : selKey === "__new__" && newShowPath === "paste-dna" ? (
+          /* ── PASTE SHOW DNA SCREEN ──────────────────────────────── */
+          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "48px 40px", background: T.bg }}>
+            <div style={{ maxWidth: "640px", width: "100%" }}>
+              <button onClick={() => setNewShowPath(null)} style={{ background: "none", border: "none", color: T.textMuted, fontSize: "13px", cursor: "pointer", fontFamily: FF, marginBottom: "24px", padding: 0, display: "flex", alignItems: "center", gap: "6px" }}>← Back</button>
+              <div style={{ marginBottom: "28px" }}>
+                <div style={{ fontSize: "26px", fontWeight: "700", color: T.text, fontFamily: PF, marginBottom: "8px" }}>Paste your Show DNA</div>
+                <div style={{ fontSize: "14px", color: T.textSecondary, fontFamily: FF, lineHeight: "1.6" }}>Paste your existing Show DNA doc or detailed show brief below. AI will read it and fill in every field automatically.</div>
+              </div>
+              <textarea value={rawDna} onChange={e => setRawDna(e.target.value)}
+                placeholder="Paste your Show DNA document here..."
+                style={{ width: "100%", height: "280px", padding: "14px 16px", border: "1px solid " + T.cardBorder, borderRadius: "10px", background: T.surface, color: T.text, fontSize: "13px", fontFamily: "monospace", resize: "vertical", boxSizing: "border-box", lineHeight: "1.6" }} />
+              {msg && <div style={{ marginTop: "10px", fontSize: "13px", color: msg.startsWith("✓") ? "#52B788" : "#F09090", fontFamily: FF }}>{msg}</div>}
+              <div style={{ display: "flex", gap: "12px", marginTop: "16px" }}>
+                <button onClick={async () => { await parseWithAI(); setNewShowPath("manual"); }} disabled={parsing || !rawDna.trim()}
+                  style={{ flex: 1, padding: "13px 24px", background: T.coral, border: "none", borderRadius: "8px", color: "#fff", fontSize: "14px", fontWeight: "700", cursor: parsing || !rawDna.trim() ? "not-allowed" : "pointer", fontFamily: FF, opacity: parsing || !rawDna.trim() ? 0.6 : 1 }}>
+                  {parsing ? "Analyzing…" : "Analyze & Create Show →"}
+                </button>
+              </div>
+            </div>
+          </div>
+
+        ) : selKey === "__new__" && newShowPath === "transcript" ? (
+          /* ── DRAFT FROM TRANSCRIPTS SCREEN ────────────────────── */
+          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "48px 40px", background: T.bg }}>
+            <div style={{ maxWidth: "640px", width: "100%" }}>
+              <button onClick={() => setNewShowPath(null)} style={{ background: "none", border: "none", color: T.textMuted, fontSize: "13px", cursor: "pointer", fontFamily: FF, marginBottom: "24px", padding: 0, display: "flex", alignItems: "center", gap: "6px" }}>← Back</button>
+              <div style={{ marginBottom: "28px" }}>
+                <div style={{ fontSize: "26px", fontWeight: "700", color: T.text, fontFamily: PF, marginBottom: "8px" }}>Paste episode transcripts</div>
+                <div style={{ fontSize: "14px", color: T.textSecondary, fontFamily: FF, lineHeight: "1.6" }}>Paste 3–5 of your best episode transcripts below (or upload .txt / .docx files). AI will draft your show's voice, audience, and style automatically.</div>
+              </div>
+              <div onDragOver={e => { e.preventDefault(); setTranscriptDragging(true); }} onDragLeave={() => setTranscriptDragging(false)} onDrop={handleTranscriptDrop}
+                style={{ border: "2px dashed " + (transcriptDragging ? T.coral : T.cardBorder), borderRadius: "10px", padding: "20px", marginBottom: "12px", textAlign: "center", background: transcriptDragging ? T.coralSoft : T.surface, transition: "all .15s", cursor: "pointer" }}
+                onClick={() => document.getElementById("txUploadIntermediate").click()}>
+                <input id="txUploadIntermediate" type="file" accept=".txt,.md,.doc,.docx" multiple style={{ display: "none" }} onChange={handleTranscriptDrop} />
+                <div style={{ fontSize: "13px", color: T.textSecondary, fontFamily: FF }}>
+                  {transcriptFiles.length > 0 ? `${transcriptFiles.length} file(s) loaded — click to add more` : "Drag & drop .txt or .docx files, or click to browse"}
+                </div>
+              </div>
+              <textarea value={rawDna} onChange={e => setRawDna(e.target.value)}
+                placeholder="Or paste transcript text directly here…"
+                style={{ width: "100%", height: "220px", padding: "14px 16px", border: "1px solid " + T.cardBorder, borderRadius: "10px", background: T.surface, color: T.text, fontSize: "13px", fontFamily: "monospace", resize: "vertical", boxSizing: "border-box", lineHeight: "1.6" }} />
+              {msg && <div style={{ marginTop: "10px", fontSize: "13px", color: msg.startsWith("✓") ? "#52B788" : "#F09090", fontFamily: FF }}>{msg}</div>}
+              <div style={{ display: "flex", gap: "12px", marginTop: "16px" }}>
+                <button onClick={async () => { await parseWithAI(); setNewShowPath("manual"); }} disabled={parsing || (!rawDna.trim() && transcriptFiles.length === 0)}
+                  style={{ flex: 1, padding: "13px 24px", background: T.coral, border: "none", borderRadius: "8px", color: "#fff", fontSize: "14px", fontWeight: "700", cursor: "pointer", fontFamily: FF, opacity: parsing || (!rawDna.trim() && transcriptFiles.length === 0) ? 0.6 : 1 }}>
+                  {parsing ? "Analyzing…" : "Analyze & Draft Show →"}
+                </button>
               </div>
             </div>
           </div>
@@ -2104,7 +2156,6 @@ ${epfPasteText.substring(0, 8000)}`;
                           <div><label style={{ fontSize: "12px", fontWeight: "700", color: T.textMuted, letterSpacing: "1px", textTransform: "uppercase", fontFamily: FF, display: "block", marginBottom: "6px" }}>Target Length</label><input value={epfForm.targetLength} onChange={e => setEpfForm(p => ({ ...p, targetLength: e.target.value }))} placeholder="e.g. 30–45 min" style={{ width: "100%", padding: "10px 14px", border: "1px solid " + T.cardBorder, borderRadius: "8px", background: T.surface, color: T.text, fontSize: "14px", fontFamily: FF, boxSizing: "border-box" }} /></div>
                           <div><label style={{ fontSize: "12px", fontWeight: "700", color: T.textMuted, letterSpacing: "1px", textTransform: "uppercase", fontFamily: FF, display: "block", marginBottom: "6px" }}>Format Structure *</label><textarea value={epfForm.structure} onChange={e => setEpfForm(p => ({ ...p, structure: e.target.value }))} placeholder={"Paste the full segment structure here:\n\nSEGMENT 1 — HOOK (0:00–1:30)\n...\nSEGMENT 2 — INTRO (1:30–4:00)\nStanding questions: ...\n..."} rows={10} style={{ width: "100%", padding: "12px 14px", border: "1px solid " + T.cardBorder, borderRadius: "8px", background: T.surface, color: T.text, fontSize: "13px", fontFamily: "monospace", resize: "vertical", boxSizing: "border-box" }} /></div>
                           <div><label style={{ fontSize: "12px", fontWeight: "700", color: T.textMuted, letterSpacing: "1px", textTransform: "uppercase", fontFamily: FF, display: "block", marginBottom: "6px" }}>Sign-off Line *</label><input value={epfForm.signOffLine} onChange={e => setEpfForm(p => ({ ...p, signOffLine: e.target.value }))} placeholder="The exact closing line — used verbatim every episode" style={{ width: "100%", padding: "10px 14px", border: "1px solid " + T.cardBorder, borderRadius: "8px", background: T.surface, color: T.text, fontSize: "14px", fontFamily: FF, boxSizing: "border-box" }} /></div>
-                          <div><label style={{ fontSize: "12px", fontWeight: "700", color: T.textMuted, letterSpacing: "1px", textTransform: "uppercase", fontFamily: FF, display: "block", marginBottom: "6px" }}>Rating/Scoring System <span style={{ fontWeight: "400", textTransform: "none" }}>(optional)</span></label><input value={epfForm.ratingSystem} onChange={e => setEpfForm(p => ({ ...p, ratingSystem: e.target.value }))} placeholder="e.g. Sobees Score 1–5" style={{ width: "100%", padding: "10px 14px", border: "1px solid " + T.cardBorder, borderRadius: "8px", background: T.surface, color: T.text, fontSize: "14px", fontFamily: FF, boxSizing: "border-box" }} /></div>
                         </div>
                         <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
                           <button onClick={() => {
