@@ -121,15 +121,12 @@ function buildSections(show, g, snTemplate) {
   let out = ""; let n = 1;
 
   // SHOW NOTES — always generated
-  // Inject actual boilerplate text directly so Claude can never omit it.
-  // Always append at the end regardless of whether the Boilerplate toggle is on.
-  const bpText = stripHtml(show?.bp || "");
-  const hadBpPlaceholder = snTemplate && /\[BOILERPLATE[^\]]*\]/i.test(snTemplate);
-  const snWithBp = snTemplate
-    ? snTemplate.replace(/\[BOILERPLATE[^\]]*\]/gi, bpText ? bpText : "")
+  // Boilerplate is NOT passed to Claude — it is appended programmatically after
+  // parsing so the original HTML (with live hyperlinks) is preserved.
+  const snClean = snTemplate
+    ? snTemplate.replace(/\[BOILERPLATE[^\]]*\]/gi, "").trimEnd()
     : "";
-  const bpAppend = bpText && !hadBpPlaceholder ? `\n\n${bpText}` : "";
-  out += `${n++}. SHOW NOTES\n${snWithBp}${bpAppend}\n---\n`;
+  out += `${n++}. SHOW NOTES\n${snClean}\n---\n`;
 
   // SPOTIFY FOR CREATORS — after show notes, before YouTube
   if (podcast.includes("Spotify for Creators")) {
@@ -314,7 +311,7 @@ function sys(show, k, g, ep, mode, extras=[], clipCount=5) {
   const bp = stripHtml(d.bp||"");
   const urls = (bp.match(/https?:\/\/[^\s,)]+|www\.[^\s,)]+/g)||[]);
   const voice = d.voice||{}; const aud = d.aud||{}; const tpl = d.tpl||{};
-  const base = `You are the content strategist for ${d.name}.\n\nOUTPUT FORMAT:\n- PLAIN TEXT only. Zero markdown. No asterisks. No bold. No italic.\n- ALL section headers and sub-headers must be in ALL CAPS — every single one, no exceptions\n- This includes: KEY TAKEAWAYS, NOTABLE QUOTE, GUEST BIO, LINKS & RESOURCES, TIMESTAMPS, HASHTAGS, KEYWORDS, SUBJECT LINE, PREVIEW TEXT, and any other label\n- Separate major sections with ---\n- Bullets use - (hyphen space)\n\nCRITICAL RULES:\n1. SEO TITLES: Write the title ONLY. Do NOT add the podcast name, a dash, episode number, or any other text after the title.\n2. SHOW NOTES: The very first thing after the SHOW NOTES header must be the hook question. No podcast name, no episode info, no intro text.\n3. BULLETS: KEY TAKEAWAYS must be 3-7 bullet points, each on its own line starting with - (hyphen space). Never write takeaways as a paragraph.\n4. HEADERS: Never use Title Case for any header or label. ALL CAPS only. "Links & Resources" must be written as "LINKS & RESOURCES".\n\nShow: ${d.name} | "${d.tag}" | Host(s): ${d.hosts}\n${g?"GUEST episode — include Guest Share Kit.":"SOLO episode — skip Guest Share Kit."}${ep?` | Episode ${ep}`:""}\n\nVOICE: ${voice.traits||""} | Energy: ${voice.energy||""} | ${voice.arch||""}\nArc: ${voice.arc||""}\nPhrases: ${(voice.phrases||[]).join(" | ")}\nUSE: ${voice.use||""}\nAVOID: ${voice.avoid||""}\n\nAUDIENCE: ${aud.who||""}\nPain: ${(aud.pains||[]).join(" | ")}\nLanguage: ${aud.lang||""}\n\nPLATFORMS: ${[...ap,...extras].join(", ")} | HASHTAGS: ${d.tags||""}\n${extras.length>0?`ADDITIONAL PLATFORMS THIS EPISODE: ${extras.join(", ")} -- generate a dedicated social post for each additional platform listed.`:""}\n\n${bp ? `BOILERPLATE — already embedded verbatim in the show notes and YouTube sections. Copy it exactly as it appears in the section template. Include every URL exactly as written. Never reword, shorten, or omit any part of it.` : "No boilerplate for this show."}\n\nSHOW NOTES FORMAT RULE: The show notes template shown in the section instructions is the COMPLETE format. Follow it EXACTLY — do not add sections, key takeaways, guest bios, or any other content not already specified in the template. The boilerplate text is embedded at the end of the template; copy it verbatim without changes.\n\nTIMESTAMPS RULE: Always include timestamps in the YouTube description — generate them from the transcript. ${getTimestampsScope(d.snElements) === "both" ? "Also include timestamps in show notes." : "Do NOT include timestamps in show notes unless the show notes template specifically includes them."}\n\nRULES:\n${d.rules||""}\n\n`;
+  const base = `You are the content strategist for ${d.name}.\n\nOUTPUT FORMAT:\n- PLAIN TEXT only. Zero markdown. No asterisks. No bold. No italic.\n- ALL section headers and sub-headers must be in ALL CAPS — every single one, no exceptions\n- This includes: KEY TAKEAWAYS, NOTABLE QUOTE, GUEST BIO, LINKS & RESOURCES, TIMESTAMPS, HASHTAGS, KEYWORDS, SUBJECT LINE, PREVIEW TEXT, and any other label\n- Separate major sections with ---\n- Bullets use - (hyphen space)\n\nCRITICAL RULES:\n1. SEO TITLES: Write the title ONLY. Do NOT add the podcast name, a dash, episode number, or any other text after the title.\n2. SHOW NOTES: The very first thing after the SHOW NOTES header must be the hook question. No podcast name, no episode info, no intro text.\n3. BULLETS: KEY TAKEAWAYS must be 3-7 bullet points, each on its own line starting with - (hyphen space). Never write takeaways as a paragraph.\n4. HEADERS: Never use Title Case for any header or label. ALL CAPS only. "Links & Resources" must be written as "LINKS & RESOURCES".\n\nShow: ${d.name} | "${d.tag}" | Host(s): ${d.hosts}\n${g?"GUEST episode — include Guest Share Kit.":"SOLO episode — skip Guest Share Kit."}${ep?` | Episode ${ep}`:""}\n\nVOICE: ${voice.traits||""} | Energy: ${voice.energy||""} | ${voice.arch||""}\nArc: ${voice.arc||""}\nPhrases: ${(voice.phrases||[]).join(" | ")}\nUSE: ${voice.use||""}\nAVOID: ${voice.avoid||""}\n\nAUDIENCE: ${aud.who||""}\nPain: ${(aud.pains||[]).join(" | ")}\nLanguage: ${aud.lang||""}\n\nPLATFORMS: ${[...ap,...extras].join(", ")} | HASHTAGS: ${d.tags||""}\n${extras.length>0?`ADDITIONAL PLATFORMS THIS EPISODE: ${extras.join(", ")} -- generate a dedicated social post for each additional platform listed.`:""}\n\n${bp ? `BOILERPLATE (YouTube description only — show notes boilerplate is handled separately):\n${bp}\nFor the YouTube description, copy the boilerplate exactly after the timestamps. Include every URL exactly as written.` : "No boilerplate for this show."}\n\nSHOW NOTES FORMAT RULE: The show notes template shown in the section instructions is the COMPLETE format. Follow it EXACTLY — do not add sections, key takeaways, guest bios, or any other content not already specified in the template. Do not add a boilerplate to show notes — it is appended automatically.\n\nTIMESTAMPS RULE: Always include timestamps in the YouTube description — generate them from the transcript. ${getTimestampsScope(d.snElements) === "both" ? "Also include timestamps in show notes." : "Do NOT include timestamps in show notes unless the show notes template specifically includes them."}\n\nRULES:\n${d.rules||""}\n\n`;
   if(mode==="clips"){return base;}
   if(mode==="editor"){
     const editLevels = {
@@ -515,15 +512,16 @@ function textToHtml(text){
   return htmlLines.join("\n");
 }
 
-function copyText(text){
-  const html = textToHtml(text);
+function copyText(text, bpHtml=""){
+  const html = textToHtml(text) + (bpHtml ? "\n" + bpHtml : "");
+  const plain = text + (bpHtml ? "\n" + stripHtml(bpHtml) : "");
   if(navigator.clipboard && window.ClipboardItem){
     const blob = new Blob([html], {type:"text/html"});
-    const plainBlob = new Blob([text], {type:"text/plain"});
-    navigator.clipboard.write([new ClipboardItem({"text/html":blob,"text/plain":plainBlob})]).catch(()=>fallbackCopy(text));
+    const plainBlob = new Blob([plain], {type:"text/plain"});
+    navigator.clipboard.write([new ClipboardItem({"text/html":blob,"text/plain":plainBlob})]).catch(()=>fallbackCopy(plain));
     return;
   }
-  fallbackCopy(text);
+  fallbackCopy(plain);
 }
 function fallbackCopy(text){
   const el=document.createElement("div");
@@ -537,7 +535,7 @@ function fallbackCopy(text){
   sel.removeAllRanges();document.body.removeChild(el);
 }
 
-function Cp({text}){const[ok,setOk]=useState(false);return <button onClick={()=>{copyText(text);setOk(true);setTimeout(()=>setOk(false),1800);}} style={{padding:"5px 14px",background:ok?T.coralSoft:"transparent",border:`1px solid ${ok?T.coralMid:T.cardBorder}`,borderRadius:"6px",color:ok?T.coral:T.textMuted,fontSize:"12px",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",transition:"all .25s",whiteSpace:"nowrap",letterSpacing:"1px"}}>{ok?"✓ COPIED":"COPY"}</button>;}
+function Cp({text,bpHtml=""}){const[ok,setOk]=useState(false);return <button onClick={()=>{copyText(text,bpHtml);setOk(true);setTimeout(()=>setOk(false),1800);}} style={{padding:"5px 14px",background:ok?T.coralSoft:"transparent",border:`1px solid ${ok?T.coralMid:T.cardBorder}`,borderRadius:"6px",color:ok?T.coral:T.textMuted,fontSize:"12px",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",transition:"all .25s",whiteSpace:"nowrap",letterSpacing:"1px"}}>{ok?"✓ COPIED":"COPY"}</button>;}
 
 function isTopSection(line){const t=line.trim();return /^(\d+\.\s*)?(SEO TITLE|SHOW NOTES|SPOTIFY FOR CREATORS|INTRO HOOK|SOCIAL CLIP|EDITOR NOTES|YOUTUBE DESC|SOCIAL MEDIA|QUOTE CARDS|POLL QUESTIONS|STORY SLIDES|ENGAGEMENT PROMPTS|KEY TAKEAWAY GRAPHICS|GUEST SHARE|EMAIL NEWS|NEWSLETTER|BLOG (ARTICLE|POST)|PATREON|CLIPS|SHORTS|REELS)/i.test(t);}
 function isSubHeader(line){const t=line.trim();if(!t||t.length<3)return false;if(/^[-\u2022*\d"(@]/.test(t))return false;if(isTopSection(line))return false;if(t.split(/\s+/).length>8)return false;const allCaps=/^[A-Z][A-Z\s&()\u00ae\u2122\/\-:\.]+$/.test(t)&&t.length>3;const titleCase=/^[A-Z][a-zA-Z]*(\s(&|[A-Z][a-zA-Z]*))*:?$/.test(t)&&t.length>3&&t.split(/\s+/).length<=6;return allCaps||titleCase;}
@@ -566,9 +564,12 @@ function Sec({s,clr}){const m=SM[s.id]||SM.intro;
         <span style={{fontSize:"14px"}}>{m.i}</span>
         <span style={{fontSize:"14px",letterSpacing:"2px",textTransform:"uppercase",color:clr||T.coral,fontWeight:"700",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{m.l}</span>
       </div>
-      <Cp text={s.content}/>
+      <Cp text={s.content} bpHtml={s.bpHtml||""}/>
     </div>
-    <div style={{padding:"20px 24px"}}>{renderContent(s.content)}</div>
+    <div style={{padding:"20px 24px"}}>
+      {renderContent(s.content)}
+      {s.bpHtml&&<div dangerouslySetInnerHTML={{__html:s.bpHtml}} style={{marginTop:"12px",fontSize:"16px",color:T.textSecondary,fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"2.0"}}/>}
+    </div>
   </div>;
 }
 
@@ -1235,7 +1236,9 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
     try{
       const j=await claudeAPI({model:"claude-sonnet-4-6",max_tokens:mode==="editor"?4000:8000,system:sys(d,show,guest,ep,mode,extraPlatforms,editorClipCount),messages:[{role:"user",content:mode==="editor"?`Analyze this transcript carefully and generate the Editor Brief as instructed.\n\nTRANSCRIPT:\n${tx.substring(0,90000)}`:`Generate the COMPLETE content package in plain text.\n\nTRANSCRIPT:\n${tx.substring(0,90000)}`}]});
       if(j.error){setErr(j.error.message);setStep("input");}
-      else{const t=j.content?.filter(i=>i.type==="text").map(i=>i.text).join("\n")||"";if(!t.trim()){setErr("No content generated. Please try again.");setStep("input");return;}setRaw(strip(t));const parsed=parse(t);setSecs(parsed.length?parsed:[{id:"full",title:"Content Package",content:strip(t)}]);setStep("result");}
+      else{const t=j.content?.filter(i=>i.type==="text").map(i=>i.text).join("\n")||"";if(!t.trim()){setErr("No content generated. Please try again.");setStep("input");return;}setRaw(strip(t));const parsed=parse(t);// Attach original HTML boilerplate to show notes section so links are preserved
+      if(d?.bp){const sn=parsed.find(s=>s.id==="shownotes");if(sn)sn.bpHtml=d.bp;}
+      setSecs(parsed.length?parsed:[{id:"full",title:"Content Package",content:strip(t)}]);setStep("result");}
     }catch(e){setErr(e.message||"Network error.");setStep("input");}
     finally{setBusy(false);}
   }
