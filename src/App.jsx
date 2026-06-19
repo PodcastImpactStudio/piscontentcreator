@@ -120,6 +120,11 @@ function buildSections(show, g, snTemplate) {
 
   let out = ""; let n = 1;
 
+  // YOUTUBE THUMBNAIL TITLES — grouped with SEO titles at the top (before show notes)
+  if (social.includes("YouTube")) {
+    out += `${n++}. YOUTUBE THUMBNAIL TITLES\nWrite 5 YouTube thumbnail title options for this episode. Each title must be EXACTLY 3 words — no more, no fewer. Prioritize high-contrast emotional punch, curiosity, or a bold claim. No filler words. No articles (a/an/the) unless they are the most powerful word available. No colons or punctuation within the title.\n\nFormat:\n1. [Three Word Title]\n2. [Three Word Title]\n3. [Three Word Title]\n4. [Three Word Title]\n5. [Three Word Title]\nRECOMMENDED: [number] — [one sentence explaining why it will perform best as a thumbnail]\n---\n`;
+  }
+
   // SHOW NOTES — always generated
   // Boilerplate is NOT passed to Claude — it is appended programmatically after
   // parsing so the original HTML (with live hyperlinks) is preserved.
@@ -173,7 +178,6 @@ Option D: [answer — 24 chars max]
     const ytBp = stripHtml(show?.bp || "");
     out += `${n++}. YOUTUBE DESCRIPTION\n[HOOK — 1 sentence]\n\n[SUMMARY: 2-3 sentences optimized for YouTube search]\n\nTIMESTAMPS\n00:00 — Introduction\n[MM:SS] — [Topic]\n[MM:SS] — [Topic]\n[MM:SS] — [Topic]\n[MM:SS] — [Topic]\n[Add all major topics with timestamps from the transcript]\n\n${ytBp || "[BOILERPLATE]"}\n\nHASHTAGS\n[8-12 hashtags with # symbol]\n\nKEYWORDS\n[8-12 comma-separated SEO keywords]\n---\n`;
     out += `${n++}. YOUTUBE QUIZ CARD\nWrite one multiple-choice quiz question based on a key insight from this episode. Choose a timestamp from the middle of the video where a viewer would have just learned this. Format exactly as:\n\nTIMESTAMP: [MM:SS]\nQUESTION: [The quiz question — clear, specific, pulled from the episode content]\nA) [Option]\nB) [Option]\nC) [Option]\nD) [Option]\nCORRECT ANSWER: [Letter] — [Brief explanation of why, 1 sentence]\n---\n`;
-    out += `${n++}. YOUTUBE THUMBNAIL TITLES\nWrite 5 YouTube thumbnail title options for this episode. Each title must be EXACTLY 3 words — no more, no fewer. Prioritize high-contrast emotional punch, curiosity, or a bold claim. No filler words. No articles (a/an/the) unless they are the most powerful word available. No colons or punctuation within the title.\n\nFormat:\n1. [Three Word Title]\n2. [Three Word Title]\n3. [Three Word Title]\n4. [Three Word Title]\n5. [Three Word Title]\nRECOMMENDED: [number] — [one sentence explaining why it will perform best as a thumbnail]\n---\n`;
   }
 
   // SOCIAL MEDIA posts — one per selected platform (except YouTube handled above)
@@ -407,7 +411,7 @@ function revSys(show){const d=show;if(!d)return "";return `Content strategist fo
 
 function linkifyLine(line){return line.replace(/(https?:\/\/[^\s,)"]+|www\.[^\s,)"]+|[a-zA-Z0-9][a-zA-Z0-9\-]*\.(?:com|org|net|io|co)(?:\/[^\s,)"]*)?)/g,url=>{const href=url.startsWith("http")?url:"https://"+url;return`<a href="${href}" style="color:#7A0019">${url}</a>`;});}
 
-const TOP_SECTIONS=/^(\d+\.\s*)?(SEO TITLE|SHOW NOTES|SPOTIFY FOR CREATORS|INTRO HOOK|SOCIAL CLIP|EDITOR NOTES|YOUTUBE DESC|SOCIAL MEDIA|QUOTE CARDS|POLL QUESTIONS|STORY SLIDES|ENGAGEMENT PROMPTS|KEY TAKEAWAY GRAPHICS|GUEST SHARE|EMAIL NEWS|NEWSLETTER|BLOG (ARTICLE|POST)|PATREON (COMPANION|DISCUSSION|POLL|EXCLUSIVE|POSTS|NEWSLETTER)|CLIPS|SHORTS|REELS)/i;
+const TOP_SECTIONS=/^(\d+\.\s*)?(SEO TITLE|SHOW NOTES|SPOTIFY FOR CREATORS|INTRO HOOK|SOCIAL CLIP|EDITOR NOTES|YOUTUBE DESC|YOUTUBE QUIZ|YOUTUBE THUMBNAIL|SOCIAL MEDIA|QUOTE CARDS|POLL QUESTIONS|STORY SLIDES|ENGAGEMENT PROMPTS|KEY TAKEAWAY GRAPHICS|GUEST SHARE|EMAIL NEWS|NEWSLETTER|BLOG (ARTICLE|POST)|PATREON (COMPANION|DISCUSSION|POLL|EXCLUSIVE|POSTS|NEWSLETTER)|CLIPS|SHORTS|REELS)/i;
 const SUB_HEADERS=/^(KEY TAKEAWAYS|NOTABLE QUOTE|TIMESTAMPS|HASHTAGS|KEYWORDS|INSTAGRAM|FACEBOOK|TIKTOK|LINKEDIN|X \(TWITTER\)|QUOTE CARDS|THANK YOU|EPISODE BLURB|SUGGESTED SOCIAL|SUBJECT LINE|PREVIEW TEXT|SOBER SHOT|ELLEVATED ACHIEVERS TAKEAWAY|IN THIS EPISODE|LINKS & RESOURCES|NOTABLE RESOURCES|CONNECT WITH|ABOUT|MUSIC CREDITS|DISCLAIMER)/i;
 
 function dlDoc(content,filename){
@@ -417,8 +421,8 @@ function dlDoc(content,filename){
 <head><meta charset="utf-8"><style>
 body{font-family:"Calibri",sans-serif;font-size:11pt;line-height:1.4;color:#111;margin:.9in 1in}
 h1{font-size:15pt;font-weight:bold;color:#111;margin-top:0;margin-bottom:3pt;font-family:"Calibri",sans-serif}
-.meta{font-size:9pt;color:#888;margin-bottom:16pt;font-family:"Calibri",sans-serif;border-bottom:1pt solid #ddd;padding-bottom:8pt}
-.sec{font-size:11pt;font-weight:bold;color:#111;margin-top:18pt;margin-bottom:4pt;text-transform:uppercase;font-family:"Calibri",sans-serif;border-bottom:1pt solid #ddd;padding-bottom:2pt}
+.meta{font-size:9pt;color:#888;margin-bottom:16pt;font-family:"Calibri",sans-serif}
+.sec{font-size:11pt;font-weight:bold;color:#111;margin-top:18pt;margin-bottom:4pt;text-transform:uppercase;font-family:"Calibri",sans-serif}
 .sub{font-size:10.5pt;font-weight:bold;color:#333;margin-top:8pt;margin-bottom:2pt;font-family:"Calibri",sans-serif}
 p{margin:1pt 0 3pt 0;font-size:11pt}
 a{color:#7A0019;text-decoration:underline}
