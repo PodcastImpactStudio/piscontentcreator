@@ -488,7 +488,7 @@ function SettingsView({ shows, globalSettings, setGlobalSettings, saveGlobalSett
       const data = await r.json();
       if (!r.ok) throw new Error(data.error || "Failed to send invite.");
       const emailLower = newMember.email.trim().toLowerCase();
-      const currentTeam = globalSettings.team || [];
+      const currentTeam = team.length > 0 ? team : (globalSettings.team || []);
       const existingIdx = currentTeam.findIndex(m => m.email?.toLowerCase() === emailLower);
       const newEntry = {
         email: emailLower,
