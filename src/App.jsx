@@ -135,7 +135,7 @@ function buildSections(show, g, snTemplate) {
 
   // YOUTUBE THUMBNAIL TITLES — grouped with SEO titles at the top (before show notes)
   if (social.includes("YouTube")) {
-    out += `${n++}. YOUTUBE THUMBNAIL TITLES\nWrite 5 YouTube thumbnail title options for this episode. Each title must be EXACTLY 3 words — no more, no fewer. Prioritize high-contrast emotional punch, curiosity, or a bold claim. No filler words. No articles (a/an/the) unless they are the most powerful word available. No colons or punctuation within the title.\n\nFormat:\n1. [Three Word Title]\n2. [Three Word Title]\n3. [Three Word Title]\n4. [Three Word Title]\n5. [Three Word Title]\nRECOMMENDED: [number] — [one sentence explaining why it will perform best as a thumbnail]\n---\n`;
+    out += `${n++}. YOUTUBE THUMBNAIL TITLES\nWrite 5 YouTube thumbnail title options for this episode. Each title must be EXACTLY 3 words — no more, no fewer. Prioritize high-contrast emotional punch, curiosity, or a bold claim. No filler words. No articles (a/an/the) unless they are the most powerful word available. No colons or punctuation within the title.\n\nFormat:\n1. [Three Word Title]\n2. [Three Word Title]\n3. [Three Word Title]\n4. [Three Word Title]\n5. [Three Word Title]\nDo NOT add a RECOMMENDED line.\n---\n`;
   }
 
   // SHOW NOTES — always generated
@@ -415,7 +415,7 @@ SUGGESTED CAPTION HOOK: [one punchy first line for the social caption]
   return base+`Generate the COMPLETE content package in plain text. Use ONLY the sections listed below.
 
 1. SEO TITLE OPTIONS
-[5 numbered titles. Titles ONLY — no podcast name. Mark RECOMMENDED.]
+[5 numbered titles, each 4-8 words — full, descriptive, search-optimized episode titles. Titles ONLY — no podcast name. Do NOT add a RECOMMENDED line.]
 ---
 ${sections}`;
 }
@@ -1379,7 +1379,7 @@ CLIP PRIORITIES
 ---
 
 SUGGESTED EPISODE TITLES (SEO)
-[5 title options. Optimized for podcast search and YouTube SEO. Each title should be specific, benefit-forward, and 50–70 characters. Mix formats: question, how-to, outcome-driven, and curiosity-gap. DO NOT include the show name in titles — titles only. Mark the strongest option RECOMMENDED.]
+[5 title options. Optimized for podcast search and YouTube SEO. Each title should be specific, benefit-forward, and 50–70 characters. Mix formats: question, how-to, outcome-driven, and curiosity-gap. DO NOT include the show name in titles — titles only. Do NOT add a RECOMMENDED line.]
 
 ---
 
