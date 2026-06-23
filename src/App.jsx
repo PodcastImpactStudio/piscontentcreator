@@ -6,14 +6,27 @@ import { supabase } from "./lib/supabase";
 import { AdminPanel, AdminGate } from "./AdminPanel";
 
 // API calls go through /api/generate (server-side) — key is never in the browser
-async function claudeAPI(body) {
+async function claudeAPI(body, attempt = 0) {
+  const MAX_RETRIES = 4;
   const r = await fetch("/api/generate", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
   const data = await r.json();
-  if (!r.ok) throw new Error(JSON.stringify(data.error || data));
+  if (!r.ok) {
+    const errType = data?.error?.type || "";
+    const isTransient = r.status === 529 || r.status === 429 || r.status === 503 || r.status === 500
+      || errType === "overloaded_error" || errType === "rate_limit_error" || errType === "api_error";
+    if (isTransient && attempt < MAX_RETRIES) {
+      // exponential backoff with jitter: ~1s, 2s, 4s, 8s
+      const delay = Math.min(1000 * 2 ** attempt, 8000) + Math.random() * 500;
+      await new Promise(res => setTimeout(res, delay));
+      return claudeAPI(body, attempt + 1);
+    }
+    if (isTransient) throw new Error("Anthropic's servers are busy right now (high demand). Please wait a moment and click Generate again.");
+    throw new Error(JSON.stringify(data.error || data));
+  }
   return data;
 }
 
