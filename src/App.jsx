@@ -427,9 +427,29 @@ function linkifyLine(line){return line.replace(/(https?:\/\/[^\s,)"]+|www\.[^\s,
 const TOP_SECTIONS=/^(\d+\.\s*)?(SEO TITLE|SHOW NOTES|SPOTIFY FOR CREATORS|INTRO HOOK|SOCIAL CLIP|EDITOR NOTES|YOUTUBE DESC|YOUTUBE QUIZ|YOUTUBE THUMBNAIL|SOCIAL MEDIA|QUOTE CARDS|POLL QUESTIONS|STORY SLIDES|ENGAGEMENT PROMPTS|KEY TAKEAWAY GRAPHICS|GUEST SHARE|EMAIL NEWS|NEWSLETTER|BLOG (ARTICLE|POST)|PATREON (COMPANION|DISCUSSION|POLL|EXCLUSIVE|POSTS|NEWSLETTER)|CLIPS|SHORTS|REELS)/i;
 const SUB_HEADERS=/^(KEY TAKEAWAYS|NOTABLE QUOTE|TIMESTAMPS|HASHTAGS|KEYWORDS|INSTAGRAM|FACEBOOK|TIKTOK|LINKEDIN|X \(TWITTER\)|QUOTE CARDS|THANK YOU|EPISODE BLURB|SUGGESTED SOCIAL|SUBJECT LINE|PREVIEW TEXT|SOBER SHOT|ELLEVATED ACHIEVERS TAKEAWAY|IN THIS EPISODE|LINKS & RESOURCES|NOTABLE RESOURCES|CONNECT WITH|ABOUT|MUSIC CREDITS|DISCLAIMER|CLIP \d+|YOUTUBE CLIP \d+|INSTAGRAM REEL \d+|FACEBOOK REEL \d+|TIKTOK \d+|SPOTIFY CLIP \d+)/i;
 
-function dlDoc(content,filename){
+function dlDoc(content,filename,bpHtml=""){
   // collapse runs of blank lines to at most one blank line
   const collapsed=content.replace(/\n{3,}/g,"\n\n");
+  const lines=collapsed.split("\n");
+  const out=[];
+  let inShowNotes=false,bpInserted=false;
+  for(const l of lines){
+    const t=l.trim();
+    if(t&&TOP_SECTIONS.test(t)){
+      // Leaving the show notes section — inject the boilerplate (with live hyperlinks) before the next section
+      if(inShowNotes&&!bpInserted&&bpHtml){out.push(`<div class="bp">${bpHtml}</div>`);bpInserted=true;}
+      inShowNotes=/SHOW NOTES/i.test(t);
+      out.push(`<div class="sec">${t}</div>`);
+      continue;
+    }
+    if(!t){out.push('<p class="blank">&nbsp;</p>');continue;}
+    if(t==="---"){out.push('<p class="blank">&nbsp;</p>');continue;}
+    if(SUB_HEADERS.test(t)&&t.split(/\s+/).length<=6){out.push(`<div class="sub">${t}</div>`);continue;}
+    if(/^[-•]\s/.test(t)){out.push(`<li>${linkifyLine(t.replace(/^[-•]\s/,""))}</li>`);continue;}
+    out.push(`<p>${linkifyLine(l)}</p>`);
+  }
+  // Show notes was the final section — append boilerplate at the end
+  if(inShowNotes&&!bpInserted&&bpHtml){out.push(`<div class="bp">${bpHtml}</div>`);bpInserted=true;}
   const h=`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
 <head><meta charset="utf-8"><style>
 body{font-family:"Calibri",sans-serif;font-size:11pt;line-height:1.4;color:#111;margin:.9in 1in}
@@ -441,19 +461,14 @@ p{margin:1pt 0 3pt 0;font-size:11pt}
 a{color:#7A0019;text-decoration:underline}
 li{margin:2pt 0;font-size:11pt}
 .blank{margin:4pt 0;font-size:4pt;line-height:1}
+.bp{font-size:11pt;margin-top:6pt}
+.bp a{color:#7A0019;text-decoration:underline}
+.bp p{margin:1pt 0 3pt 0}
 </style></head>
 <body>
 <h1>${filename}</h1>
 <div class="meta">Podcast Impact Studio &nbsp;·&nbsp; Content Creator</div>
-${collapsed.split("\n").map(l=>{
-  const t=l.trim();
-  if(!t)return'<p class="blank">&nbsp;</p>';
-  if(t==="---")return'<p class="blank">&nbsp;</p>';
-  if(TOP_SECTIONS.test(t))return`<div class="sec">${t}</div>`;
-  if(SUB_HEADERS.test(t)&&t.split(/\s+/).length<=6)return`<div class="sub">${t}</div>`;
-  if(/^[-•]\s/.test(t))return`<li>${linkifyLine(t.replace(/^[-•]\s/,""))}</li>`;
-  return`<p>${linkifyLine(l)}</p>`;
-}).join("\n")}
+${out.join("\n")}
 </body></html>`;
   const b=new Blob([h],{type:"application/msword"});
   const u=URL.createObjectURL(b);
@@ -463,7 +478,25 @@ ${collapsed.split("\n").map(l=>{
   document.body.removeChild(a);URL.revokeObjectURL(u);
 }
 
-function buildHtml(content,filename){
+function buildHtml(content,filename,bpHtml=""){
+  const lines=content.split("\n");
+  const out=[];
+  let inShowNotes=false,bpInserted=false;
+  for(const l of lines){
+    const t=l.trim();
+    if(t&&TOP_SECTIONS.test(t)){
+      if(inShowNotes&&!bpInserted&&bpHtml){out.push(`<div class="bp">${bpHtml}</div>`);bpInserted=true;}
+      inShowNotes=/SHOW NOTES/i.test(t);
+      out.push(`<div class="sec">${t}</div>`);
+      continue;
+    }
+    if(!t){out.push("<p>&nbsp;</p>");continue;}
+    if(t==="---"){out.push("<hr>");continue;}
+    if(SUB_HEADERS.test(t)&&t.split(/\s+/).length<=6){out.push(`<div class="sub">${t}</div>`);continue;}
+    if(/^[-•]\s/.test(t)){out.push(`<p style="padding-left:16px">- ${linkifyLine(t.replace(/^[-•]\s/,""))}</p>`);continue;}
+    out.push(`<p>${linkifyLine(l)}</p>`);
+  }
+  if(inShowNotes&&!bpInserted&&bpHtml){out.push(`<div class="bp">${bpHtml}</div>`);bpInserted=true;}
   return`<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><title>${filename}</title>
@@ -476,19 +509,13 @@ h1{font-size:18pt;font-weight:bold;color:#C41230;border-bottom:2px solid #C41230
 p{margin:3pt 0}
 hr{border:none;border-top:1px solid #ddd;margin:18px 0}
 a{color:#C41230}
+.bp{margin-top:8px}
+.bp a{color:#C41230}
 </style></head>
 <body>
 <h1>${filename}</h1>
 <div class="meta">Podcast Impact Studio · Content Planner · Generated ${new Date().toLocaleDateString("en-US",{year:"numeric",month:"long",day:"numeric"})}</div>
-${content.split("\n").map(l=>{
-  const t=l.trim();
-  if(!t)return"<p>&nbsp;</p>";
-  if(t==="---")return"<hr>";
-  if(TOP_SECTIONS.test(t))return`<div class="sec">${t}</div>`;
-  if(SUB_HEADERS.test(t)&&t.split(/\s+/).length<=6)return`<div class="sub">${t}</div>`;
-  if(/^[-•]\s/.test(t))return`<p style="padding-left:16px">- ${linkifyLine(t.replace(/^[-•]\s/,""))}</p>`;
-  return`<p>${linkifyLine(l)}</p>`;
-}).join("\n")}
+${out.join("\n")}
 </body></html>`;
 }
 function dlHtml(content,filename){
@@ -1519,7 +1546,7 @@ PRE-RECORDING CHECKLIST
     }catch{}
     if(!token){setGDriveStatus("disconnected");setTimeout(()=>setGDriveStatus(""),4000);return;}
     const filename=`${d?.name||"Content Package"}${ep?` — Ep ${ep}`:""}`;
-    const html=buildHtml(raw,filename);
+    const html=buildHtml(raw,filename,d?.bp);
     setGDriveStatus("uploading");
     try{
       const meta={name:filename,mimeType:"application/vnd.google-apps.document"};
@@ -2107,7 +2134,7 @@ PRE-RECORDING CHECKLIST
                 </div>
                 <div style={{display:"flex",gap:"8px"}}>
                   {mode!=="clips"&&<button onClick={()=>{copyText(raw);setCpAll(true);setTimeout(()=>setCpAll(false),2000);}} style={{...ghost,background:cpAll?T.coralSoft:"transparent",borderColor:cpAll?T.coralMid:T.cardBorder,color:cpAll?T.coral:T.textMuted}}>{cpAll?"✓ COPIED":"COPY ALL"}</button>}
-                  {mode!=="clips"&&<button onClick={()=>{dlDoc(raw,`${d?.name}${mode==="prep"?` — Episode Prep${epTopic?` — ${epTopic}`:""}`:ep?` — Ep ${ep}`:""} Content Package`);setDlOk(true);setTimeout(()=>setDlOk(false),2500);}} style={{...ghost,background:dlOk?T.coralSoft:"transparent",borderColor:dlOk?T.coralMid:T.cardBorder,color:dlOk?T.coral:T.textMuted}}>{dlOk?"✓ DOWNLOADED":"📄 WORD DOC"}</button>}
+                  {mode!=="clips"&&<button onClick={()=>{dlDoc(raw,`${d?.name}${mode==="prep"?` — Episode Prep${epTopic?` — ${epTopic}`:""}`:ep?` — Ep ${ep}`:""} Content Package`,d?.bp);setDlOk(true);setTimeout(()=>setDlOk(false),2500);}} style={{...ghost,background:dlOk?T.coralSoft:"transparent",borderColor:dlOk?T.coralMid:T.cardBorder,color:dlOk?T.coral:T.textMuted}}>{dlOk?"✓ DOWNLOADED":"📄 WORD DOC"}</button>}
                   {mode==="clips"&&<button onClick={()=>{const clipDoc=clipResults.filter(r=>!r.skipped).map(r=>`CLIP ${r.index}\n\n${r.content}`).join("\n\n");dlDoc(clipDoc,`${d?.name}${ep?` — Ep ${ep}`:""} — Clips`);setDlOk(true);setTimeout(()=>setDlOk(false),2500);}} style={{...ghost,background:dlOk?T.coralSoft:"transparent",borderColor:dlOk?T.coralMid:T.cardBorder,color:dlOk?T.coral:T.textMuted}}>{dlOk?"✓ DOWNLOADED":"📄 WORD DOC"}</button>}
                   {mode!=="clips"&&<button onClick={uploadToGDrive} disabled={gDriveStatus==="uploading"} title="Export to Google Drive as a Google Doc" style={{...ghost,background:gDriveStatus==="ok"?T.coralSoft:gDriveStatus==="error"||gDriveStatus==="disconnected"?"#D94F4F18":"transparent",borderColor:gDriveStatus==="ok"?T.coralMid:gDriveStatus==="error"||gDriveStatus==="disconnected"?"#D94F4F44":T.cardBorder,color:gDriveStatus==="ok"?T.coral:gDriveStatus==="error"||gDriveStatus==="disconnected"?"#D94F4F":T.textMuted,opacity:gDriveStatus==="uploading"?.6:1}}>{gDriveStatus==="uploading"?"UPLOADING…":gDriveStatus==="ok"?"✓ EXPORTED TO DRIVE":gDriveStatus==="error"?"✕ EXPORT FAILED":gDriveStatus==="disconnected"?"⚙ CONNECT IN SETTINGS":"📁 EXPORT TO GOOGLE DRIVE"}</button>}
                   <button onClick={()=>{setStep(mode==="clips"?"clips-setup":"input");setRaw("");setSecs([]);setClipResults([]);}} style={ghost}>{mode==="clips"?"NEW CLIPS":"NEW EPISODE"}</button>
@@ -2132,7 +2159,7 @@ PRE-RECORDING CHECKLIST
                   <div>{secs.map((s,i)=><Sec key={s.id+i} s={s} clr={clr}/>)}</div>
                   <div style={{display:"flex",gap:"10px",marginTop:"16px",flexWrap:"wrap"}}>
                     <button onClick={()=>setEditing(!editing)} style={{flex:1,padding:"13px",background:editing?T.coralSoft:T.card,border:`1px solid ${editing?T.coralMid:T.cardBorder}`,borderRadius:"8px",color:editing?T.coral:T.textSecondary,fontSize:"14px",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1.5px",textTransform:"uppercase",transition:"all .2s"}}>{editing?"CLOSE EDITOR":"✏️  REVISE A SECTION"}</button>
-                    {mode!=="editor"&&<button onClick={()=>{dlDoc(raw,`${d?.name}${mode==="prep"?` — Episode Prep${epTopic?` — ${epTopic}`:""}`:ep?` — Ep ${ep}`:""} Content Package`);setDlOk(true);setTimeout(()=>setDlOk(false),2500);}} style={{flex:1,padding:"13px",background:dlOk?T.coralSoft:T.card,border:`1px solid ${dlOk?T.coralMid:T.cardBorder}`,borderRadius:"8px",color:dlOk?T.coral:T.textSecondary,fontSize:"14px",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1.5px",textTransform:"uppercase",transition:"all .2s"}}>{dlOk?"✓ DOWNLOADED":"📄  WORD DOC"}</button>}
+                    {mode!=="editor"&&<button onClick={()=>{dlDoc(raw,`${d?.name}${mode==="prep"?` — Episode Prep${epTopic?` — ${epTopic}`:""}`:ep?` — Ep ${ep}`:""} Content Package`,d?.bp);setDlOk(true);setTimeout(()=>setDlOk(false),2500);}} style={{flex:1,padding:"13px",background:dlOk?T.coralSoft:T.card,border:`1px solid ${dlOk?T.coralMid:T.cardBorder}`,borderRadius:"8px",color:dlOk?T.coral:T.textSecondary,fontSize:"14px",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1.5px",textTransform:"uppercase",transition:"all .2s"}}>{dlOk?"✓ DOWNLOADED":"📄  WORD DOC"}</button>}
                     {mode!=="editor"&&<button onClick={uploadToGDrive} disabled={gDriveStatus==="uploading"} title="Export to Google Drive as a Google Doc" style={{flex:1,padding:"13px",background:gDriveStatus==="ok"?T.coralSoft:gDriveStatus==="error"||gDriveStatus==="disconnected"?"#D94F4F18":T.card,border:`1px solid ${gDriveStatus==="ok"?T.coralMid:gDriveStatus==="error"||gDriveStatus==="disconnected"?"#D94F4F44":T.cardBorder}`,borderRadius:"8px",color:gDriveStatus==="ok"?T.coral:gDriveStatus==="error"||gDriveStatus==="disconnected"?"#D94F4F":T.textSecondary,fontSize:"14px",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1.5px",textTransform:"uppercase",transition:"all .2s",opacity:gDriveStatus==="uploading"?.6:1}}>{gDriveStatus==="uploading"?"UPLOADING…":gDriveStatus==="ok"?"✓ EXPORTED TO DRIVE":gDriveStatus==="error"?"✕ EXPORT FAILED":gDriveStatus==="disconnected"?"⚙ CONNECT IN SETTINGS":"📁 EXPORT TO GOOGLE DRIVE"}</button>}
                   </div>
                   {mode==="editor"&&<div style={{background:T.card,border:"1px solid "+T.cardBorder,borderRadius:"10px",padding:"18px 20px",marginTop:"14px"}}>
