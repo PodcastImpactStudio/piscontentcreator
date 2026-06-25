@@ -500,7 +500,9 @@ function SettingsView({ shows, globalSettings, setGlobalSettings, saveGlobalSett
         ? currentTeam.map((m, i) => i === existingIdx ? { ...m, ...newEntry } : m)
         : [...currentTeam, newEntry];
       saveTeam(updatedTeam);
-      setInviteMsg("✓ Invite sent to " + newMember.email);
+      setInviteMsg(data.status === "updated"
+        ? "✓ " + newMember.email + " updated — now " + (isCollab ? "Collaborator" : newMember.role)
+        : "✓ Invite sent to " + newMember.email);
       setNewMember({ email: "", role: "Editor", jobTitle: "Host", assignedShows: [], allowedModes: ["prep"] });
       setTimeout(() => { setAddingMember(false); setInviteMsg(""); }, 2500);
     } catch (e) {
