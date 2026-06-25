@@ -47,6 +47,8 @@ const PF = "'DM Sans', system-ui, sans-serif";
 function strip(t){if(!t)return "";const B=String.fromCharCode(96);const r1=new RegExp(B+"{3}[\\s\\S]*?"+B+"{3}","g");const r2=new RegExp(B+"([^"+B+"]+)"+B,"g");return t.replace(/^#{1,6}\s+/gm,"").replace(/\*\*\*(.*?)\*\*\*/g,"$1").replace(/\*\*(.*?)\*\*/g,"$1").replace(/\*(.*?)\*/g,"$1").replace(/__(.*?)__/g,"$1").replace(r1,"").replace(r2,"$1").replace(/^\s*[-*+]\s+/gm,"- ").replace(/\[([^\]]+)\]\([^)]+\)/g,"$1").replace(/^>\s+/gm,"").replace(/^---+$/gm,"").replace(/\n{3,}/g,"\n\n").trim();}
 function parse(raw){const ps=[
   // Episode Prep sections (checked first — more specific)
+  {id:"prep-series",     r:[/SERIES PLAN/i]},
+  {id:"prep-topics",     r:[/SUGGESTED TOPICS/i]},
   {id:"prep-package",    r:[/EPISODE PREP PACKAGE/i]},
   {id:"prep-hook",       r:[/^HOOK\b/i,/^HOOK\s*\(/i]},
   {id:"prep-bridge",     r:[/^BRIDGE\b/i,/^BRIDGE\s*\(/i]},
@@ -61,7 +63,7 @@ function parse(raw){const ps=[
   {id:"titles",r:[/SEO TITLE/i]},{id:"shownotes",r:[/SHOW NOTES/i]},{id:"spotify-creators",r:[/SPOTIFY FOR CREATORS/i]},{id:"editor-hooks",r:[/INTRO HOOK REC/i]},{id:"editor-clips",r:[/SOCIAL (MEDIA )?CLIP REC/i,/SOCIAL CLIP REC/i]},{id:"editor-notes",r:[/EDITOR NOTES/i]},{id:"youtube",r:[/YOUTUBE DESC/i]},{id:"youtube-quiz",r:[/YOUTUBE QUIZ/i]},{id:"youtube-thumbnail",r:[/YOUTUBE THUMBNAIL/i,/THUMBNAIL TITLE/i]},{id:"social",r:[/SOCIAL MEDIA(?! CLIP)/i]},{id:"quotes",r:[/QUOTE CARDS/i,/PULL QUOTES/i]},{id:"poll-questions",r:[/POLL QUESTIONS/i]},{id:"story-slides",r:[/STORY SLIDES/i]},{id:"engagement-prompts",r:[/ENGAGEMENT PROMPTS/i]},{id:"takeaway-graphics",r:[/KEY TAKEAWAY GRAPHICS/i]},{id:"guestkit",r:[/GUEST SHARE/i]},{id:"email",r:[/EMAIL NEWS/i,/^(?!.*(PATREON|CIRCLE|MIGHTY|KAJABI|SKOOL|FACEBOOK GROUP)).*NEWSLETTER/i]},{id:"blog",r:[/BLOG ART/i,/BLOG POST/i]},{id:"community-companion",r:[/COMPANION POST/i]},{id:"community-prompts",r:[/COMMUNITY FEED PROMPTS/i,/DISCUSSION PROMPTS/i]},{id:"community-polls",r:[/POLL IDEAS/i,/(?:PATREON|CIRCLE|MIGHTY|KAJABI|SKOOL|FACEBOOK) POLL/i]},{id:"community-starters",r:[/CONVERSATION STARTERS/i]},{id:"clips",r:[/^\d+\.\s*CLIPS/i,/^\d+\.\s*SHORTS/i,/^\d+\.\s*REELS/i]}
 ];const c=strip(raw),lines=c.split("\n"),secs=[];let ti=null,id="intro",buf=[];for(const l of lines){let h=false;for(const p of ps){if(p.r.some(r=>r.test(l))){if(buf.length)secs.push({id,title:ti||"Overview",content:buf.join("\n").trim()});ti=l.replace(/^\d+\.\s*/,"").trim();id=p.id;buf=[];h=true;break;}}if(!h)buf.push(l);}if(buf.length)secs.push({id,title:ti||"Content",content:buf.join("\n").trim()});return secs.filter(s=>s.content.length>0);}
 
-const SM={"prep-package":{l:"Episode Overview",i:"📋"},"prep-hook":{l:"Hook",i:"🎣"},"prep-bridge":{l:"Bridge",i:"🌉"},"prep-permission":{l:"Permission Slip Close",i:"🔓"},"prep-structure":{l:"Episode Structure",i:"📐"},"prep-research":{l:"Guest Research",i:"🔍"},"prep-questions":{l:"Tailored Interview Questions",i:"❓"},"prep-clips":{l:"Clip Priorities",i:"✂️"},"prep-titles":{l:"SEO Episode Titles",i:"🎯"},"prep-checklist":{l:"Pre-Recording Checklist",i:"✅"},titles:{l:"SEO Titles",i:"🎯"},shownotes:{l:"Show Notes",i:"📝"},"spotify-creators":{l:"Spotify for Creators",i:"🎵"},youtube:{l:"YouTube",i:"▶️"},"youtube-thumbnail":{l:"YouTube Thumbnail Titles",i:"🖼️"},"youtube-quiz":{l:"YouTube Quiz Card",i:"🧩"},"editor-hooks":{l:"Intro Hook Recommendations",i:"🎬"},"editor-clips":{l:"Social Clip Recommendations",i:"✂️"},"editor-notes":{l:"Editor Notes",i:"📋"},social:{l:"Social Media",i:"📱"},quotes:{l:"Quote Cards",i:"💬"},"poll-questions":{l:"Poll Questions",i:"📊"},"story-slides":{l:"Story Slides",i:"🎞️"},"engagement-prompts":{l:"Engagement Prompts",i:"💡"},"takeaway-graphics":{l:"Key Takeaway Graphics",i:"✨"},guestkit:{l:"Guest Kit",i:"🎁"},email:{l:"Newsletter",i:"📧"},blog:{l:"Blog",i:"📰"},"patreon-companion":{l:"Patreon Companion Post",i:"📝"},"patreon-discussion":{l:"Patreon Discussion Prompts",i:"💬"},"patreon-poll":{l:"Patreon Poll",i:"📊"},"patreon-newsletter":{l:"Patreon Newsletter",i:"📧"},"community-companion":{l:"Community Companion Post",i:"📝"},"community-prompts":{l:"Community Feed Prompts",i:"💬"},"community-polls":{l:"Community Polls",i:"📊"},"community-starters":{l:"Conversation Starters",i:"✨"},clips:{l:"Clips & Shorts",i:"✂️"},intro:{l:"Overview",i:"📋"}};
+const SM={"prep-series":{l:"Series Plan",i:"📚"},"prep-topics":{l:"Suggested Topics",i:"💡"},"prep-package":{l:"Episode Overview",i:"📋"},"prep-hook":{l:"Hook",i:"🎣"},"prep-bridge":{l:"Bridge",i:"🌉"},"prep-permission":{l:"Permission Slip Close",i:"🔓"},"prep-structure":{l:"Episode Structure",i:"📐"},"prep-research":{l:"Guest Research",i:"🔍"},"prep-questions":{l:"Tailored Interview Questions",i:"❓"},"prep-clips":{l:"Clip Priorities",i:"✂️"},"prep-titles":{l:"SEO Episode Titles",i:"🎯"},"prep-checklist":{l:"Pre-Recording Checklist",i:"✅"},titles:{l:"SEO Titles",i:"🎯"},shownotes:{l:"Show Notes",i:"📝"},"spotify-creators":{l:"Spotify for Creators",i:"🎵"},youtube:{l:"YouTube",i:"▶️"},"youtube-thumbnail":{l:"YouTube Thumbnail Titles",i:"🖼️"},"youtube-quiz":{l:"YouTube Quiz Card",i:"🧩"},"editor-hooks":{l:"Intro Hook Recommendations",i:"🎬"},"editor-clips":{l:"Social Clip Recommendations",i:"✂️"},"editor-notes":{l:"Editor Notes",i:"📋"},social:{l:"Social Media",i:"📱"},quotes:{l:"Quote Cards",i:"💬"},"poll-questions":{l:"Poll Questions",i:"📊"},"story-slides":{l:"Story Slides",i:"🎞️"},"engagement-prompts":{l:"Engagement Prompts",i:"💡"},"takeaway-graphics":{l:"Key Takeaway Graphics",i:"✨"},guestkit:{l:"Guest Kit",i:"🎁"},email:{l:"Newsletter",i:"📧"},blog:{l:"Blog",i:"📰"},"patreon-companion":{l:"Patreon Companion Post",i:"📝"},"patreon-discussion":{l:"Patreon Discussion Prompts",i:"💬"},"patreon-poll":{l:"Patreon Poll",i:"📊"},"patreon-newsletter":{l:"Patreon Newsletter",i:"📧"},"community-companion":{l:"Community Companion Post",i:"📝"},"community-prompts":{l:"Community Feed Prompts",i:"💬"},"community-polls":{l:"Community Polls",i:"📊"},"community-starters":{l:"Conversation Starters",i:"✨"},clips:{l:"Clips & Shorts",i:"✂️"},intro:{l:"Overview",i:"📋"}};
 const ED=[{id:"titles",l:"SEO Titles"},{id:"shownotes",l:"Show Notes"},{id:"youtube",l:"YouTube"},{id:"social",l:"Social Media"},{id:"guestkit",l:"Guest Kit",g:true},{id:"email",l:"Newsletter"},{id:"blog",l:"Blog"},{id:"quotes",l:"Quotes"},{id:"patreon-companion",l:"Patreon Companion Post",pm:true},{id:"patreon-discussion",l:"Patreon Discussion Prompts",pm:true},{id:"patreon-poll",l:"Patreon Poll",pm:true},{id:"patreon-newsletter",l:"Patreon Newsletter",pm:true},{id:"clips",l:"Clips & Shorts",cm:true}];
 
 function stripHtml(html) {
@@ -1205,6 +1207,7 @@ export default function App(){
   const[epTakeaway,setEpTakeaway]=useState("");
   const[epMoments,setEpMoments]=useState("");
   const[epPanelists,setEpPanelists]=useState("");
+  const[epPlanRequest,setEpPlanRequest]=useState("");
 
   const d=show?shows[show]:null;
   const clr=d?.clr||T.coral;
@@ -1331,6 +1334,16 @@ ${epGuestUrl ? `Guest URL/Handle: ${epGuestUrl}` : ""}
 One Takeaway: ${epTakeaway || "[not specified — suggest the single most listener-relevant takeaway from this guest/topic in the Episode Overview, labeled SUGGESTED TAKEAWAY]"}
 ${epMoments ? `Key Moments/Angles: ${epMoments}` : ""}
 ${epPanelists ? `Additional Panelists: ${epPanelists}` : ""}
+${epPlanRequest ? `
+WHAT THE HOST WANTS TO PLAN (their own words — treat this as the primary instruction for what to produce):
+"${epPlanRequest}"
+
+HOW TO HANDLE THIS REQUEST:
+- This is what the host actually wants help planning. Honor it directly, using the Show DNA, THE ONE PERSON, voice, and ${fmt ? `the ${fmt.name} format` : "the show's usual style"} as your guardrails.
+- If they are asking for a MULTI-PART SERIES (e.g. "a 5-part series on X"): before the standard sections, add a "SERIES PLAN" section that proposes the series arc — a one-line through-line, then each episode with a working title, the angle, and how it serves ${onePerson.name || "the ONE person"}. Then build the full prep package below for EPISODE 1 of that series.
+- If they are asking you to SUGGEST or brainstorm topics: add a "SUGGESTED TOPICS" section near the top with 3–5 specific, on-brand topic ideas (each with a one-line why-it-fits), then prep the strongest one in full below.
+- If it's a single solo or guest episode: just plan it in full as instructed below.
+- TOPIC FRESHNESS: You do NOT have live web access. When you reference what's "trending," base it on general knowledge and clearly label it [BASED ON GENERAL KNOWLEDGE — please verify it's still current]. Never fabricate specific recent events, statistics, or headlines.` : ""}
 
 ACCURACY RULES — NON-NEGOTIABLE:
 - Never invent guest biographical details. If you cannot verify something, write: "[Could not verify — please fill in manually]"
@@ -1573,7 +1586,7 @@ PRE-RECORDING CHECKLIST
     }
   }
 
-  function reset(){setStep("welcome");setMode(null);if(Object.keys(shows).length>1)setShow(null);setGuest(null);setEp("");setTx("");setRaw("");setSecs([]);setErr("");setEditing(false);setESec(null);setETxt("");setExtraPlatforms([]);setClipCount(3);setClipTexts(Array(10).fill(""));setClipResults([]);setClipPlatforms(["YouTube"]);setSelectedFormat(null);setEpGuest("");setEpGuestUrl("");setEpTopic("");setEpTakeaway("");setEpMoments("");setEpPanelists("");}
+  function reset(){setStep("welcome");setMode(null);if(Object.keys(shows).length>1)setShow(null);setGuest(null);setEp("");setTx("");setRaw("");setSecs([]);setErr("");setEditing(false);setESec(null);setETxt("");setExtraPlatforms([]);setClipCount(3);setClipTexts(Array(10).fill(""));setClipResults([]);setClipPlatforms(["YouTube"]);setSelectedFormat(null);setEpGuest("");setEpGuestUrl("");setEpTopic("");setEpTakeaway("");setEpMoments("");setEpPanelists("");setEpPlanRequest("");}
 
   function goBack(){
     setErr("");
@@ -2068,14 +2081,14 @@ PRE-RECORDING CHECKLIST
 
             {step==="prep-format"&&d&&<div style={{animation:"fadeUp .4s ease"}}>
               <p style={{fontSize:"14px",color:T.coral,margin:"0 0 8px",letterSpacing:"2px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600"}}>{d.name}</p>
-              <h2 style={{fontSize:"36px",fontWeight:"700",color:T.text,margin:"0 0 8px",letterSpacing:"-0.5px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Select an episode format</h2>
-              <p style={{fontSize:"15px",color:T.textMuted,margin:"0 0 32px",fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.6"}}>Choose the format for this episode. Your episode prep will follow this structure.</p>
+              <h2 style={{fontSize:"36px",fontWeight:"700",color:T.text,margin:"0 0 8px",letterSpacing:"-0.5px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>How would you like to plan?</h2>
+              <p style={{fontSize:"15px",color:T.textMuted,margin:"0 0 32px",fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.6"}}>Pick one of this show's saved formats, or choose Custom to describe your own — a one-off episode, a reaction, or a whole series.</p>
               {(!d.episodeFormats || d.episodeFormats.length === 0) ? (
                 <div style={{background:T.card,border:"1px solid "+T.cardBorder,borderRadius:"12px",padding:"40px",textAlign:"center"}}>
                   <div style={{fontSize:"32px",marginBottom:"12px"}}>📋</div>
                   <div style={{fontSize:"16px",fontWeight:"600",color:T.text,marginBottom:"8px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>No formats set up yet</div>
                   <div style={{fontSize:"14px",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.6",marginBottom:"20px"}}>Go to Settings → Episode Formats to add your first format, or continue without one and the AI will do its best with your Show DNA.</div>
-                  <button onClick={()=>{setSelectedFormat(null);setStep("prep-details");}} style={{padding:"12px 24px",background:T.coral,border:"none",borderRadius:"8px",color:"#fff",fontSize:"14px",fontWeight:"700",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Continue without a format →</button>
+                  <button onClick={()=>{setSelectedFormat(null);setStep("prep-details");}} style={{padding:"12px 24px",background:T.coral,border:"none",borderRadius:"8px",color:"#fff",fontSize:"14px",fontWeight:"700",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif"}}>✨ Custom planning — continue →</button>
                 </div>
               ) : (
                 <div style={{display:"flex",flexDirection:"column",gap:"12px"}}>
@@ -2090,14 +2103,14 @@ PRE-RECORDING CHECKLIST
                       </div>
                     </div>
                   ))}
-                  <button onClick={()=>{setSelectedFormat(null);setStep("prep-details");}} style={{padding:"12px",background:"transparent",border:"1px dashed "+T.cardBorder,borderRadius:"10px",color:T.textMuted,fontSize:"13px",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Continue without a format</button>
+                  <button onClick={()=>{setSelectedFormat(null);setStep("prep-details");}} style={{padding:"16px",background:T.coralSoft,border:"1px solid "+T.coralMid,borderRadius:"10px",color:T.coral,fontSize:"14px",fontWeight:"700",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",textAlign:"left"}}>✨ Custom — I'll describe what I want to plan →</button>
                 </div>
               )}
             </div>}
             {step==="prep-details"&&d&&<div style={{animation:"fadeUp .4s ease"}}>
               <p style={{fontSize:"14px",color:T.coral,margin:"0 0 8px",letterSpacing:"2px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600"}}>{d.name}{selectedFormat?" · "+selectedFormat.name:""}</p>
-              <h2 style={{fontSize:"36px",fontWeight:"700",color:T.text,margin:"0 0 8px",letterSpacing:"-0.5px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Tell me about this episode</h2>
-              <p style={{fontSize:"15px",color:T.textMuted,margin:"0 0 32px",fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.6"}}>The more detail you provide, the more tailored your episode prep will be.</p>
+              <h2 style={{fontSize:"36px",fontWeight:"700",color:T.text,margin:"0 0 8px",letterSpacing:"-0.5px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>What would you like to plan?</h2>
+              <p style={{fontSize:"15px",color:T.textMuted,margin:"0 0 32px",fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.6"}}>{selectedFormat?`Planning in your ${selectedFormat.name} format. `:"Custom planning — describe it in your own words below. "}The more detail you provide, the more tailored your plan will be.</p>
               <div style={{display:"flex",flexDirection:"column",gap:"20px",marginBottom:"32px"}}>
                 <div>
                   <label style={{fontSize:"12px",fontWeight:"700",color:T.textMuted,letterSpacing:"1px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",display:"block",marginBottom:"8px"}}>Topic / Title / Content Being Covered *</label>
@@ -2111,8 +2124,13 @@ PRE-RECORDING CHECKLIST
                   <label style={{fontSize:"12px",fontWeight:"700",color:T.textMuted,letterSpacing:"1px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",display:"block",marginBottom:"8px"}}>Guest URL or Social Handle <span style={{fontWeight:"400",textTransform:"none"}}>(optional — helps with accuracy)</span></label>
                   <input value={epGuestUrl} onChange={e=>setEpGuestUrl(e.target.value)} placeholder="https://guestwebsite.com or @handle" style={{width:"100%",padding:"12px 16px",border:"1px solid "+T.cardBorder,borderRadius:"8px",background:T.card,color:T.text,fontSize:"15px",fontFamily:"'DM Sans', system-ui, sans-serif",boxSizing:"border-box"}} />
                 </div>}
+                <div style={{background:T.coralSoft,border:"1px solid "+T.coralMid,borderRadius:"10px",padding:"16px 18px"}}>
+                  <label style={{fontSize:"12px",fontWeight:"700",color:T.coral,letterSpacing:"1px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",display:"block",marginBottom:"4px"}}>✨ What would you like to plan together?</label>
+                  <p style={{fontSize:"13px",color:T.textMuted,margin:"0 0 10px",fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.5"}}>Plan this single episode, ask for topic ideas, or describe something bigger — e.g. "Plan a 5-part series on ADHD" or "I want to react to this article and tie it to our show."</p>
+                  <textarea value={epPlanRequest} onChange={e=>setEpPlanRequest(e.target.value)} placeholder='Leave blank to plan a standard episode, or tell the AI exactly what you want to build…' rows={3} style={{width:"100%",padding:"12px 16px",border:"1px solid "+T.cardBorder,borderRadius:"8px",background:T.card,color:T.text,fontSize:"15px",fontFamily:"'DM Sans', system-ui, sans-serif",resize:"vertical",boxSizing:"border-box"}} />
+                </div>
                 <div>
-                  <label style={{fontSize:"12px",fontWeight:"700",color:T.textMuted,letterSpacing:"1px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",display:"block",marginBottom:"8px"}}>The ONE Takeaway *</label>
+                  <label style={{fontSize:"12px",fontWeight:"700",color:T.textMuted,letterSpacing:"1px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",display:"block",marginBottom:"8px"}}>The ONE Takeaway <span style={{fontWeight:"400",textTransform:"none"}}>(optional)</span></label>
                   <input value={epTakeaway} onChange={e=>setEpTakeaway(e.target.value)} placeholder="What should the ONE person walk away with? (one sentence)" style={{width:"100%",padding:"12px 16px",border:"1px solid "+T.cardBorder,borderRadius:"8px",background:T.card,color:T.text,fontSize:"15px",fontFamily:"'DM Sans', system-ui, sans-serif",boxSizing:"border-box"}} />
                 </div>
                 <div>
@@ -2124,7 +2142,7 @@ PRE-RECORDING CHECKLIST
                   <input value={epPanelists} onChange={e=>setEpPanelists(e.target.value)} placeholder="Names of other panelists" style={{width:"100%",padding:"12px 16px",border:"1px solid "+T.cardBorder,borderRadius:"8px",background:T.card,color:T.text,fontSize:"15px",fontFamily:"'DM Sans', system-ui, sans-serif",boxSizing:"border-box"}} />
                 </div>}
               </div>
-              <button onClick={genPrep} disabled={!epTopic.trim()} style={{padding:"16px 32px",background:epTopic.trim()?T.coral:T.cardBorder,border:"none",borderRadius:"10px",color:"#fff",fontSize:"16px",fontWeight:"700",cursor:epTopic.trim()?"pointer":"not-allowed",fontFamily:"'DM Sans', system-ui, sans-serif",transition:"background 0.2s"}}>Generate Episode Prep →</button>
+              <button onClick={genPrep} disabled={!epTopic.trim()} style={{padding:"16px 32px",background:epTopic.trim()?T.coral:T.cardBorder,border:"none",borderRadius:"10px",color:"#fff",fontSize:"16px",fontWeight:"700",cursor:epTopic.trim()?"pointer":"not-allowed",fontFamily:"'DM Sans', system-ui, sans-serif",transition:"background 0.2s"}}>Start Planning →</button>
             </div>}
 
             {/* RESULT */}
