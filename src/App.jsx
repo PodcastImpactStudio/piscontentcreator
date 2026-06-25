@@ -1735,7 +1735,7 @@ PRE-RECORDING CHECKLIST
           <div style={{padding:"10px 16px",borderBottom:"1px solid #2E2E2E"}}>
             <button onClick={()=>setShowAdmin(true)}
               className="sidebar-nav-item"
-              style={{width:"100%",padding:"9px 14px",background:T.coralSoft,border:"1px solid "+T.coralMid,borderRadius:"6px",color:T.coral,fontSize:"13px",fontWeight:"700",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",display:"flex",alignItems:"center",gap:"8px"}}>
+              style={{width:"100%",padding:"9px 14px",background:T.coral,border:"1px solid "+T.coral,borderRadius:"6px",color:"#FFFFFF",fontSize:"13px",fontWeight:"700",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",display:"flex",alignItems:"center",gap:"8px"}}>
               <span>⚙</span><span>Admin Settings</span>
             </button>
           </div>
