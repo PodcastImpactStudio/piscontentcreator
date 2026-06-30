@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { saveShow } from "./lib/shows";
+import { saveShow, deleteShow } from "./lib/shows";
 import { supabase } from "./lib/supabase";
 import mammoth from "mammoth";
 
@@ -1057,6 +1057,8 @@ export function AdminPanel({ shows, orgId, onClose, onSaved, accountType = "agen
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState("");
   const [addingNew, setAddingNew] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [newId, setNewId] = useState("");
   const [newShowPath, setNewShowPath] = useState(null); // null | "manual" | "transcript" | "dna"
   const [globalSettings, setGlobalSettings] = useState({});
@@ -1508,6 +1510,19 @@ ${epfPasteText.substring(0, 8000)}`;
     finally { setSaving(false); }
   }
 
+  async function handleDelete() {
+    if (!selKey || selKey === "__new__") return;
+    setDeleting(true); setMsg("");
+    try {
+      await deleteShow(selKey);
+      setDeleteConfirm(false);
+      setSelKey(null);
+      setForm(null);
+      onSaved();
+    } catch (e) { setMsg("Delete error: " + e.message); }
+    finally { setDeleting(false); }
+  }
+
   const TABS = [
     { id: "basic", label: "Basic Info" },
     { id: "voice", label: "Voice & Tone" },
@@ -1830,11 +1845,11 @@ ${epfPasteText.substring(0, 8000)}`;
                 <div style={{ display: "flex", alignItems: "center", gap: "10px", flexShrink: 0 }}>
                   {selKey !== "__new__" && (
                     <button
-                      onClick={() => { if (window.confirm("Delete this show? This cannot be undone.")) { /* delete handler — existing show */ } }}
+                      onClick={() => setDeleteConfirm(true)}
                       style={{ background: "none", border: "none", color: "#D94F4F", fontSize: "12px", cursor: "pointer", fontFamily: FF, padding: "4px 8px", opacity: 0.7 }}
                       onMouseEnter={e => e.currentTarget.style.opacity = "1"}
                       onMouseLeave={e => e.currentTarget.style.opacity = "0.7"}>
-                      Delete show
+                      🗑 Delete show
                     </button>
                   )}
                   <button onClick={() => setShowAIPanel(v => !v)}
@@ -1847,6 +1862,25 @@ ${epfPasteText.substring(0, 8000)}`;
                   </button>
                 </div>
               </div>
+
+              {/* Delete confirmation modal */}
+              {deleteConfirm && selKey !== "__new__" && (
+                <div onClick={() => !deleting && setDeleteConfirm(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: "20px" }}>
+                  <div onClick={e => e.stopPropagation()} style={{ background: T.card, border: "1px solid " + T.cardBorder, borderRadius: "14px", padding: "28px", maxWidth: "460px", width: "100%", boxShadow: "0 24px 64px rgba(0,0,0,0.3)" }}>
+                    <div style={{ fontSize: "32px", marginBottom: "12px" }}>🗑</div>
+                    <div style={{ fontSize: "20px", fontWeight: "700", color: T.text, marginBottom: "8px", fontFamily: PF }}>Delete "{form?.name || shows[selKey]?.name || "this show"}"?</div>
+                    <div style={{ background: "#D94F4F14", border: "1px solid #D94F4F44", borderRadius: "8px", padding: "12px 14px", marginBottom: "20px" }}>
+                      <div style={{ fontSize: "14px", color: "#C0392B", fontWeight: "700", fontFamily: FF, marginBottom: "4px" }}>⚠️ This cannot be undone.</div>
+                      <div style={{ fontSize: "13px", color: T.textSecondary, fontFamily: FF, lineHeight: "1.5" }}>This permanently deletes the show and all of its DNA — voice, audience, platforms, show notes builder, episode formats, and boilerplate. There is no way to get it back. You'll need to rebuild it from scratch.</div>
+                    </div>
+                    {msg && msg.startsWith("Delete error") && <div style={{ fontSize: "13px", color: "#D94F4F", marginBottom: "12px", fontFamily: FF }}>{msg}</div>}
+                    <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+                      <button onClick={() => setDeleteConfirm(false)} disabled={deleting} style={{ padding: "10px 20px", background: "transparent", border: "1px solid " + T.cardBorder, borderRadius: "8px", color: T.textSecondary, fontSize: "14px", fontWeight: "600", cursor: deleting ? "not-allowed" : "pointer", fontFamily: FF }}>Cancel</button>
+                      <button onClick={handleDelete} disabled={deleting} style={{ padding: "10px 20px", background: "#D94F4F", border: "none", borderRadius: "8px", color: "#fff", fontSize: "14px", fontWeight: "700", cursor: deleting ? "not-allowed" : "pointer", fontFamily: FF, opacity: deleting ? 0.6 : 1 }}>{deleting ? "Deleting…" : "Delete permanently"}</button>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* New show banner */}
               {selKey === "__new__" && (
