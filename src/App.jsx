@@ -1775,6 +1775,34 @@ PRE-RECORDING CHECKLIST
           </div>
         )}
 
+        {/* Section Navigation */}
+        {(()=>{
+          const allowed = isClient && clientConfig?.allowedModes?.length > 0 ? clientConfig.allowedModes : null;
+          const navItems = [
+            {label:"Content Planning", icon:"📦", section:"create", action:()=>{setMode(null);setStep("welcome");}, visible:!allowed||allowed.includes("full")||allowed.includes("clips")},
+            {label:"Editorial",        icon:"🎬", section:"editor", action:()=>handleSidebarNav("editor"),           visible:!allowed||allowed.includes("editor")},
+            {label:"Episode Planning", icon:"📋", section:"prep",   action:()=>handleSidebarNav("prep"),             visible:!allowed||allowed.includes("prep")},
+          ].filter(i=>i.visible);
+          if(!navItems.length) return null;
+          return(
+          <div style={{padding:"8px 0",borderBottom:"1px solid #2E2E2E"}}>
+            <div style={{fontSize:"10px",color:"#555555",letterSpacing:"2px",textTransform:"uppercase",padding:"4px 16px 6px",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600"}}>NAVIGATE</div>
+            {navItems.map(item=>{
+              const isActive = item.section==="create" ? (mode==="full"||mode==="clips") : mode===item.section;
+              return(
+              <button key={item.label} onClick={item.action}
+                style={{width:"100%",padding:"9px 16px",background:isActive?"#2E2E2E":"transparent",border:"none",borderLeft:`3px solid ${isActive?T.coral:"transparent"}`,color:isActive?"#FFFFFF":"#8A8A8A",fontSize:"13px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",display:"flex",alignItems:"center",gap:"8px",transition:"all .15s"}}
+                onMouseEnter={e=>{if(!isActive){e.currentTarget.style.background="#252525";e.currentTarget.style.color="#CCCCCC";}}}
+                onMouseLeave={e=>{if(!isActive){e.currentTarget.style.background="transparent";e.currentTarget.style.color="#8A8A8A";}}}>
+                <span style={{fontSize:"14px"}}>{item.icon}</span>
+                <span>{item.label}</span>
+              </button>
+              );
+            })}
+          </div>
+          );
+        })()}
+
         {/* Spacer */}
         <div style={{flex:1}}/>
 
@@ -1856,7 +1884,11 @@ PRE-RECORDING CHECKLIST
 
         {/* Top bar — 48px, breadcrumb + back/start over */}
         <div style={{height:"48px",background:T.surface,borderBottom:`1px solid ${T.cardBorder}`,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 32px",flexShrink:0}}>
-          <div style={{fontSize:"12px",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1.5px",textTransform:"uppercase"}}>
+          <div style={{fontSize:"12px",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1.5px",textTransform:"uppercase",display:"flex",alignItems:"center",gap:"8px"}}>
+            {(mode==="full"||mode==="clips")&&step!=="welcome"&&<span style={{color:T.coral,fontWeight:"700"}}>Content</span>}
+            {mode==="editor"&&step!=="welcome"&&<span style={{color:T.coral,fontWeight:"700"}}>Editorial</span>}
+            {mode==="prep"&&step!=="welcome"&&<span style={{color:T.coral,fontWeight:"700"}}>Planning</span>}
+            {mode&&step!=="welcome"&&<span style={{color:T.cardBorder}}>›</span>}
             {step==="show-select"&&<span>Select Show</span>}
             {step==="configure"&&<span>Configure</span>}
             {step==="clips-setup"&&<span>Clips Setup</span>}
@@ -1889,7 +1921,7 @@ PRE-RECORDING CHECKLIST
               <div style={{marginBottom:"48px"}}>
                 <h1 style={{fontSize:"42px",fontWeight:"700",color:T.text,margin:"0 0 10px",letterSpacing:"-1px",fontFamily:PF,lineHeight:"1.15"}}>
                   Welcome back{displayName?`, ${displayName.split(" ")[0]}`:""}.</h1>
-                <p style={{fontSize:"17px",color:T.textMuted,margin:0,fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"400"}}>What are you creating today?</p>
+                <p style={{fontSize:"17px",color:T.textMuted,margin:0,fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"400"}}>{show&&shows[show]?"Your show's DNA is loaded — choose a workflow to get started.":"What would you like to work on today?"}</p>
               </div>
               {loadingShows&&!(isClient&&clientConfig?.assignedShows?.length>0)?(
                 <div style={{textAlign:"center",padding:"60px",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"2px",fontSize:"12px"}}>LOADING SHOWS...</div>
@@ -1914,40 +1946,98 @@ PRE-RECORDING CHECKLIST
                   </div>
                 )
               ):(()=>{
-                const ALL_CARDS=[
-                  {id:"full",  category:"CREATE",    name:"Content Package",     desc:"Turn any transcript into show notes, social posts, email newsletter, and blog — all written in your show's voice.",           headerBg:"linear-gradient(150deg,#7A0019 0%,#4A0010 100%)", accent:"#7A0019", icon:"📦"},
-                  {id:"clips", category:"CREATE",    name:"Short-Form Content",  desc:"Generate SEO titles, captions, and hashtags for YouTube Shorts, Instagram Reels, TikTok, and more.",                          headerBg:"linear-gradient(150deg,#5C1F00 0%,#2E0F00 100%)", accent:"#8B4513", icon:"✂️"},
-                  {id:"editor",category:"EDITORIAL", name:"Editor Companion",    desc:"A structured editing brief with hook recommendations, best clip moments, timestamps, and pacing guidance for your editor.",     headerBg:"linear-gradient(150deg,#1C2B3A 0%,#0A1520 100%)", accent:"#3A7BD5", icon:"🎬"},
-                  {id:"prep",  category:"PLANNING",  name:"Episode Prep",        desc:"Build a complete episode outline — scripted hook, bridge, interview questions, and permission slip — before you hit record.",  headerBg:"linear-gradient(150deg,#1A1A3E 0%,#0A0A20 100%)", accent:"#6B6BAF", icon:"📋"},
-                ];
-                const visibleCards = isClient && clientConfig?.allowedModes?.length > 0
-                  ? ALL_CARDS.filter(c => clientConfig.allowedModes.includes(c.id))
-                  : ALL_CARDS;
-                const colCount = visibleCards.length <= 2 ? visibleCards.length : 2;
+                const allowed = isClient && clientConfig?.allowedModes?.length > 0 ? clientConfig.allowedModes : null;
+                const showContent = !allowed || allowed.includes("full") || allowed.includes("clips");
+                const showFull    = !allowed || allowed.includes("full");
+                const showClips   = !allowed || allowed.includes("clips");
+                const showEditor  = !allowed || allowed.includes("editor");
+                const showPrep    = !allowed || allowed.includes("prep");
+                const cardBase = {background:T.card,border:`1px solid ${T.cardBorder}`,borderRadius:"16px",overflow:"hidden",boxShadow:"0 2px 8px rgba(0,0,0,.05)",textAlign:"left",transition:"all .22s ease"};
+                const hdrBand = {background:`linear-gradient(150deg,${T.coral} 0%,#4A0010 100%)`,height:"96px",display:"flex",flexDirection:"column",justifyContent:"flex-end",padding:"16px 24px",position:"relative"};
+                const hdrBandMuted = {background:"linear-gradient(150deg,#3A2A28 0%,#1A1210 100%)",height:"96px",display:"flex",flexDirection:"column",justifyContent:"flex-end",padding:"16px 24px",position:"relative"};
                 return(
-                <div className="welcome-cards" style={{display:"grid",gridTemplateColumns:`repeat(${colCount},1fr)`,gap:"20px",width:"100%",maxWidth:"860px"}}>
-                  {visibleCards.map(card=>(
-                    <div key={card.id}
-                      onClick={()=>handleSidebarNav(card.id)}
-                      style={{background:T.card,border:`1px solid ${T.cardBorder}`,borderRadius:"16px",cursor:"pointer",transition:"all .22s ease",overflow:"hidden",boxShadow:"0 2px 12px rgba(0,0,0,.06)",textAlign:"left"}}
-                      onMouseEnter={e=>{e.currentTarget.style.boxShadow=`0 12px 36px rgba(0,0,0,.14)`;e.currentTarget.style.transform="translateY(-3px)";e.currentTarget.style.borderColor=card.accent;}}
-                      onMouseLeave={e=>{e.currentTarget.style.boxShadow="0 2px 12px rgba(0,0,0,.06)";e.currentTarget.style.transform="translateY(0)";e.currentTarget.style.borderColor=T.cardBorder;}}>
-                      {/* Coloured header band */}
-                      <div style={{height:"120px",background:card.headerBg,display:"flex",flexDirection:"column",justifyContent:"flex-end",padding:"18px 24px",position:"relative"}}>
-                        <div style={{position:"absolute",top:"18px",right:"20px",fontSize:"28px",opacity:0.35}}>{card.icon}</div>
-                        <div style={{fontSize:"10px",letterSpacing:"2.5px",textTransform:"uppercase",color:"rgba(255,255,255,0.5)",fontFamily:"'DM Sans',system-ui,sans-serif",fontWeight:"700",marginBottom:"6px"}}>{card.category}</div>
-                        <div style={{fontSize:"20px",fontWeight:"700",color:"#FFFFFF",fontFamily:PF,lineHeight:"1.2",letterSpacing:"-0.3px"}}>{card.name}</div>
+                <div style={{display:"flex",flexDirection:"column",gap:"20px",width:"100%",maxWidth:"860px"}}>
+
+                  {/* Row 1 — Content Planning (featured, full width) */}
+                  {showContent&&(
+                  <div style={cardBase}
+                    onMouseEnter={e=>{e.currentTarget.style.boxShadow=`0 8px 28px rgba(122,0,25,.12)`;e.currentTarget.style.borderColor=T.coral;}}
+                    onMouseLeave={e=>{e.currentTarget.style.boxShadow="0 2px 8px rgba(0,0,0,.05)";e.currentTarget.style.borderColor=T.cardBorder;}}>
+                    <div style={hdrBand}>
+                      <div style={{position:"absolute",top:"16px",right:"20px",fontSize:"32px",opacity:0.25}}>📦</div>
+                      <div style={{fontSize:"10px",letterSpacing:"2.5px",textTransform:"uppercase",color:"rgba(255,255,255,0.5)",fontFamily:"'DM Sans',system-ui,sans-serif",fontWeight:"700",marginBottom:"6px"}}>CONTENT PLANNING</div>
+                      <div style={{fontSize:"22px",fontWeight:"700",color:"#FFFFFF",fontFamily:PF,lineHeight:"1.2",letterSpacing:"-0.3px"}}>Content Planning</div>
+                    </div>
+                    <div style={{padding:"20px 24px 24px"}}>
+                      <p style={{margin:"0 0 20px",fontSize:"14px",color:T.textSecondary,lineHeight:"1.7",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Transform any transcript into a complete content package for your show — or generate targeted content for individual clips and shorts. All output is written in your show's voice using its DNA.</p>
+                      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"12px"}}>
+                        {showFull&&(
+                        <button onClick={()=>handleSidebarNav("full")}
+                          style={{padding:"14px 18px",background:T.surface,border:`1px solid ${T.cardBorder}`,borderRadius:"10px",cursor:"pointer",textAlign:"left",transition:"all .15s",fontFamily:"'DM Sans', system-ui, sans-serif"}}
+                          onMouseEnter={e=>{e.currentTarget.style.background=T.coralSoft;e.currentTarget.style.borderColor=T.coral;}}
+                          onMouseLeave={e=>{e.currentTarget.style.background=T.surface;e.currentTarget.style.borderColor=T.cardBorder;}}>
+                          <div style={{fontSize:"13px",fontWeight:"700",color:T.text,marginBottom:"4px"}}>Full Episode Package</div>
+                          <div style={{fontSize:"12px",color:T.textMuted}}>Show notes, YouTube, social, email, blog</div>
+                          <div style={{marginTop:"10px",fontSize:"12px",color:T.coral,fontWeight:"700",letterSpacing:"1px",textTransform:"uppercase"}}>Get Started →</div>
+                        </button>
+                        )}
+                        {showClips&&(
+                        <button onClick={()=>handleSidebarNav("clips")}
+                          style={{padding:"14px 18px",background:T.surface,border:`1px solid ${T.cardBorder}`,borderRadius:"10px",cursor:"pointer",textAlign:"left",transition:"all .15s",fontFamily:"'DM Sans', system-ui, sans-serif"}}
+                          onMouseEnter={e=>{e.currentTarget.style.background=T.coralSoft;e.currentTarget.style.borderColor=T.coral;}}
+                          onMouseLeave={e=>{e.currentTarget.style.background=T.surface;e.currentTarget.style.borderColor=T.cardBorder;}}>
+                          <div style={{fontSize:"13px",fontWeight:"700",color:T.text,marginBottom:"4px"}}>Clips & Shorts</div>
+                          <div style={{fontSize:"12px",color:T.textMuted}}>SEO titles, captions, and hashtags per clip</div>
+                          <div style={{marginTop:"10px",fontSize:"12px",color:T.coral,fontWeight:"700",letterSpacing:"1px",textTransform:"uppercase"}}>Get Started →</div>
+                        </button>
+                        )}
                       </div>
-                      {/* Card body */}
+                    </div>
+                  </div>
+                  )}
+
+                  {/* Row 2 — Editorial + Planning side by side */}
+                  {(showEditor||showPrep)&&(
+                  <div style={{display:"grid",gridTemplateColumns:showEditor&&showPrep?"1fr 1fr":"1fr",gap:"20px"}}>
+                    {showEditor&&(
+                    <div style={cardBase}
+                      onClick={()=>handleSidebarNav("editor")}
+                      onMouseEnter={e=>{e.currentTarget.style.boxShadow=`0 8px 28px rgba(122,0,25,.12)`;e.currentTarget.style.borderColor=T.coral;e.currentTarget.style.cursor="pointer";}}
+                      onMouseLeave={e=>{e.currentTarget.style.boxShadow="0 2px 8px rgba(0,0,0,.05)";e.currentTarget.style.borderColor=T.cardBorder;}}>
+                      <div style={hdrBandMuted}>
+                        <div style={{position:"absolute",top:"16px",right:"20px",fontSize:"28px",opacity:0.25}}>🎬</div>
+                        <div style={{fontSize:"10px",letterSpacing:"2.5px",textTransform:"uppercase",color:"rgba(255,255,255,0.5)",fontFamily:"'DM Sans',system-ui,sans-serif",fontWeight:"700",marginBottom:"6px"}}>EDITORIAL ASSISTANCE</div>
+                        <div style={{fontSize:"20px",fontWeight:"700",color:"#FFFFFF",fontFamily:PF,lineHeight:"1.2",letterSpacing:"-0.3px"}}>Editorial Assistance</div>
+                      </div>
                       <div style={{padding:"20px 24px 24px",display:"flex",flexDirection:"column",gap:"16px"}}>
-                        <p style={{margin:0,fontSize:"14px",color:T.textSecondary,lineHeight:"1.7",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{card.desc}</p>
+                        <p style={{margin:0,fontSize:"14px",color:T.textSecondary,lineHeight:"1.7",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Run the transcript through your show's DNA to get hook recommendations, best clip moments, timestamps, and level-based editing guidance for your editor.</p>
                         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-                          <span style={{fontSize:"11px",color:card.accent,fontWeight:"700",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1.5px",textTransform:"uppercase"}}>Get Started</span>
-                          <div style={{width:"32px",height:"32px",borderRadius:"50%",background:`${card.accent}15`,border:`1px solid ${card.accent}30`,display:"flex",alignItems:"center",justifyContent:"center",color:card.accent,fontSize:"14px",fontWeight:"700"}}>→</div>
+                          <span style={{fontSize:"11px",color:T.coral,fontWeight:"700",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1.5px",textTransform:"uppercase"}}>Open →</span>
                         </div>
                       </div>
                     </div>
-                  ))}
+                    )}
+                    {showPrep&&(
+                    <div style={cardBase}
+                      onClick={()=>handleSidebarNav("prep")}
+                      onMouseEnter={e=>{e.currentTarget.style.boxShadow=`0 8px 28px rgba(122,0,25,.12)`;e.currentTarget.style.borderColor=T.coral;e.currentTarget.style.cursor="pointer";}}
+                      onMouseLeave={e=>{e.currentTarget.style.boxShadow="0 2px 8px rgba(0,0,0,.05)";e.currentTarget.style.borderColor=T.cardBorder;}}>
+                      <div style={hdrBandMuted}>
+                        <div style={{position:"absolute",top:"16px",right:"20px",fontSize:"28px",opacity:0.25}}>📋</div>
+                        <div style={{fontSize:"10px",letterSpacing:"2.5px",textTransform:"uppercase",color:"rgba(255,255,255,0.5)",fontFamily:"'DM Sans',system-ui,sans-serif",fontWeight:"700",marginBottom:"6px"}}>EPISODE PLANNING</div>
+                        <div style={{fontSize:"20px",fontWeight:"700",color:"#FFFFFF",fontFamily:PF,lineHeight:"1.2",letterSpacing:"-0.3px"}}>Episode Planning</div>
+                      </div>
+                      <div style={{padding:"20px 24px 24px",display:"flex",flexDirection:"column",gap:"16px"}}>
+                        <p style={{margin:0,fontSize:"14px",color:T.textSecondary,lineHeight:"1.7",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Plan your next episode before you hit record — scripted hooks, talking points, interview questions, and a complete episode structure rooted in your show's DNA.</p>
+                        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                          <span style={{fontSize:"11px",color:T.coral,fontWeight:"700",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1.5px",textTransform:"uppercase"}}>Open →</span>
+                        </div>
+                      </div>
+                    </div>
+                    )}
+                  </div>
+                  )}
+
                 </div>
                 );
               })()}
