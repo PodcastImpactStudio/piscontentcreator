@@ -1234,6 +1234,7 @@ export default function App(){
   const[guestQuery,setGuestQuery]=useState("");
   const[guestResults,setGuestResults]=useState([]);
   const[guestCopied,setGuestCopied]=useState(null);
+  const[guestEmails,setGuestEmails]=useState({});
 
   const d=show?shows[show]:null;
   const clr=d?.clr||T.coral;
@@ -1466,6 +1467,94 @@ PRE-RECORDING CHECKLIST
     finally { setBusy(false); }
   }
 
+  async function generatePitchEmail(podcast, type){
+    const key = podcast.id || podcast.title;
+    setGuestEmails(prev=>({...prev,[key]:{type,email:"",loading:true,copied:false}}));
+
+    const voiceLines=[
+      d?.voice?.tone?`Tone/vibe: ${d.voice.tone}`:"",
+      d?.voice?.hostPersonality?`Host personality: ${d.voice.hostPersonality}`:"",
+      d?.voice?.coreBeliefs?`Core beliefs/mission: ${d.voice.coreBeliefs}`:"",
+      d?.voice?.writingStyle?`Writing style: ${d.voice.writingStyle}`:"",
+      d?.voice?.avoidWords?`Never use these words/phrases: ${d.voice.avoidWords}`:"",
+    ].filter(Boolean).join("\n");
+
+    const showLines=[
+      `Show name: ${d?.name||""}`,
+      d?.hosts?`Host(s): ${d.hosts}`:"",
+      d?.tag?`What the show is about: ${d.tag}`:"",
+      d?.audience?.onePerson?.name?`Ideal listener: ${d.audience.onePerson.name}`:"",
+      d?.audience?.onePerson?.twoAmQuestion?`Their 2AM question: ${d.audience.onePerson.twoAmQuestion}`:"",
+    ].filter(Boolean).join("\n");
+
+    const pitch=podcast.pitch;
+    const pitchContext=pitch?[
+      pitch.audienceOverlap?`Audience overlap: ${pitch.audienceOverlap}`:"",
+      pitch.suggestedAngle?`Suggested angle: ${pitch.suggestedAngle}`:"",
+      pitch.hostPitch?`Why the host is a good fit: ${pitch.hostPitch}`:"",
+    ].filter(Boolean).join("\n"):"";
+
+    const systemPrompt=`You write authentic, human outreach emails from one podcaster to another. Your job is to sound like a real person — warm, direct, specific. You NEVER sound like a PR pitch or a marketing email.
+
+RULES:
+- Match the host's voice from their show DNA exactly
+- Use the target host's first name in the greeting (extract it from their publisher/host info — if it looks like an organization name, use "Hi [Podcast Name] team" instead)
+- Name their podcast specifically
+- Keep it short: 150–220 words max
+- No empty openers ("I hope this finds you well", "I came across your podcast randomly")
+- No corporate buzzwords: "synergy", "mutual benefit", "leverage", "reach out", "circle back", "connect"
+- End with a soft, genuine ask — not a hard sell
+- Write ONLY the email body. No subject line. No "Here is the email:" preamble.`;
+
+    const userPrompt=type==="guest"?
+`Write a genuine guest pitch email from ${d?.hosts||d?.name||"the host"} to the host of "${podcast.title}" (publisher/host listed as: ${podcast.publisher||"unknown"}).
+
+OUR SHOW DNA:
+${showLines}
+
+VOICE TO MATCH:
+${voiceLines||"Warm, direct, human."}
+
+CONTEXT FOR THIS PITCH:
+${pitchContext}
+
+The email should:
+- Open with their first name
+- Mention noticing their podcast "${podcast.title}" and name something specific about what it covers
+- Briefly introduce our show and who it's for (in our voice, not a bio)
+- Mention 2–3 topics we could bring to their audience (based on the suggested angle above)
+- Close with a soft ask — something like "if you're accepting guests" or "happy to share more if it's a fit"
+- Sound like a real human wrote it, not an AI`:
+
+`Write a genuine podcast swap pitch email from ${d?.hosts||d?.name||"the host"} to the host of "${podcast.title}" (publisher/host listed as: ${podcast.publisher||"unknown"}).
+
+OUR SHOW DNA:
+${showLines}
+
+VOICE TO MATCH:
+${voiceLines||"Warm, direct, human."}
+
+CONTEXT:
+${pitchContext}
+
+The email should:
+- Open with their first name
+- Mention noticing their podcast "${podcast.title}" and something genuine about its audience
+- Propose a podcast swap — they come on ours, we go on theirs
+- Briefly describe our show and what our listeners get
+- Explain why the swap makes sense for BOTH audiences (use the audience overlap above)
+- Close with a soft ask — "curious if that's something you'd be open to" style
+- Sound collaborative, not transactional`;
+
+    try{
+      const data=await claudeAPI({model:"claude-sonnet-4-6",max_tokens:700,system:systemPrompt,messages:[{role:"user",content:userPrompt}]});
+      const email=(data.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("").trim();
+      setGuestEmails(prev=>({...prev,[key]:{type,email,loading:false,copied:false}}));
+    }catch(e){
+      setGuestEmails(prev=>({...prev,[key]:{type,email:"Error: "+e.message,loading:false,copied:false}}));
+    }
+  }
+
   async function genGuest(){
     setErr("");setBusy(true);setStep("generating");
     try{
@@ -1630,7 +1719,7 @@ PRE-RECORDING CHECKLIST
     }
   }
 
-  function reset(){setStep("welcome");setMode(null);if(Object.keys(shows).length>1)setShow(null);setGuest(null);setEp("");setTx("");setRaw("");setSecs([]);setErr("");setEditing(false);setESec(null);setETxt("");setExtraPlatforms([]);setClipCount(3);setClipTexts(Array(10).fill(""));setClipResults([]);setClipPlatforms(["YouTube"]);setSelectedFormat(null);setEpGuest("");setEpGuestUrl("");setEpTopic("");setEpTakeaway("");setEpMoments("");setEpPanelists("");setEpPlanRequest("");setGuestResults([]);setGuestHostName("");setGuestQuery("");}
+  function reset(){setStep("welcome");setMode(null);if(Object.keys(shows).length>1)setShow(null);setGuest(null);setEp("");setTx("");setRaw("");setSecs([]);setErr("");setEditing(false);setESec(null);setETxt("");setExtraPlatforms([]);setClipCount(3);setClipTexts(Array(10).fill(""));setClipResults([]);setClipPlatforms(["YouTube"]);setSelectedFormat(null);setEpGuest("");setEpGuestUrl("");setEpTopic("");setEpTakeaway("");setEpMoments("");setEpPanelists("");setEpPlanRequest("");setGuestResults([]);setGuestHostName("");setGuestQuery("");setGuestEmails({});}
 
   function goBack(){
     setErr("");
@@ -2340,10 +2429,45 @@ PRE-RECORDING CHECKLIST
                         <div style={{fontSize:"10px",letterSpacing:"1.5px",textTransform:"uppercase",color:T.coral,fontWeight:"700",fontFamily:"'DM Sans', system-ui, sans-serif",marginBottom:"6px"}}>Why {guestHostName} Should Be Your Guest</div>
                         <p style={{margin:0,fontSize:"13px",color:T.textSecondary,lineHeight:"1.6",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{p.pitch.hostPitch}</p>
                       </div>
-                      {pitchText&&<button onClick={()=>{navigator.clipboard.writeText(pitchText);setGuestCopied(i);setTimeout(()=>setGuestCopied(null),2000);}}
-                        style={{padding:"8px 18px",background:copied?T.coralSoft:"transparent",border:`1px solid ${copied?T.coralMid:T.cardBorder}`,borderRadius:"6px",color:copied?T.coral:T.textMuted,fontSize:"12px",fontWeight:"700",cursor:"pointer",letterSpacing:"1px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",transition:"all .15s"}}>
-                        {copied?"✓ COPIED":"COPY PITCH"}
-                      </button>}
+                      {/* Email generation */}
+                      {(()=>{
+                        const eKey=p.id||p.title;
+                        const em=guestEmails[eKey];
+                        if(em?.loading) return <div style={{fontSize:"13px",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",fontStyle:"italic",padding:"4px 0"}}>Writing email…</div>;
+                        if(em?.email) return(
+                          <div style={{marginTop:"4px"}}>
+                            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"8px"}}>
+                              <span style={{fontSize:"11px",color:T.coral,fontWeight:"700",letterSpacing:"1.5px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{em.type==="swap"?"Podcast Swap Email":"Guest Pitch Email"}</span>
+                              <div style={{display:"flex",gap:"6px"}}>
+                                <button onClick={()=>generatePitchEmail(p,"guest")} style={{fontSize:"11px",padding:"3px 8px",background:"transparent",border:`1px solid ${T.cardBorder}`,borderRadius:"4px",color:T.textMuted,cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Guest</button>
+                                <button onClick={()=>generatePitchEmail(p,"swap")} style={{fontSize:"11px",padding:"3px 8px",background:"transparent",border:`1px solid ${T.cardBorder}`,borderRadius:"4px",color:T.textMuted,cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Swap</button>
+                              </div>
+                            </div>
+                            <textarea readOnly value={em.email} rows={9}
+                              style={{width:"100%",padding:"14px 16px",background:T.surface,border:`1px solid ${T.cardBorder}`,borderRadius:"8px",color:T.text,fontSize:"13px",fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.7",resize:"vertical",boxSizing:"border-box"}}/>
+                            <button onClick={()=>{navigator.clipboard.writeText(em.email);setGuestEmails(prev=>({...prev,[eKey]:{...prev[eKey],copied:true}}));setTimeout(()=>setGuestEmails(prev=>({...prev,[eKey]:{...prev[eKey],copied:false}})),2000);}}
+                              style={{marginTop:"8px",padding:"8px 18px",background:em.copied?T.coralSoft:"transparent",border:`1px solid ${em.copied?T.coralMid:T.cardBorder}`,borderRadius:"6px",color:em.copied?T.coral:T.textMuted,fontSize:"12px",fontWeight:"700",cursor:"pointer",letterSpacing:"1px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",transition:"all .15s"}}>
+                              {em.copied?"✓ COPIED":"COPY EMAIL"}
+                            </button>
+                          </div>
+                        );
+                        return(
+                          <div style={{display:"flex",gap:"8px",marginTop:"4px"}}>
+                            <button onClick={()=>generatePitchEmail(p,"guest")}
+                              style={{padding:"8px 16px",background:"transparent",border:`1px solid ${T.cardBorder}`,borderRadius:"6px",color:T.textSecondary,fontSize:"12px",fontWeight:"700",cursor:"pointer",letterSpacing:"0.5px",fontFamily:"'DM Sans', system-ui, sans-serif",transition:"all .15s"}}
+                              onMouseEnter={e=>{e.currentTarget.style.borderColor=T.coral;e.currentTarget.style.color=T.coral;}}
+                              onMouseLeave={e=>{e.currentTarget.style.borderColor=T.cardBorder;e.currentTarget.style.color=T.textSecondary;}}>
+                              ✉️ Guest Pitch Email
+                            </button>
+                            <button onClick={()=>generatePitchEmail(p,"swap")}
+                              style={{padding:"8px 16px",background:"transparent",border:`1px solid ${T.cardBorder}`,borderRadius:"6px",color:T.textSecondary,fontSize:"12px",fontWeight:"700",cursor:"pointer",letterSpacing:"0.5px",fontFamily:"'DM Sans', system-ui, sans-serif",transition:"all .15s"}}
+                              onMouseEnter={e=>{e.currentTarget.style.borderColor=T.coral;e.currentTarget.style.color=T.coral;}}
+                              onMouseLeave={e=>{e.currentTarget.style.borderColor=T.cardBorder;e.currentTarget.style.color=T.textSecondary;}}>
+                              🔄 Podcast Swap Email
+                            </button>
+                          </div>
+                        );
+                      })()}
                     </div>
                     ):(
                     <div style={{padding:"14px 24px",color:T.textMuted,fontSize:"13px",fontFamily:"'DM Sans', system-ui, sans-serif",fontStyle:"italic"}}>Pitch not generated for this result.</div>
