@@ -1467,18 +1467,18 @@ PRE-RECORDING CHECKLIST
   }
 
   async function genGuest(){
-    if(!guestHostName.trim()){setErr("Please enter the host's name.");return;}
-    if(!guestQuery.trim()){setErr("Please enter at least one search keyword.");return;}
     setErr("");setBusy(true);setStep("generating");
     try{
       const r=await fetch("/api/guest-search",{
         method:"POST",
         headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({showDna:d,hostName:guestHostName.trim(),searchQuery:guestQuery.trim(),maxResults:10}),
+        body:JSON.stringify({showDna:d}),
       });
       const data=await r.json();
       if(!r.ok)throw new Error(data.error||"Search failed. Please try again.");
       setGuestResults(data.results||[]);
+      setGuestHostName(data.hostName||d?.hosts||"");
+      setGuestQuery((data.queries||[]).join(", "));
       setStep("guest-results");
     }catch(e){setErr(e.message);setStep("guest-setup");}
     finally{setBusy(false);}
@@ -2263,33 +2263,34 @@ PRE-RECORDING CHECKLIST
             </div>}
 
             {/* GUEST FINDER — SETUP */}
-            {step==="guest-setup"&&d&&<div style={{animation:"fadeUp .4s ease",maxWidth:"620px"}}>
+            {step==="guest-setup"&&d&&<div style={{animation:"fadeUp .4s ease",maxWidth:"640px"}}>
               <p style={{fontSize:"14px",color:T.coral,margin:"0 0 8px",letterSpacing:"2px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600"}}>{d.name}</p>
-              <h2 style={{fontSize:"36px",fontWeight:"700",color:T.text,margin:"0 0 8px",letterSpacing:"-0.5px",fontFamily:PF}}>Find Podcast Guesting Opportunities</h2>
-              <p style={{fontSize:"15px",color:T.textMuted,margin:"0 0 32px",fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.6"}}>We'll search for active podcasts in your niche and write a personalized pitch for each one — based on your show's DNA, your audience, and what you bring to the table.</p>
-              <div style={{display:"flex",flexDirection:"column",gap:"20px"}}>
-                <div>
-                  <label style={lbl}>Host Name *</label>
-                  <input value={guestHostName} onChange={e=>setGuestHostName(e.target.value)} placeholder="Who is looking for guesting opportunities?" style={field}/>
-                </div>
-                <div>
-                  <label style={lbl}>Search Keywords *</label>
-                  <input value={guestQuery} onChange={e=>setGuestQuery(e.target.value)} placeholder="e.g. sobriety, mental health, women entrepreneurs" style={field}/>
-                  <p style={{fontSize:"12px",color:T.textMuted,margin:"6px 0 0",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Keywords describing your show's niche — used to find podcasts with overlapping audiences. Pre-filled from your show DNA.</p>
+              <h2 style={{fontSize:"36px",fontWeight:"700",color:T.text,margin:"0 0 10px",letterSpacing:"-0.5px",fontFamily:PF}}>Find Podcast Guesting Opportunities</h2>
+              <p style={{fontSize:"15px",color:T.textMuted,margin:"0 0 28px",fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.6"}}>We'll read your show's DNA — your host, your audience, and what your show stands for — and find active podcasts whose listeners overlap with yours. Then we'll write a personalized pitch for each one.</p>
+              {/* DNA summary card */}
+              <div style={{background:T.card,border:`1px solid ${T.cardBorder}`,borderRadius:"14px",padding:"20px 24px",marginBottom:"28px"}}>
+                <div style={{fontSize:"11px",letterSpacing:"2px",textTransform:"uppercase",color:T.coral,fontWeight:"700",fontFamily:"'DM Sans', system-ui, sans-serif",marginBottom:"14px"}}>What we'll use from your show DNA</div>
+                <div style={{display:"flex",flexDirection:"column",gap:"10px"}}>
+                  {d.hosts&&<div style={{display:"flex",gap:"10px",alignItems:"flex-start"}}><span style={{fontSize:"13px",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",minWidth:"90px",flexShrink:0}}>Host(s)</span><span style={{fontSize:"13px",color:T.text,fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600"}}>{d.hosts}</span></div>}
+                  {d.tag&&<div style={{display:"flex",gap:"10px",alignItems:"flex-start"}}><span style={{fontSize:"13px",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",minWidth:"90px",flexShrink:0}}>Show niche</span><span style={{fontSize:"13px",color:T.text,fontFamily:"'DM Sans', system-ui, sans-serif"}}>{d.tag}</span></div>}
+                  {d.audience?.onePerson?.name&&<div style={{display:"flex",gap:"10px",alignItems:"flex-start"}}><span style={{fontSize:"13px",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",minWidth:"90px",flexShrink:0}}>Ideal listener</span><span style={{fontSize:"13px",color:T.text,fontFamily:"'DM Sans', system-ui, sans-serif"}}>{d.audience.onePerson.name}</span></div>}
+                  {d.audience?.onePerson?.twoAmQuestion&&<div style={{display:"flex",gap:"10px",alignItems:"flex-start"}}><span style={{fontSize:"13px",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",minWidth:"90px",flexShrink:0}}>Their struggle</span><span style={{fontSize:"13px",color:T.text,fontFamily:"'DM Sans', system-ui, sans-serif",fontStyle:"italic"}}>"{d.audience.onePerson.twoAmQuestion}"</span></div>}
+                  {!d.hosts&&!d.tag&&!d.audience?.onePerson?.name&&<p style={{margin:0,fontSize:"13px",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif"}}>Add host name, audience, and niche to your Show DNA in Admin Settings to get better results.</p>}
                 </div>
               </div>
-              {err&&<p style={{color:"#C41230",fontSize:"14px",margin:"16px 0 0",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{err}</p>}
-              <button onClick={genGuest} disabled={!guestHostName.trim()||!guestQuery.trim()}
-                style={{...primary(T.coral),opacity:(!guestHostName.trim()||!guestQuery.trim())?.5:1,cursor:(!guestHostName.trim()||!guestQuery.trim())?"not-allowed":"pointer"}}>
-                Find Podcasts →
-              </button>
+              <div style={{background:T.coralSoft,border:`1px solid ${T.coralMid}`,borderRadius:"10px",padding:"12px 16px",marginBottom:"24px",fontSize:"13px",color:T.textSecondary,fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.6"}}>
+                <strong style={{color:T.coral}}>How it works:</strong> We'll generate search queries from your DNA, find active podcasts in overlapping niches, and score each one for audience fit — then write a tailored pitch for each result.
+              </div>
+              {err&&<p style={{color:"#C41230",fontSize:"14px",margin:"0 0 16px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{err}</p>}
+              <button onClick={genGuest} style={primary(T.coral)}>Find Podcasts →</button>
             </div>}
 
             {/* GUEST FINDER — RESULTS */}
             {step==="guest-results"&&<div style={{animation:"fadeUp .4s ease"}}>
               <div style={{marginBottom:"28px"}}>
                 <h2 style={{fontSize:"36px",fontWeight:"700",color:T.text,margin:"0 0 4px",letterSpacing:"-0.5px",fontFamily:PF}}>Podcast Opportunities</h2>
-                <p style={{fontSize:"15px",color:T.textMuted,margin:0,fontFamily:"'DM Sans', system-ui, sans-serif"}}>{guestResults.length} active podcast{guestResults.length!==1?"s":""} found for <strong>{guestHostName}</strong> · {d?.name}</p>
+                <p style={{fontSize:"15px",color:T.textMuted,margin:"0 0 8px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{guestResults.length} best-fit podcast{guestResults.length!==1?"s":""} found for <strong>{guestHostName||d?.hosts||d?.name}</strong> · {d?.name}</p>
+                {guestQuery&&<p style={{fontSize:"12px",color:T.textMuted,margin:0,fontFamily:"'DM Sans', system-ui, sans-serif"}}>Searched: <span style={{fontStyle:"italic"}}>{guestQuery}</span></p>}
               </div>
               {guestResults.length===0?(
                 <div style={{background:T.card,border:`1px solid ${T.cardBorder}`,borderRadius:"12px",padding:"48px",textAlign:"center"}}>
@@ -2308,7 +2309,11 @@ PRE-RECORDING CHECKLIST
                     <div style={{padding:"18px 24px 14px",display:"flex",alignItems:"flex-start",gap:"14px",borderBottom:`1px solid ${T.cardBorder}`}}>
                       {p.image&&<img src={p.image} alt="" style={{width:"52px",height:"52px",borderRadius:"8px",objectFit:"cover",flexShrink:0}}/>}
                       <div style={{flex:1,minWidth:0}}>
-                        <div style={{fontSize:"16px",fontWeight:"700",color:T.text,fontFamily:PF,marginBottom:"3px",lineHeight:"1.3"}}>{p.title}</div>
+                        <div style={{display:"flex",alignItems:"center",gap:"8px",marginBottom:"3px",flexWrap:"wrap"}}>
+                          <div style={{fontSize:"16px",fontWeight:"700",color:T.text,fontFamily:PF,lineHeight:"1.3"}}>{p.title}</div>
+                          {p.fitScore>=8&&<span style={{fontSize:"10px",background:T.coral,color:"#fff",padding:"2px 7px",borderRadius:"10px",fontWeight:"700",letterSpacing:"0.5px",flexShrink:0}}>STRONG FIT</span>}
+                          {p.fitScore>=5&&p.fitScore<8&&<span style={{fontSize:"10px",background:T.coralMid,color:T.coral,padding:"2px 7px",borderRadius:"10px",fontWeight:"700",letterSpacing:"0.5px",flexShrink:0}}>GOOD FIT</span>}
+                        </div>
                         {p.publisher&&<div style={{fontSize:"13px",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",marginBottom:"4px"}}>{p.publisher}</div>}
                         <div style={{display:"flex",alignItems:"center",gap:"12px",flexWrap:"wrap"}}>
                           {p.totalEpisodes>0&&<span style={{fontSize:"11px",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif"}}>{p.totalEpisodes} episodes</span>}
