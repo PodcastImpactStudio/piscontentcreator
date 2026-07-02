@@ -41,6 +41,7 @@ const MODES = [
   { id: "clips", icon: "✂️", label: "Short-Form Content", desc: "SEO-optimized titles, captions & hashtags for YouTube Shorts, Instagram Reels, TikTok & Facebook Reels" },
   { id: "editor", icon: "🎬", label: "Editor Companion", desc: "A coaching brief for your editor — editing level guidance, best clip moments with timestamps, and sections to cut based on your show's standard." },
   { id: "prep", icon: "📋", label: "Episode Prep", desc: "Generate a complete episode outline with scripted hook, wound bridge, and permission slip close — tailored to your show format and guest or topic." },
+  { id: "guest", icon: "🎙️", label: "Guest Finder", desc: "Find active podcasts your host should appear on as a guest, with personalized pitches based on your show's DNA." },
 ];
 const PF = "'DM Sans', system-ui, sans-serif";
 
@@ -1229,10 +1230,14 @@ export default function App(){
   const[epMoments,setEpMoments]=useState("");
   const[epPanelists,setEpPanelists]=useState("");
   const[epPlanRequest,setEpPlanRequest]=useState("");
+  const[guestHostName,setGuestHostName]=useState("");
+  const[guestQuery,setGuestQuery]=useState("");
+  const[guestResults,setGuestResults]=useState([]);
+  const[guestCopied,setGuestCopied]=useState(null);
 
   const d=show?shows[show]:null;
   const clr=d?.clr||T.coral;
-  const ci={welcome:0,configure:1,"clips-setup":2,input:2,generating:2,result:2,"prep-format":1,"prep-details":2}[step]||0;
+  const ci={welcome:0,configure:1,"clips-setup":2,input:2,generating:2,result:2,"prep-format":1,"prep-details":2,"guest-setup":1,"guest-results":2}[step]||0;
 
   useEffect(()=>{
     if(!authReady)return;
@@ -1461,6 +1466,24 @@ PRE-RECORDING CHECKLIST
     finally { setBusy(false); }
   }
 
+  async function genGuest(){
+    if(!guestHostName.trim()){setErr("Please enter the host's name.");return;}
+    if(!guestQuery.trim()){setErr("Please enter at least one search keyword.");return;}
+    setErr("");setBusy(true);setStep("generating");
+    try{
+      const r=await fetch("/api/guest-search",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({showDna:d,hostName:guestHostName.trim(),searchQuery:guestQuery.trim(),maxResults:10}),
+      });
+      const data=await r.json();
+      if(!r.ok)throw new Error(data.error||"Search failed. Please try again.");
+      setGuestResults(data.results||[]);
+      setStep("guest-results");
+    }catch(e){setErr(e.message);setStep("guest-setup");}
+    finally{setBusy(false);}
+  }
+
   async function doRev(){
     if(!eSec||!eTxt.trim())return;setRev(true);setErr("");
     const label=ED.find(s=>s.id===eSec)?.l||eSec;
@@ -1607,7 +1630,7 @@ PRE-RECORDING CHECKLIST
     }
   }
 
-  function reset(){setStep("welcome");setMode(null);if(Object.keys(shows).length>1)setShow(null);setGuest(null);setEp("");setTx("");setRaw("");setSecs([]);setErr("");setEditing(false);setESec(null);setETxt("");setExtraPlatforms([]);setClipCount(3);setClipTexts(Array(10).fill(""));setClipResults([]);setClipPlatforms(["YouTube"]);setSelectedFormat(null);setEpGuest("");setEpGuestUrl("");setEpTopic("");setEpTakeaway("");setEpMoments("");setEpPanelists("");setEpPlanRequest("");}
+  function reset(){setStep("welcome");setMode(null);if(Object.keys(shows).length>1)setShow(null);setGuest(null);setEp("");setTx("");setRaw("");setSecs([]);setErr("");setEditing(false);setESec(null);setETxt("");setExtraPlatforms([]);setClipCount(3);setClipTexts(Array(10).fill(""));setClipResults([]);setClipPlatforms(["YouTube"]);setSelectedFormat(null);setEpGuest("");setEpGuestUrl("");setEpTopic("");setEpTakeaway("");setEpMoments("");setEpPanelists("");setEpPlanRequest("");setGuestResults([]);setGuestHostName("");setGuestQuery("");}
 
   function goBack(){
     setErr("");
@@ -1622,6 +1645,8 @@ PRE-RECORDING CHECKLIST
     else if(step==="result"){if(mode==="prep")setStep("prep-details");else setStep("input");}
     else if(step==="prep-format"){setStep(Object.keys(shows).length>1?"show-select":"welcome");}
     else if(step==="prep-details"){const hasFmts=d?.episodeFormats?.length>0;setStep(hasFmts?"prep-format":(Object.keys(shows).length>1?"show-select":"welcome"));}
+    else if(step==="guest-setup"){setStep(Object.keys(shows).length>1?"show-select":"welcome");}
+    else if(step==="guest-results"){setStep("guest-setup");}
   }
 
   const lbl={fontSize:"15px",letterSpacing:"2px",textTransform:"uppercase",color:T.textMuted,marginBottom:"10px",display:"block",fontFamily:"'DM Sans', system-ui, sans-serif"};
@@ -1702,7 +1727,13 @@ PRE-RECORDING CHECKLIST
       const hasFmts=shows[showKey]?.episodeFormats?.length>0;
       setStep(hasFmts?"prep-format":"prep-details");
     } else if(newMode==="editor") setStep("input");
-    else setStep("configure");
+    else if(newMode==="guest"){
+      const dna=shows[showKey];
+      setGuestResults([]);
+      setGuestQuery(dna?.tag||dna?.name||"");
+      setGuestHostName("");
+      setStep("guest-setup");
+    } else setStep("configure");
   }
 
   // Sidebar nav click handler
@@ -1779,16 +1810,17 @@ PRE-RECORDING CHECKLIST
         {(()=>{
           const allowed = isClient && clientConfig?.allowedModes?.length > 0 ? clientConfig.allowedModes : null;
           const navItems = [
-            {label:"Content Planning", icon:"📦", section:"create", action:()=>{setMode(null);setStep("welcome");}, visible:!allowed||allowed.includes("full")||allowed.includes("clips")},
-            {label:"Editorial",        icon:"🎬", section:"editor", action:()=>handleSidebarNav("editor"),           visible:!allowed||allowed.includes("editor")},
-            {label:"Episode Planning", icon:"📋", section:"prep",   action:()=>handleSidebarNav("prep"),             visible:!allowed||allowed.includes("prep")},
+            {label:"Content Generation", icon:"📦", section:"create", action:()=>{setMode(null);setStep("welcome");},  visible:!allowed||allowed.includes("full")||allowed.includes("clips")},
+            {label:"Editorial",          icon:"🎬", section:"editor", action:()=>handleSidebarNav("editor"),           visible:!allowed||allowed.includes("editor")},
+            {label:"Episode Planning",   icon:"📋", section:"prep",   action:()=>handleSidebarNav("prep"),             visible:!allowed||allowed.includes("prep")},
+            {label:"Guest Finder",       icon:"🎙️", section:"guest",  action:()=>handleSidebarNav("guest"),            visible:!allowed||allowed.includes("guest")},
           ].filter(i=>i.visible);
           if(!navItems.length) return null;
           return(
           <div style={{padding:"8px 0",borderBottom:"1px solid #2E2E2E"}}>
             <div style={{fontSize:"10px",color:"#555555",letterSpacing:"2px",textTransform:"uppercase",padding:"4px 16px 6px",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600"}}>NAVIGATE</div>
             {navItems.map(item=>{
-              const isActive = item.section==="create" ? (mode==="full"||mode==="clips") : mode===item.section;
+              const isActive = item.section==="create" ? (mode==="full"||mode==="clips") : item.section==="guest" ? mode==="guest" : mode===item.section;
               return(
               <button key={item.label} onClick={item.action}
                 style={{width:"100%",padding:"9px 16px",background:isActive?"#2E2E2E":"transparent",border:"none",borderLeft:`3px solid ${isActive?T.coral:"transparent"}`,color:isActive?"#FFFFFF":"#8A8A8A",fontSize:"13px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",display:"flex",alignItems:"center",gap:"8px",transition:"all .15s"}}
@@ -1888,6 +1920,7 @@ PRE-RECORDING CHECKLIST
             {(mode==="full"||mode==="clips")&&step!=="welcome"&&<span style={{color:T.coral,fontWeight:"700"}}>Content</span>}
             {mode==="editor"&&step!=="welcome"&&<span style={{color:T.coral,fontWeight:"700"}}>Editorial</span>}
             {mode==="prep"&&step!=="welcome"&&<span style={{color:T.coral,fontWeight:"700"}}>Planning</span>}
+            {mode==="guest"&&step!=="welcome"&&<span style={{color:T.coral,fontWeight:"700"}}>Guest Finder</span>}
             {mode&&step!=="welcome"&&<span style={{color:T.cardBorder}}>›</span>}
             {step==="show-select"&&<span>Select Show</span>}
             {step==="configure"&&<span>Configure</span>}
@@ -1897,6 +1930,8 @@ PRE-RECORDING CHECKLIST
             {step==="result"&&<span>Results</span>}
             {step==="prep-format"&&<span>Select Format</span>}
             {step==="prep-details"&&<span>Episode Details</span>}
+            {step==="guest-setup"&&<span>Search</span>}
+            {step==="guest-results"&&<span>Results</span>}
           </div>
           {/* Progress + nav buttons */}
           <div style={{display:"flex",alignItems:"center",gap:"12px"}}>
@@ -1947,94 +1982,65 @@ PRE-RECORDING CHECKLIST
                 )
               ):(()=>{
                 const allowed = isClient && clientConfig?.allowedModes?.length > 0 ? clientConfig.allowedModes : null;
-                const showContent = !allowed || allowed.includes("full") || allowed.includes("clips");
-                const showFull    = !allowed || allowed.includes("full");
-                const showClips   = !allowed || allowed.includes("clips");
-                const showEditor  = !allowed || allowed.includes("editor");
-                const showPrep    = !allowed || allowed.includes("prep");
-                const cardBase = {background:T.card,border:`1px solid ${T.cardBorder}`,borderRadius:"16px",overflow:"hidden",boxShadow:"0 2px 8px rgba(0,0,0,.05)",textAlign:"left",transition:"all .22s ease"};
-                const hdrBand = {background:`linear-gradient(150deg,${T.coral} 0%,#4A0010 100%)`,height:"96px",display:"flex",flexDirection:"column",justifyContent:"flex-end",padding:"16px 24px",position:"relative"};
-                const hdrBandMuted = {background:"linear-gradient(150deg,#3A2A28 0%,#1A1210 100%)",height:"96px",display:"flex",flexDirection:"column",justifyContent:"flex-end",padding:"16px 24px",position:"relative"};
-                return(
-                <div style={{display:"flex",flexDirection:"column",gap:"20px",width:"100%",maxWidth:"860px"}}>
-
-                  {/* Row 1 — Content Planning (featured, full width) */}
-                  {showContent&&(
-                  <div style={cardBase}
-                    onMouseEnter={e=>{e.currentTarget.style.boxShadow=`0 8px 28px rgba(122,0,25,.12)`;e.currentTarget.style.borderColor=T.coral;}}
-                    onMouseLeave={e=>{e.currentTarget.style.boxShadow="0 2px 8px rgba(0,0,0,.05)";e.currentTarget.style.borderColor=T.cardBorder;}}>
-                    <div style={hdrBand}>
-                      <div style={{position:"absolute",top:"16px",right:"20px",fontSize:"32px",opacity:0.25}}>📦</div>
-                      <div style={{fontSize:"10px",letterSpacing:"2.5px",textTransform:"uppercase",color:"rgba(255,255,255,0.5)",fontFamily:"'DM Sans',system-ui,sans-serif",fontWeight:"700",marginBottom:"6px"}}>CONTENT PLANNING</div>
-                      <div style={{fontSize:"22px",fontWeight:"700",color:"#FFFFFF",fontFamily:PF,lineHeight:"1.2",letterSpacing:"-0.3px"}}>Content Planning</div>
-                    </div>
-                    <div style={{padding:"20px 24px 24px"}}>
-                      <p style={{margin:"0 0 20px",fontSize:"14px",color:T.textSecondary,lineHeight:"1.7",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Transform any transcript into a complete content package for your show — or generate targeted content for individual clips and shorts. All output is written in your show's voice using its DNA.</p>
-                      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"12px"}}>
-                        {showFull&&(
-                        <button onClick={()=>handleSidebarNav("full")}
-                          style={{padding:"14px 18px",background:T.surface,border:`1px solid ${T.cardBorder}`,borderRadius:"10px",cursor:"pointer",textAlign:"left",transition:"all .15s",fontFamily:"'DM Sans', system-ui, sans-serif"}}
-                          onMouseEnter={e=>{e.currentTarget.style.background=T.coralSoft;e.currentTarget.style.borderColor=T.coral;}}
-                          onMouseLeave={e=>{e.currentTarget.style.background=T.surface;e.currentTarget.style.borderColor=T.cardBorder;}}>
-                          <div style={{fontSize:"13px",fontWeight:"700",color:T.text,marginBottom:"4px"}}>Full Episode Package</div>
-                          <div style={{fontSize:"12px",color:T.textMuted}}>Show notes, YouTube, social, email, blog</div>
-                          <div style={{marginTop:"10px",fontSize:"12px",color:T.coral,fontWeight:"700",letterSpacing:"1px",textTransform:"uppercase"}}>Get Started →</div>
-                        </button>
-                        )}
-                        {showClips&&(
-                        <button onClick={()=>handleSidebarNav("clips")}
-                          style={{padding:"14px 18px",background:T.surface,border:`1px solid ${T.cardBorder}`,borderRadius:"10px",cursor:"pointer",textAlign:"left",transition:"all .15s",fontFamily:"'DM Sans', system-ui, sans-serif"}}
-                          onMouseEnter={e=>{e.currentTarget.style.background=T.coralSoft;e.currentTarget.style.borderColor=T.coral;}}
-                          onMouseLeave={e=>{e.currentTarget.style.background=T.surface;e.currentTarget.style.borderColor=T.cardBorder;}}>
-                          <div style={{fontSize:"13px",fontWeight:"700",color:T.text,marginBottom:"4px"}}>Clips & Shorts</div>
-                          <div style={{fontSize:"12px",color:T.textMuted}}>SEO titles, captions, and hashtags per clip</div>
-                          <div style={{marginTop:"10px",fontSize:"12px",color:T.coral,fontWeight:"700",letterSpacing:"1px",textTransform:"uppercase"}}>Get Started →</div>
-                        </button>
-                        )}
+                const showFull   = !allowed || allowed.includes("full");
+                const showClips  = !allowed || allowed.includes("clips");
+                const showEditor = !allowed || allowed.includes("editor");
+                const showPrep   = !allowed || allowed.includes("prep");
+                const showGuest  = !allowed || allowed.includes("guest");
+                const showContentGen   = showFull || showClips;
+                const showPodcastAsst  = showEditor || showPrep || showGuest;
+                const cardBase = {background:T.card,border:`1px solid ${T.cardBorder}`,borderRadius:"16px",overflow:"hidden",boxShadow:"0 2px 8px rgba(0,0,0,.05)",textAlign:"left",transition:"all .22s ease",display:"flex",flexDirection:"column"};
+                const SubBtn = ({label,desc,badge,onClick})=>(
+                  <button onClick={onClick}
+                    style={{padding:"12px 16px",background:T.surface,border:`1px solid ${T.cardBorder}`,borderRadius:"10px",cursor:"pointer",textAlign:"left",transition:"all .15s",fontFamily:"'DM Sans', system-ui, sans-serif",display:"flex",alignItems:"center",justifyContent:"space-between",gap:"12px"}}
+                    onMouseEnter={e=>{e.currentTarget.style.background=T.coralSoft;e.currentTarget.style.borderColor=T.coral;}}
+                    onMouseLeave={e=>{e.currentTarget.style.background=T.surface;e.currentTarget.style.borderColor=T.cardBorder;}}>
+                    <div>
+                      <div style={{fontSize:"13px",fontWeight:"700",color:T.text,marginBottom:"2px",display:"flex",alignItems:"center",gap:"6px"}}>
+                        {label}{badge&&<span style={{fontSize:"9px",background:T.coral,color:"#fff",padding:"2px 6px",borderRadius:"10px",letterSpacing:"0.5px",fontWeight:"700"}}>NEW</span>}
                       </div>
+                      <div style={{fontSize:"12px",color:T.textMuted}}>{desc}</div>
+                    </div>
+                    <span style={{color:T.coral,fontSize:"16px",flexShrink:0}}>→</span>
+                  </button>
+                );
+                return(
+                <div style={{display:"grid",gridTemplateColumns:showContentGen&&showPodcastAsst?"1fr 1fr":"1fr",gap:"20px",width:"100%",maxWidth:"860px"}}>
+
+                  {/* Content Generation */}
+                  {showContentGen&&(
+                  <div style={cardBase}
+                    onMouseEnter={e=>{e.currentTarget.style.boxShadow=`0 8px 28px rgba(122,0,25,.1)`;e.currentTarget.style.borderColor=T.coral;}}
+                    onMouseLeave={e=>{e.currentTarget.style.boxShadow="0 2px 8px rgba(0,0,0,.05)";e.currentTarget.style.borderColor=T.cardBorder;}}>
+                    <div style={{background:`linear-gradient(150deg,${T.coral} 0%,#3A0010 100%)`,padding:"20px 24px 18px",position:"relative"}}>
+                      <div style={{position:"absolute",top:"16px",right:"18px",fontSize:"28px",opacity:0.2}}>📦</div>
+                      <div style={{fontSize:"10px",letterSpacing:"2.5px",textTransform:"uppercase",color:"rgba(255,255,255,0.5)",fontFamily:"'DM Sans',system-ui,sans-serif",fontWeight:"700",marginBottom:"6px"}}>CONTENT GENERATION</div>
+                      <div style={{fontSize:"20px",fontWeight:"700",color:"#FFFFFF",fontFamily:PF,lineHeight:"1.2"}}>Content Generation</div>
+                      <div style={{fontSize:"12px",color:"rgba(255,255,255,0.6)",marginTop:"6px",fontFamily:"'DM Sans',system-ui,sans-serif",lineHeight:"1.5"}}>Paste a transcript — get a complete, DNA-matched content package.</div>
+                    </div>
+                    <div style={{padding:"16px 20px 20px",display:"flex",flexDirection:"column",gap:"8px",flex:1}}>
+                      {showFull&&<SubBtn label="Full Episode Package" desc="Show notes, YouTube, social, email, blog" onClick={()=>handleSidebarNav("full")}/>}
+                      {showClips&&<SubBtn label="Clips & Shorts" desc="SEO titles, captions, hashtags per clip" onClick={()=>handleSidebarNav("clips")}/>}
                     </div>
                   </div>
                   )}
 
-                  {/* Row 2 — Editorial + Planning side by side */}
-                  {(showEditor||showPrep)&&(
-                  <div style={{display:"grid",gridTemplateColumns:showEditor&&showPrep?"1fr 1fr":"1fr",gap:"20px"}}>
-                    {showEditor&&(
-                    <div style={cardBase}
-                      onClick={()=>handleSidebarNav("editor")}
-                      onMouseEnter={e=>{e.currentTarget.style.boxShadow=`0 8px 28px rgba(122,0,25,.12)`;e.currentTarget.style.borderColor=T.coral;e.currentTarget.style.cursor="pointer";}}
-                      onMouseLeave={e=>{e.currentTarget.style.boxShadow="0 2px 8px rgba(0,0,0,.05)";e.currentTarget.style.borderColor=T.cardBorder;}}>
-                      <div style={hdrBandMuted}>
-                        <div style={{position:"absolute",top:"16px",right:"20px",fontSize:"28px",opacity:0.25}}>🎬</div>
-                        <div style={{fontSize:"10px",letterSpacing:"2.5px",textTransform:"uppercase",color:"rgba(255,255,255,0.5)",fontFamily:"'DM Sans',system-ui,sans-serif",fontWeight:"700",marginBottom:"6px"}}>EDITORIAL ASSISTANCE</div>
-                        <div style={{fontSize:"20px",fontWeight:"700",color:"#FFFFFF",fontFamily:PF,lineHeight:"1.2",letterSpacing:"-0.3px"}}>Editorial Assistance</div>
-                      </div>
-                      <div style={{padding:"20px 24px 24px",display:"flex",flexDirection:"column",gap:"16px"}}>
-                        <p style={{margin:0,fontSize:"14px",color:T.textSecondary,lineHeight:"1.7",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Run the transcript through your show's DNA to get hook recommendations, best clip moments, timestamps, and level-based editing guidance for your editor.</p>
-                        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-                          <span style={{fontSize:"11px",color:T.coral,fontWeight:"700",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1.5px",textTransform:"uppercase"}}>Open →</span>
-                        </div>
-                      </div>
+                  {/* Podcast Assistant */}
+                  {showPodcastAsst&&(
+                  <div style={cardBase}
+                    onMouseEnter={e=>{e.currentTarget.style.boxShadow=`0 8px 28px rgba(122,0,25,.1)`;e.currentTarget.style.borderColor=T.coral;}}
+                    onMouseLeave={e=>{e.currentTarget.style.boxShadow="0 2px 8px rgba(0,0,0,.05)";e.currentTarget.style.borderColor=T.cardBorder;}}>
+                    <div style={{background:"linear-gradient(150deg,#3A2A28 0%,#1A1210 100%)",padding:"20px 24px 18px",position:"relative"}}>
+                      <div style={{position:"absolute",top:"16px",right:"18px",fontSize:"28px",opacity:0.2}}>🎙️</div>
+                      <div style={{fontSize:"10px",letterSpacing:"2.5px",textTransform:"uppercase",color:"rgba(255,255,255,0.5)",fontFamily:"'DM Sans',system-ui,sans-serif",fontWeight:"700",marginBottom:"6px"}}>PODCAST ASSISTANT</div>
+                      <div style={{fontSize:"20px",fontWeight:"700",color:"#FFFFFF",fontFamily:PF,lineHeight:"1.2"}}>Podcast Assistant</div>
+                      <div style={{fontSize:"12px",color:"rgba(255,255,255,0.6)",marginTop:"6px",fontFamily:"'DM Sans',system-ui,sans-serif",lineHeight:"1.5"}}>Strategic tools to grow, plan, and edit your show.</div>
                     </div>
-                    )}
-                    {showPrep&&(
-                    <div style={cardBase}
-                      onClick={()=>handleSidebarNav("prep")}
-                      onMouseEnter={e=>{e.currentTarget.style.boxShadow=`0 8px 28px rgba(122,0,25,.12)`;e.currentTarget.style.borderColor=T.coral;e.currentTarget.style.cursor="pointer";}}
-                      onMouseLeave={e=>{e.currentTarget.style.boxShadow="0 2px 8px rgba(0,0,0,.05)";e.currentTarget.style.borderColor=T.cardBorder;}}>
-                      <div style={hdrBandMuted}>
-                        <div style={{position:"absolute",top:"16px",right:"20px",fontSize:"28px",opacity:0.25}}>📋</div>
-                        <div style={{fontSize:"10px",letterSpacing:"2.5px",textTransform:"uppercase",color:"rgba(255,255,255,0.5)",fontFamily:"'DM Sans',system-ui,sans-serif",fontWeight:"700",marginBottom:"6px"}}>EPISODE PLANNING</div>
-                        <div style={{fontSize:"20px",fontWeight:"700",color:"#FFFFFF",fontFamily:PF,lineHeight:"1.2",letterSpacing:"-0.3px"}}>Episode Planning</div>
-                      </div>
-                      <div style={{padding:"20px 24px 24px",display:"flex",flexDirection:"column",gap:"16px"}}>
-                        <p style={{margin:0,fontSize:"14px",color:T.textSecondary,lineHeight:"1.7",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Plan your next episode before you hit record — scripted hooks, talking points, interview questions, and a complete episode structure rooted in your show's DNA.</p>
-                        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-                          <span style={{fontSize:"11px",color:T.coral,fontWeight:"700",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1.5px",textTransform:"uppercase"}}>Open →</span>
-                        </div>
-                      </div>
+                    <div style={{padding:"16px 20px 20px",display:"flex",flexDirection:"column",gap:"8px",flex:1}}>
+                      {showEditor&&<SubBtn label="Editorial Assistance" desc="Hooks, clip moments, editing guidance" onClick={()=>handleSidebarNav("editor")}/>}
+                      {showPrep&&<SubBtn label="Episode Planning" desc="Outlines, prep, interview questions" onClick={()=>handleSidebarNav("prep")}/>}
+                      {showGuest&&<SubBtn label="Guest Finder" desc="Find podcasts to appear on as a guest" badge onClick={()=>handleSidebarNav("guest")}/>}
                     </div>
-                    )}
                   </div>
                   )}
 
@@ -2254,6 +2260,97 @@ PRE-RECORDING CHECKLIST
                 </div>}
               </div>
               <button onClick={genPrep} disabled={!epTopic.trim()} style={{padding:"16px 32px",background:epTopic.trim()?T.coral:T.cardBorder,border:"none",borderRadius:"10px",color:"#fff",fontSize:"16px",fontWeight:"700",cursor:epTopic.trim()?"pointer":"not-allowed",fontFamily:"'DM Sans', system-ui, sans-serif",transition:"background 0.2s"}}>Start Planning →</button>
+            </div>}
+
+            {/* GUEST FINDER — SETUP */}
+            {step==="guest-setup"&&d&&<div style={{animation:"fadeUp .4s ease",maxWidth:"620px"}}>
+              <p style={{fontSize:"14px",color:T.coral,margin:"0 0 8px",letterSpacing:"2px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600"}}>{d.name}</p>
+              <h2 style={{fontSize:"36px",fontWeight:"700",color:T.text,margin:"0 0 8px",letterSpacing:"-0.5px",fontFamily:PF}}>Find Podcast Guesting Opportunities</h2>
+              <p style={{fontSize:"15px",color:T.textMuted,margin:"0 0 32px",fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.6"}}>We'll search for active podcasts in your niche and write a personalized pitch for each one — based on your show's DNA, your audience, and what you bring to the table.</p>
+              <div style={{display:"flex",flexDirection:"column",gap:"20px"}}>
+                <div>
+                  <label style={lbl}>Host Name *</label>
+                  <input value={guestHostName} onChange={e=>setGuestHostName(e.target.value)} placeholder="Who is looking for guesting opportunities?" style={field}/>
+                </div>
+                <div>
+                  <label style={lbl}>Search Keywords *</label>
+                  <input value={guestQuery} onChange={e=>setGuestQuery(e.target.value)} placeholder="e.g. sobriety, mental health, women entrepreneurs" style={field}/>
+                  <p style={{fontSize:"12px",color:T.textMuted,margin:"6px 0 0",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Keywords describing your show's niche — used to find podcasts with overlapping audiences. Pre-filled from your show DNA.</p>
+                </div>
+              </div>
+              {err&&<p style={{color:"#C41230",fontSize:"14px",margin:"16px 0 0",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{err}</p>}
+              <button onClick={genGuest} disabled={!guestHostName.trim()||!guestQuery.trim()}
+                style={{...primary(T.coral),opacity:(!guestHostName.trim()||!guestQuery.trim())?.5:1,cursor:(!guestHostName.trim()||!guestQuery.trim())?"not-allowed":"pointer"}}>
+                Find Podcasts →
+              </button>
+            </div>}
+
+            {/* GUEST FINDER — RESULTS */}
+            {step==="guest-results"&&<div style={{animation:"fadeUp .4s ease"}}>
+              <div style={{marginBottom:"28px"}}>
+                <h2 style={{fontSize:"36px",fontWeight:"700",color:T.text,margin:"0 0 4px",letterSpacing:"-0.5px",fontFamily:PF}}>Podcast Opportunities</h2>
+                <p style={{fontSize:"15px",color:T.textMuted,margin:0,fontFamily:"'DM Sans', system-ui, sans-serif"}}>{guestResults.length} active podcast{guestResults.length!==1?"s":""} found for <strong>{guestHostName}</strong> · {d?.name}</p>
+              </div>
+              {guestResults.length===0?(
+                <div style={{background:T.card,border:`1px solid ${T.cardBorder}`,borderRadius:"12px",padding:"48px",textAlign:"center"}}>
+                  <p style={{fontSize:"16px",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif"}}>No active podcasts found for those keywords. Try broader search terms.</p>
+                  <button onClick={()=>setStep("guest-setup")} style={{...primary(T.coral),width:"auto",padding:"12px 28px",marginTop:"16px"}}>Try Different Keywords</button>
+                </div>
+              ):(
+              <div style={{display:"flex",flexDirection:"column",gap:"16px"}}>
+                {guestResults.map((p,i)=>{
+                  const lastPub=p.latestPubMs?new Date(p.latestPubMs).toLocaleDateString("en-US",{month:"short",year:"numeric"}):"";
+                  const pitchText=p.pitch?`AUDIENCE FIT\n${p.pitch.audienceFit}\n\nWHY ${(guestHostName||"").toUpperCase()} SHOULD BE YOUR GUEST\n${p.pitch.hostPitch}\n\nSUGGESTED EPISODE ANGLE\n${p.pitch.suggestedAngle}`:"";
+                  const copied=guestCopied===i;
+                  return(
+                  <div key={p.id||i} style={{background:T.card,border:`1px solid ${T.cardBorder}`,borderRadius:"14px",overflow:"hidden",boxShadow:"0 2px 8px rgba(0,0,0,.04)"}}>
+                    {/* Header row */}
+                    <div style={{padding:"18px 24px 14px",display:"flex",alignItems:"flex-start",gap:"14px",borderBottom:`1px solid ${T.cardBorder}`}}>
+                      {p.image&&<img src={p.image} alt="" style={{width:"52px",height:"52px",borderRadius:"8px",objectFit:"cover",flexShrink:0}}/>}
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{fontSize:"16px",fontWeight:"700",color:T.text,fontFamily:PF,marginBottom:"3px",lineHeight:"1.3"}}>{p.title}</div>
+                        {p.publisher&&<div style={{fontSize:"13px",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",marginBottom:"4px"}}>{p.publisher}</div>}
+                        <div style={{display:"flex",alignItems:"center",gap:"12px",flexWrap:"wrap"}}>
+                          {p.totalEpisodes>0&&<span style={{fontSize:"11px",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif"}}>{p.totalEpisodes} episodes</span>}
+                          {lastPub&&<span style={{fontSize:"11px",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif"}}>Last published {lastPub}</span>}
+                          {p.website&&<a href={p.website} target="_blank" rel="noopener noreferrer" style={{fontSize:"11px",color:T.coral,fontFamily:"'DM Sans', system-ui, sans-serif",textDecoration:"none",fontWeight:"600"}}>{p.website.replace(/^https?:\/\//,"").split("/")[0]}</a>}
+                        </div>
+                      </div>
+                      <a href={p.listennotesUrl} target="_blank" rel="noopener noreferrer" style={{fontSize:"11px",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",textDecoration:"none",flexShrink:0,border:`1px solid ${T.cardBorder}`,padding:"4px 10px",borderRadius:"6px",whiteSpace:"nowrap"}}>Listen Notes ↗</a>
+                    </div>
+                    {/* Pitch */}
+                    {p.pitch?(
+                    <div style={{padding:"16px 24px 20px"}}>
+                      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"12px",marginBottom:"14px"}}>
+                        <div style={{background:T.surface,borderRadius:"8px",padding:"12px 14px"}}>
+                          <div style={{fontSize:"10px",letterSpacing:"1.5px",textTransform:"uppercase",color:T.coral,fontWeight:"700",fontFamily:"'DM Sans', system-ui, sans-serif",marginBottom:"6px"}}>Audience Fit</div>
+                          <p style={{margin:0,fontSize:"13px",color:T.textSecondary,lineHeight:"1.6",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{p.pitch.audienceFit}</p>
+                        </div>
+                        <div style={{background:T.surface,borderRadius:"8px",padding:"12px 14px"}}>
+                          <div style={{fontSize:"10px",letterSpacing:"1.5px",textTransform:"uppercase",color:T.coral,fontWeight:"700",fontFamily:"'DM Sans', system-ui, sans-serif",marginBottom:"6px"}}>Suggested Angle</div>
+                          <p style={{margin:0,fontSize:"13px",color:T.textSecondary,lineHeight:"1.6",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{p.pitch.suggestedAngle}</p>
+                        </div>
+                      </div>
+                      <div style={{background:T.coralSoft,border:`1px solid ${T.coralMid}`,borderRadius:"8px",padding:"12px 14px",marginBottom:"12px"}}>
+                        <div style={{fontSize:"10px",letterSpacing:"1.5px",textTransform:"uppercase",color:T.coral,fontWeight:"700",fontFamily:"'DM Sans', system-ui, sans-serif",marginBottom:"6px"}}>Why {guestHostName} Should Be Your Guest</div>
+                        <p style={{margin:0,fontSize:"13px",color:T.textSecondary,lineHeight:"1.6",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{p.pitch.hostPitch}</p>
+                      </div>
+                      {pitchText&&<button onClick={()=>{navigator.clipboard.writeText(pitchText);setGuestCopied(i);setTimeout(()=>setGuestCopied(null),2000);}}
+                        style={{padding:"8px 18px",background:copied?T.coralSoft:"transparent",border:`1px solid ${copied?T.coralMid:T.cardBorder}`,borderRadius:"6px",color:copied?T.coral:T.textMuted,fontSize:"12px",fontWeight:"700",cursor:"pointer",letterSpacing:"1px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",transition:"all .15s"}}>
+                        {copied?"✓ COPIED":"COPY PITCH"}
+                      </button>}
+                    </div>
+                    ):(
+                    <div style={{padding:"14px 24px",color:T.textMuted,fontSize:"13px",fontFamily:"'DM Sans', system-ui, sans-serif",fontStyle:"italic"}}>Pitch not generated for this result.</div>
+                    )}
+                  </div>
+                  );
+                })}
+                <div style={{textAlign:"center",padding:"8px 0"}}>
+                  <button onClick={()=>setStep("guest-setup")} style={{...ghost}}>Search Again</button>
+                </div>
+              </div>
+              )}
             </div>}
 
             {/* RESULT */}
