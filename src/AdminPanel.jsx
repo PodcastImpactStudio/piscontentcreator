@@ -1566,7 +1566,7 @@ ${epfPasteText.substring(0, 8000)}`;
             <div style={{ fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase", color: "#6B6B6B", padding: "10px 16px 4px", fontFamily: "'DM Sans', system-ui, sans-serif", fontWeight: "600" }}>MANAGE</div>
             <button className="sidebar-nav-item"
               onClick={() => setAdminView("shows")}
-              style={{ width: "100%", padding: "9px 16px", background: adminView === "shows" ? "#252525" : "transparent", border: "none", borderLeft: adminView === "shows" ? "3px solid #7A0019" : "3px solid transparent", color: adminView === "shows" ? "#7A0019" : "#FFFFFF", fontSize: "14px", fontWeight: adminView === "shows" ? "600" : "400", cursor: "pointer", textAlign: "left", fontFamily: "'DM Sans', system-ui, sans-serif", transition: "all .1s", display: "block" }}>
+              style={{ width: "100%", padding: "9px 16px", background: adminView === "shows" ? "#252525" : "transparent", border: "none", borderLeft: adminView === "shows" ? "3px solid #7A0019" : "3px solid transparent", color: "#FFFFFF", fontSize: "14px", fontWeight: adminView === "shows" ? "600" : "400", cursor: "pointer", textAlign: "left", fontFamily: "'DM Sans', system-ui, sans-serif", transition: "all .1s", display: "block" }}>
               Show DNA Manager
             </button>
           </div>
@@ -1574,7 +1574,7 @@ ${epfPasteText.substring(0, 8000)}`;
             <div style={{ fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase", color: "#6B6B6B", padding: "10px 16px 4px", fontFamily: "'DM Sans', system-ui, sans-serif", fontWeight: "600" }}>CONFIGURE</div>
             <button className="sidebar-nav-item"
               onClick={() => setAdminView("settings")}
-              style={{ width: "100%", padding: "9px 16px", background: adminView === "settings" ? "#252525" : "transparent", border: "none", borderLeft: adminView === "settings" ? "3px solid #7A0019" : "3px solid transparent", color: adminView === "settings" ? "#7A0019" : "#FFFFFF", fontSize: "14px", fontWeight: adminView === "settings" ? "600" : "400", cursor: "pointer", textAlign: "left", fontFamily: "'DM Sans', system-ui, sans-serif", transition: "all .1s", display: "block" }}>
+              style={{ width: "100%", padding: "9px 16px", background: adminView === "settings" ? "#252525" : "transparent", border: "none", borderLeft: adminView === "settings" ? "3px solid #7A0019" : "3px solid transparent", color: "#FFFFFF", fontSize: "14px", fontWeight: adminView === "settings" ? "600" : "400", cursor: "pointer", textAlign: "left", fontFamily: "'DM Sans', system-ui, sans-serif", transition: "all .1s", display: "block" }}>
               Settings
             </button>
           </div>
