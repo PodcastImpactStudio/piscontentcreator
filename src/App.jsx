@@ -1870,7 +1870,7 @@ The email should:
 
         {/* Logo */}
         <div style={{padding:"24px 20px 20px",display:"flex",alignItems:"center",justifyContent:"center",borderBottom:"1px solid #2E2E2E"}}>
-          <img src="/logo-nav.png" alt="Podcast Impact Content Studio" style={{height:"120px",objectFit:"contain",width:"100%"}}/>
+          <img src="/logo-nav.png" alt="Podcast Impact Content Studio" style={{height:"120px",objectFit:"contain",width:"100%",cursor:"pointer"}} onClick={()=>{setMode(null);setStep("welcome");}}/>
         </div>
 
         {/* Active show indicator — shown once a show is selected */}
@@ -1890,7 +1890,7 @@ The email should:
             <button onClick={()=>setShowAdmin(true)}
               className="sidebar-nav-item"
               style={{width:"100%",padding:"9px 14px",background:T.coral,border:"1px solid "+T.coral,borderRadius:"6px",color:"#FFFFFF",fontSize:"13px",fontWeight:"700",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",display:"flex",alignItems:"center",gap:"8px"}}>
-              <span>⚙</span><span>Admin Settings</span>
+              <span>⚙</span><span>Podcast Settings</span>
             </button>
           </div>
         )}
@@ -1899,6 +1899,7 @@ The email should:
         {(()=>{
           const allowed = isClient && clientConfig?.allowedModes?.length > 0 ? clientConfig.allowedModes : null;
           const navItems = [
+            {label:"Home",               icon:"🏠", section:"home",   action:()=>{setMode(null);setStep("welcome");},  visible:true},
             {label:"Content Generation", icon:"📦", section:"create", action:()=>{setMode(null);setStep("welcome");},  visible:!allowed||allowed.includes("full")||allowed.includes("clips")},
             {label:"Editorial",          icon:"🎬", section:"editor", action:()=>handleSidebarNav("editor"),           visible:!allowed||allowed.includes("editor")},
             {label:"Episode Planning",   icon:"📋", section:"prep",   action:()=>handleSidebarNav("prep"),             visible:!allowed||allowed.includes("prep")},
@@ -1909,7 +1910,7 @@ The email should:
           <div style={{padding:"8px 0",borderBottom:"1px solid #2E2E2E"}}>
             <div style={{fontSize:"10px",color:"#555555",letterSpacing:"2px",textTransform:"uppercase",padding:"4px 16px 6px",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600"}}>NAVIGATE</div>
             {navItems.map(item=>{
-              const isActive = item.section==="create" ? (mode==="full"||mode==="clips") : item.section==="guest" ? mode==="guest" : mode===item.section;
+              const isActive = item.section==="home" ? step==="welcome" : item.section==="create" ? (mode==="full"||mode==="clips") : item.section==="guest" ? mode==="guest" : mode===item.section;
               return(
               <button key={item.label} onClick={item.action}
                 style={{width:"100%",padding:"9px 16px",background:isActive?"#2E2E2E":"transparent",border:"none",borderLeft:`3px solid ${isActive?T.coral:"transparent"}`,color:isActive?"#FFFFFF":"#8A8A8A",fontSize:"13px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",display:"flex",alignItems:"center",gap:"8px",transition:"all .15s"}}
@@ -1976,7 +1977,7 @@ The email should:
                   <div style={{padding:"4px 0"}}>
                     {[
                       {label:"My Profile",action:()=>{setShowProfile(true);setShowUserMenu(false);}},
-                      ...(isAdmin?[{label:"Admin Settings",action:()=>{setShowAdmin(true);setShowUserMenu(false);}}]:[]),
+                      ...(isAdmin?[{label:"Podcast Settings",action:()=>{setShowAdmin(true);setShowUserMenu(false);}}]:[]),
                     ].map(item=>(
                       <button key={item.label} onClick={item.action}
                         style={{width:"100%",padding:"9px 14px",background:"transparent",border:"none",color:"#FFFFFF",fontSize:"13px",fontFamily:"'DM Sans', system-ui, sans-serif",cursor:"pointer",textAlign:"left",transition:"background .1s"}}
@@ -2030,7 +2031,7 @@ The email should:
                   {[0,1,2].map(i=><div key={i} style={{width:i<ci?"20px":"6px",height:"4px",borderRadius:"2px",background:i<ci?T.coral:T.cardBorder,transition:"all .3s"}}/>)}
                 </div>}
                 <button onClick={goBack} style={ghost}>Back</button>
-                <button onClick={reset} style={{...ghost,opacity:.5,fontSize:"12px",padding:"6px 12px"}}>Start Over</button>
+                <button onClick={()=>{setMode(null);setStep("welcome");}} style={{...ghost,opacity:.5,fontSize:"12px",padding:"6px 12px"}}>Home</button>
               </>
             )}
           </div>
@@ -2379,7 +2380,12 @@ The email should:
               <div style={{marginBottom:"28px"}}>
                 <h2 style={{fontSize:"36px",fontWeight:"700",color:T.text,margin:"0 0 4px",letterSpacing:"-0.5px",fontFamily:PF}}>Podcast Opportunities</h2>
                 <p style={{fontSize:"15px",color:T.textMuted,margin:"0 0 8px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{guestResults.length} best-fit podcast{guestResults.length!==1?"s":""} found for <strong>{guestHostName||d?.hosts||d?.name}</strong> · {d?.name}</p>
-                {guestQuery&&<p style={{fontSize:"12px",color:T.textMuted,margin:0,fontFamily:"'DM Sans', system-ui, sans-serif"}}>Searched: <span style={{fontStyle:"italic"}}>{guestQuery}</span></p>}
+                {guestQuery&&<p style={{fontSize:"12px",color:T.textMuted,margin:"0 0 10px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Searched: <span style={{fontStyle:"italic"}}>{guestQuery}</span></p>}
+                <div style={{display:"inline-flex",alignItems:"center",gap:"6px",background:T.card,border:`1px solid ${T.cardBorder}`,borderRadius:"6px",padding:"5px 12px"}}>
+                  <span style={{fontSize:"11px",color:"#888888",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"500"}}>powered by</span>
+                  <span style={{fontSize:"12px",fontWeight:"800",color:"#1A1A1A",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"0.5px"}}>LISTEN</span>
+                  <span style={{fontSize:"12px",fontWeight:"800",color:"#B03A00",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"0.5px"}}>NOTES</span>
+                </div>
               </div>
               {guestResults.length===0?(
                 <div style={{background:T.card,border:`1px solid ${T.cardBorder}`,borderRadius:"12px",padding:"48px",textAlign:"center"}}>
