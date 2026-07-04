@@ -1159,6 +1159,7 @@ export function AdminPanel({ shows, orgId, onClose, onSaved, accountType = "agen
         permissionSlips: (s.epPrep?.permissionSlips || []).join("\n"),
       },
       episodeFormats: s.episodeFormats || [],
+      episodeRules: s.episodeRules || [],
     });
     setRawDna(""); setMsg(""); setTab("basic"); setNewShowPath("manual");
   }
@@ -1176,6 +1177,7 @@ export function AdminPanel({ shows, orgId, onClose, onSaved, accountType = "agen
       editingLevel: "1",
       epPrep: { onePerson: { name: "", question2AM: "", wound: "" }, storyMission: "", permissionSlips: "" },
       episodeFormats: [],
+      episodeRules: [],
     });
     setNewId(""); setRawDna(""); setMsg(""); setAddingNew(true); setTab("basic"); setNewShowPath(null);
   }
