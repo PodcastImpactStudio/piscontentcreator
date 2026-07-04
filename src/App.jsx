@@ -2067,10 +2067,10 @@ The email should:
               <div style={{animation:"fadeUp .4s ease"}}>
 
                 {/* Greeting */}
-                <div style={{marginBottom:"28px"}}>
-                  <div style={{fontSize:"10px",fontWeight:"700",letterSpacing:"2.5px",textTransform:"uppercase",color:T.coral,marginBottom:"8px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Good morning, {displayName?displayName.split(" ")[0]:"there"}</div>
-                  <h1 style={{fontFamily:SF,fontSize:"36px",fontWeight:"normal",color:T.text,margin:"0 0 8px",letterSpacing:"-0.5px",lineHeight:"1.15",textWrap:"balance"}}>Your podcast companion is ready.</h1>
-                  <p style={{fontSize:"14px",color:T.textMuted,margin:0,fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.65",maxWidth:"440px"}}>Select your show, then choose a workflow — everything generated will match your voice and audience.</p>
+                <div style={{marginBottom:"36px"}}>
+                  <div style={{fontSize:"13px",fontWeight:"700",letterSpacing:"2.5px",textTransform:"uppercase",color:T.coral,marginBottom:"12px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Good morning, {displayName?displayName.split(" ")[0]:"there"}</div>
+                  <h1 style={{fontFamily:SF,fontSize:"48px",fontWeight:"normal",color:T.text,margin:"0 0 12px",letterSpacing:"-1px",lineHeight:"1.1",textWrap:"balance"}}>Your podcast companion is ready.</h1>
+                  <p style={{fontSize:"17px",color:T.textMuted,margin:0,fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.6",maxWidth:"520px"}}>Select your show, then choose a workflow — everything generated will match your voice and audience.</p>
                 </div>
 
                 {/* Show picker */}
@@ -2085,23 +2085,23 @@ The email should:
                     </div>
                   </div>
                 ):(
-                  <div style={{background:T.card,border:`1px solid ${T.cardBorder}`,borderRadius:"12px",padding:"16px 20px",maxWidth:"820px",marginBottom:"22px",display:"flex",alignItems:"center",gap:"14px",boxShadow:"0 1px 4px rgba(30,20,10,.05)"}}>
-                    <div style={{width:"22px",height:"22px",borderRadius:"50%",background:T.coral,color:"#fff",fontSize:"10px",fontWeight:"700",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>1</div>
-                    <div style={{fontSize:"10px",fontWeight:"700",letterSpacing:"2px",textTransform:"uppercase",color:T.textMuted,whiteSpace:"nowrap",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Select Show</div>
+                  <div style={{background:T.card,border:`1px solid ${T.cardBorder}`,borderRadius:"12px",padding:"18px 24px",marginBottom:"24px",display:"flex",alignItems:"center",gap:"16px",boxShadow:"0 1px 4px rgba(30,20,10,.05)"}}>
+                    <div style={{width:"26px",height:"26px",borderRadius:"50%",background:T.coral,color:"#fff",fontSize:"12px",fontWeight:"700",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>1</div>
+                    <div style={{fontSize:"12px",fontWeight:"700",letterSpacing:"2px",textTransform:"uppercase",color:T.textMuted,whiteSpace:"nowrap",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Select Show</div>
                     <div style={{flex:1,position:"relative"}}>
                       <select
                         value={show||""}
                         onChange={e=>{const k=e.target.value;if(k)setShow(k);else setShow(null);}}
                         className="sidebar-show-select"
-                        style={{width:"100%",appearance:"none",background:"#fff",border:`1px solid ${T.cardBorder}`,borderRadius:"8px",padding:"9px 32px 9px 13px",fontSize:"14px",fontWeight:"600",color:show?T.text:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",cursor:"pointer",outline:"none"}}>
+                        style={{width:"100%",appearance:"none",background:"#fff",border:`1px solid ${T.cardBorder}`,borderRadius:"8px",padding:"11px 36px 11px 15px",fontSize:"16px",fontWeight:"600",color:show?T.text:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",cursor:"pointer",outline:"none"}}>
                         <option value="">Choose a show…</option>
                         {[...Object.entries(availShows)].sort(([,a],[,b])=>a.name.localeCompare(b.name)).map(([k,s])=>(
                           <option key={k} value={k}>{s.name}</option>
                         ))}
                       </select>
-                      <span style={{position:"absolute",right:"11px",top:"50%",transform:"translateY(-50%)",pointerEvents:"none",color:T.textMuted,fontSize:"11px"}}>▾</span>
+                      <span style={{position:"absolute",right:"13px",top:"50%",transform:"translateY(-50%)",pointerEvents:"none",color:T.textMuted,fontSize:"12px"}}>▾</span>
                     </div>
-                    <div style={{fontSize:"11.5px",color:show?"#3A6B3A":T.textMuted,whiteSpace:"nowrap",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:show?"600":"400"}}>
+                    <div style={{fontSize:"13px",color:show?"#3A6B3A":T.textMuted,whiteSpace:"nowrap",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:show?"600":"400"}}>
                       {show?"DNA loaded ✓":"Show DNA loads automatically"}
                     </div>
                   </div>
@@ -2112,33 +2112,33 @@ The email should:
 
                   {/* Featured: Content Generation */}
                   {(showFull||showClips)&&(
-                  <div {...cardHover} style={{background:T.card,border:`1px solid ${T.cardBorder}`,borderRadius:"13px",overflow:"hidden",marginBottom:"13px",cursor:"pointer",boxShadow:"0 1px 4px rgba(30,20,10,.06),0 4px 14px rgba(30,20,10,.05)",transition:"box-shadow .16s,transform .16s,border-color .16s"}}>
+                  <div {...cardHover} style={{background:T.card,border:`1px solid ${T.cardBorder}`,borderRadius:"14px",overflow:"hidden",marginBottom:"16px",cursor:"pointer",boxShadow:"0 1px 4px rgba(30,20,10,.06),0 4px 14px rgba(30,20,10,.05)",transition:"box-shadow .16s,transform .16s,border-color .16s"}}>
                     <div style={{height:"2px",background:`linear-gradient(90deg,${T.coral},rgba(122,0,25,.2) 80%,transparent)`}}/>
-                    <div style={{padding:"15px 20px 13px",borderBottom:`1px solid ${T.cardBorder}`,display:"flex",alignItems:"center",justifyContent:"space-between",gap:"12px"}}>
-                      <div style={{display:"flex",alignItems:"center",gap:"10px"}}>
-                        <div style={{width:"36px",height:"36px",borderRadius:"8px",background:T.coralSoft,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="4" width="14" height="10" rx="1.5" stroke={T.coral} strokeWidth="1.5"/><path d="M5 4V3a3 3 0 016 0v1" stroke={T.coral} strokeWidth="1.5" strokeLinecap="round"/><path d="M1 8h14" stroke={T.coral} strokeWidth="1" strokeOpacity=".4"/></svg></div>
+                    <div style={{padding:"22px 28px 18px",borderBottom:`1px solid ${T.cardBorder}`,display:"flex",alignItems:"center",justifyContent:"space-between",gap:"16px"}}>
+                      <div style={{display:"flex",alignItems:"center",gap:"14px"}}>
+                        <div style={{width:"44px",height:"44px",borderRadius:"10px",background:T.coralSoft,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><svg width="20" height="20" viewBox="0 0 16 16" fill="none"><rect x="1" y="4" width="14" height="10" rx="1.5" stroke={T.coral} strokeWidth="1.5"/><path d="M5 4V3a3 3 0 016 0v1" stroke={T.coral} strokeWidth="1.5" strokeLinecap="round"/><path d="M1 8h14" stroke={T.coral} strokeWidth="1" strokeOpacity=".4"/></svg></div>
                         <div>
-                          <div style={{fontSize:"8px",fontWeight:"700",letterSpacing:"2px",textTransform:"uppercase",color:T.coral,marginBottom:"3px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Content Generation</div>
-                          <div style={{fontFamily:SF,fontSize:"15px",fontWeight:"normal",color:T.text,letterSpacing:"-0.1px"}}>Turn your transcript into a full content package</div>
+                          <div style={{fontSize:"11px",fontWeight:"700",letterSpacing:"2px",textTransform:"uppercase",color:T.coral,marginBottom:"4px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Content Generation</div>
+                          <div style={{fontFamily:SF,fontSize:"20px",fontWeight:"normal",color:T.text,letterSpacing:"-0.2px"}}>Turn your transcript into a full content package</div>
                         </div>
                       </div>
-                      <span style={{fontSize:"16px",color:T.cardBorder,flexShrink:0,transition:"transform .14s"}}>→</span>
+                      <span style={{fontSize:"18px",color:T.cardBorder,flexShrink:0}}>→</span>
                     </div>
-                    <div style={{padding:"13px 20px 18px"}}>
-                      <p style={{fontSize:"13px",color:T.textMuted,lineHeight:"1.65",margin:"0 0 13px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Paste your transcript and get show notes, YouTube, social, email, and blog — all written in your show's voice.</p>
-                      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"9px"}}>
+                    <div style={{padding:"18px 28px 24px"}}>
+                      <p style={{fontSize:"15px",color:T.textMuted,lineHeight:"1.65",margin:"0 0 16px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Paste your transcript and get show notes, YouTube, social, email, and blog — all written in your show's voice.</p>
+                      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"12px"}}>
                         {showFull&&(
                         <button onClick={()=>handleSidebarNav("full")} {...subBtnHover}
-                          style={{background:"#fff",border:`1px solid ${T.cardBorder}`,borderRadius:"8px",padding:"10px 12px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",transition:"border-color .13s"}}>
-                          <div style={{fontSize:"12px",fontWeight:"600",color:T.text,marginBottom:"2px"}}>Full Episode Package</div>
-                          <div style={{fontSize:"10.5px",color:T.textMuted,lineHeight:"1.4"}}>Show notes, YouTube, social, email &amp; blog</div>
+                          style={{background:"#fff",border:`1px solid ${T.cardBorder}`,borderRadius:"10px",padding:"14px 16px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",transition:"border-color .13s"}}>
+                          <div style={{fontSize:"14px",fontWeight:"600",color:T.text,marginBottom:"4px"}}>Full Episode Package</div>
+                          <div style={{fontSize:"12.5px",color:T.textMuted,lineHeight:"1.4"}}>Show notes, YouTube, social, email &amp; blog</div>
                         </button>
                         )}
                         {showClips&&(
                         <button onClick={()=>handleSidebarNav("clips")} {...subBtnHover}
-                          style={{background:"#fff",border:`1px solid ${T.cardBorder}`,borderRadius:"8px",padding:"10px 12px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",transition:"border-color .13s"}}>
-                          <div style={{fontSize:"12px",fontWeight:"600",color:T.text,marginBottom:"2px"}}>Clips &amp; Shorts</div>
-                          <div style={{fontSize:"10.5px",color:T.textMuted,lineHeight:"1.4"}}>Titles, captions &amp; hashtags per clip</div>
+                          style={{background:"#fff",border:`1px solid ${T.cardBorder}`,borderRadius:"10px",padding:"14px 16px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",transition:"border-color .13s"}}>
+                          <div style={{fontSize:"14px",fontWeight:"600",color:T.text,marginBottom:"4px"}}>Clips &amp; Shorts</div>
+                          <div style={{fontSize:"12.5px",color:T.textMuted,lineHeight:"1.4"}}>Titles, captions &amp; hashtags per clip</div>
                         </button>
                         )}
                       </div>
@@ -2147,23 +2147,23 @@ The email should:
                   )}
 
                   {/* 3-column row */}
-                  <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"13px"}}>
+                  <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"16px"}}>
 
                     {showEditor&&(
                     <div onClick={()=>handleSidebarNav("editor")} {...cardHover}
                       style={{background:T.card,border:`1px solid ${T.cardBorder}`,borderRadius:"13px",overflow:"hidden",cursor:"pointer",boxShadow:"0 1px 4px rgba(30,20,10,.06),0 4px 14px rgba(30,20,10,.05)",transition:"box-shadow .16s,transform .16s,border-color .16s"}}>
-                      <div style={{padding:"14px 18px 12px",borderBottom:`1px solid ${T.cardBorder}`,display:"flex",alignItems:"center",justifyContent:"space-between",gap:"10px"}}>
-                        <div style={{display:"flex",alignItems:"center",gap:"9px"}}>
-                          <div style={{width:"32px",height:"32px",borderRadius:"7px",background:"rgba(100,85,70,.09)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="2.5" width="8" height="9" rx="1" stroke="#7A5C4A" strokeWidth="1.4"/><path d="M9 5l4-2v8l-4-2V5z" stroke="#7A5C4A" strokeWidth="1.4" strokeLinejoin="round"/></svg></div>
+                      <div style={{padding:"20px 22px 16px",borderBottom:`1px solid ${T.cardBorder}`,display:"flex",alignItems:"center",justifyContent:"space-between",gap:"10px"}}>
+                        <div style={{display:"flex",alignItems:"center",gap:"12px"}}>
+                          <div style={{width:"38px",height:"38px",borderRadius:"9px",background:"rgba(100,85,70,.09)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><svg width="17" height="17" viewBox="0 0 14 14" fill="none"><rect x="1" y="2.5" width="8" height="9" rx="1" stroke="#7A5C4A" strokeWidth="1.4"/><path d="M9 5l4-2v8l-4-2V5z" stroke="#7A5C4A" strokeWidth="1.4" strokeLinejoin="round"/></svg></div>
                           <div>
-                            <div style={{fontSize:"8px",fontWeight:"700",letterSpacing:"2px",textTransform:"uppercase",color:"#5A4F45",marginBottom:"3px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Editorial</div>
-                            <div style={{fontFamily:SF,fontSize:"14px",fontWeight:"normal",color:T.text}}>Editor briefs &amp; clip guidance</div>
+                            <div style={{fontSize:"10px",fontWeight:"700",letterSpacing:"2px",textTransform:"uppercase",color:"#5A4F45",marginBottom:"4px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Editorial</div>
+                            <div style={{fontFamily:SF,fontSize:"17px",fontWeight:"normal",color:T.text}}>Editor briefs &amp; clip guidance</div>
                           </div>
                         </div>
-                        <span style={{fontSize:"14px",color:T.cardBorder,flexShrink:0}}>→</span>
+                        <span style={{fontSize:"16px",color:T.cardBorder,flexShrink:0}}>→</span>
                       </div>
-                      <div style={{padding:"11px 18px 16px"}}>
-                        <p style={{fontSize:"12.5px",color:T.textMuted,lineHeight:"1.65",margin:0,fontFamily:"'DM Sans', system-ui, sans-serif"}}>Hook picks, timestamps, and a complete brief for your editor — built from your show's DNA.</p>
+                      <div style={{padding:"14px 22px 20px"}}>
+                        <p style={{fontSize:"14px",color:T.textMuted,lineHeight:"1.65",margin:0,fontFamily:"'DM Sans', system-ui, sans-serif"}}>Hook picks, timestamps, and a complete brief for your editor — built from your show's DNA.</p>
                       </div>
                     </div>
                     )}
@@ -2171,18 +2171,18 @@ The email should:
                     {showPrep&&(
                     <div onClick={()=>handleSidebarNav("prep")} {...cardHover}
                       style={{background:T.card,border:`1px solid ${T.cardBorder}`,borderRadius:"13px",overflow:"hidden",cursor:"pointer",boxShadow:"0 1px 4px rgba(30,20,10,.06),0 4px 14px rgba(30,20,10,.05)",transition:"box-shadow .16s,transform .16s,border-color .16s"}}>
-                      <div style={{padding:"14px 18px 12px",borderBottom:`1px solid ${T.cardBorder}`,display:"flex",alignItems:"center",justifyContent:"space-between",gap:"10px"}}>
-                        <div style={{display:"flex",alignItems:"center",gap:"9px"}}>
-                          <div style={{width:"32px",height:"32px",borderRadius:"7px",background:"rgba(60,70,90,.08)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><svg width="13" height="14" viewBox="0 0 13 14" fill="none"><rect x="1" y="1.5" width="11" height="11" rx="1.5" stroke="#485060" strokeWidth="1.4"/><path d="M3.5 5h6M3.5 7.5h6M3.5 10h4" stroke="#485060" strokeWidth="1.2" strokeLinecap="round"/></svg></div>
+                      <div style={{padding:"20px 22px 16px",borderBottom:`1px solid ${T.cardBorder}`,display:"flex",alignItems:"center",justifyContent:"space-between",gap:"10px"}}>
+                        <div style={{display:"flex",alignItems:"center",gap:"12px"}}>
+                          <div style={{width:"38px",height:"38px",borderRadius:"9px",background:"rgba(60,70,90,.08)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><svg width="16" height="17" viewBox="0 0 13 14" fill="none"><rect x="1" y="1.5" width="11" height="11" rx="1.5" stroke="#485060" strokeWidth="1.4"/><path d="M3.5 5h6M3.5 7.5h6M3.5 10h4" stroke="#485060" strokeWidth="1.2" strokeLinecap="round"/></svg></div>
                           <div>
-                            <div style={{fontSize:"8px",fontWeight:"700",letterSpacing:"2px",textTransform:"uppercase",color:"#485060",marginBottom:"3px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Episode Planning</div>
-                            <div style={{fontFamily:SF,fontSize:"14px",fontWeight:"normal",color:T.text}}>Plan before you record</div>
+                            <div style={{fontSize:"10px",fontWeight:"700",letterSpacing:"2px",textTransform:"uppercase",color:"#485060",marginBottom:"4px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Episode Planning</div>
+                            <div style={{fontFamily:SF,fontSize:"17px",fontWeight:"normal",color:T.text}}>Plan before you record</div>
                           </div>
                         </div>
-                        <span style={{fontSize:"14px",color:T.cardBorder,flexShrink:0}}>→</span>
+                        <span style={{fontSize:"16px",color:T.cardBorder,flexShrink:0}}>→</span>
                       </div>
-                      <div style={{padding:"11px 18px 16px"}}>
-                        <p style={{fontSize:"12.5px",color:T.textMuted,lineHeight:"1.65",margin:0,fontFamily:"'DM Sans', system-ui, sans-serif"}}>Scripted hooks, talking points, and a full structure — before the mic is on.</p>
+                      <div style={{padding:"14px 22px 20px"}}>
+                        <p style={{fontSize:"14px",color:T.textMuted,lineHeight:"1.65",margin:0,fontFamily:"'DM Sans', system-ui, sans-serif"}}>Scripted hooks, talking points, and a full structure — before the mic is on.</p>
                       </div>
                     </div>
                     )}
@@ -2190,18 +2190,18 @@ The email should:
                     {showGuest&&(
                     <div onClick={()=>handleSidebarNav("guest")} {...cardHover}
                       style={{background:T.card,border:`1px solid ${T.cardBorder}`,borderRadius:"13px",overflow:"hidden",cursor:"pointer",boxShadow:"0 1px 4px rgba(30,20,10,.06),0 4px 14px rgba(30,20,10,.05)",transition:"box-shadow .16s,transform .16s,border-color .16s"}}>
-                      <div style={{padding:"14px 18px 12px",borderBottom:`1px solid ${T.cardBorder}`,display:"flex",alignItems:"center",justifyContent:"space-between",gap:"10px"}}>
-                        <div style={{display:"flex",alignItems:"center",gap:"9px"}}>
-                          <div style={{width:"32px",height:"32px",borderRadius:"7px",background:"rgba(30,30,30,.06)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><svg width="13" height="14" viewBox="0 0 13 14" fill="none"><rect x="4" y="1" width="5" height="7" rx="2.5" stroke="#707070" strokeWidth="1.4"/><path d="M1.5 7.5A5 5 0 0011.5 7.5" stroke="#707070" strokeWidth="1.4" strokeLinecap="round"/><line x1="6.5" y1="12.5" x2="6.5" y2="10" stroke="#707070" strokeWidth="1.4" strokeLinecap="round"/></svg></div>
+                      <div style={{padding:"20px 22px 16px",borderBottom:`1px solid ${T.cardBorder}`,display:"flex",alignItems:"center",justifyContent:"space-between",gap:"10px"}}>
+                        <div style={{display:"flex",alignItems:"center",gap:"12px"}}>
+                          <div style={{width:"38px",height:"38px",borderRadius:"9px",background:"rgba(30,30,30,.06)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><svg width="16" height="17" viewBox="0 0 13 14" fill="none"><rect x="4" y="1" width="5" height="7" rx="2.5" stroke="#707070" strokeWidth="1.4"/><path d="M1.5 7.5A5 5 0 0011.5 7.5" stroke="#707070" strokeWidth="1.4" strokeLinecap="round"/><line x1="6.5" y1="12.5" x2="6.5" y2="10" stroke="#707070" strokeWidth="1.4" strokeLinecap="round"/></svg></div>
                           <div>
-                            <div style={{fontSize:"8px",fontWeight:"700",letterSpacing:"2px",textTransform:"uppercase",color:"#707070",marginBottom:"3px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Podcast Assistant</div>
-                            <div style={{fontFamily:SF,fontSize:"14px",fontWeight:"normal",color:T.text,display:"flex",alignItems:"baseline",gap:"7px"}}>Guest Finder <span style={{fontFamily:"'DM Sans', system-ui, sans-serif",fontSize:"7.5px",fontWeight:"800",letterSpacing:".8px",background:T.coral,color:"#fff",padding:"2px 5px",borderRadius:"3px",verticalAlign:"middle"}}>NEW</span></div>
+                            <div style={{fontSize:"10px",fontWeight:"700",letterSpacing:"2px",textTransform:"uppercase",color:"#707070",marginBottom:"4px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Podcast Assistant</div>
+                            <div style={{fontFamily:SF,fontSize:"17px",fontWeight:"normal",color:T.text,display:"flex",alignItems:"baseline",gap:"8px"}}>Guest Finder <span style={{fontFamily:"'DM Sans', system-ui, sans-serif",fontSize:"8px",fontWeight:"800",letterSpacing:".8px",background:T.coral,color:"#fff",padding:"2px 6px",borderRadius:"3px",verticalAlign:"middle"}}>NEW</span></div>
                           </div>
                         </div>
-                        <span style={{fontSize:"14px",color:T.cardBorder,flexShrink:0}}>→</span>
+                        <span style={{fontSize:"16px",color:T.cardBorder,flexShrink:0}}>→</span>
                       </div>
-                      <div style={{padding:"11px 18px 16px"}}>
-                        <p style={{fontSize:"12.5px",color:T.textMuted,lineHeight:"1.65",margin:0,fontFamily:"'DM Sans', system-ui, sans-serif"}}>Find shows your host should appear on — pitches drafted from your audience DNA.</p>
+                      <div style={{padding:"14px 22px 20px"}}>
+                        <p style={{fontSize:"14px",color:T.textMuted,lineHeight:"1.65",margin:0,fontFamily:"'DM Sans', system-ui, sans-serif"}}>Find shows your host should appear on — pitches drafted from your audience DNA.</p>
                       </div>
                     </div>
                     )}
