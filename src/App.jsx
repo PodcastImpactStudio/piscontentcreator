@@ -1773,12 +1773,14 @@ The email should:
       const agentPrompt = `Create highlights from these timestamps. For each clip, add a marker or comment at the start timestamp so the editor can find them easily:\n\n${clipLines}\n\nLabel each one as CLIP 1, CLIP 2, etc.`;
 
       // Call our Vercel proxy instead of Descript directly (avoids CORS)
+      const showApiKey = shows[show]?.descriptApiKey || descriptApiKey;
       const r = await fetch("/api/descript", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
         projectId: descriptProjectId.trim().split("/").pop().split("?")[0],
-        prompt: agentPrompt
+        prompt: agentPrompt,
+        apiKey: showApiKey,
       })
       });
       const j = await r.json();

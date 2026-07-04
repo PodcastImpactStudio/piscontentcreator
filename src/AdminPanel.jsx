@@ -2025,6 +2025,24 @@ ${epfPasteText.substring(0, 8000)}`;
                         </div>
                       ))}
                     </div>
+
+                    {/* Descript API Key */}
+                    <div style={{ marginTop: "32px", padding: "20px 24px", background: T.surface, border: "1px solid " + T.cardBorder, borderRadius: "12px" }}>
+                      <div style={{ fontSize: "15px", fontWeight: "700", color: T.text, fontFamily: FF, marginBottom: "4px" }}>Descript API Key</div>
+                      <div style={{ fontSize: "13px", color: T.textMuted, fontFamily: FF, marginBottom: "12px", lineHeight: "1.6" }}>
+                        Used to send clip timestamps directly to this show's Descript project. Get your key from Descript → Settings → API Tokens.
+                      </div>
+                      <input
+                        type="password"
+                        value={form.descriptApiKey || ""}
+                        onChange={e => setForm(p => ({ ...p, descriptApiKey: e.target.value }))}
+                        placeholder="descript_•••••••••••••••••••"
+                        style={{ width: "100%", padding: "11px 14px", border: "1px solid " + T.cardBorder, borderRadius: "8px", background: T.card, color: T.text, fontSize: "14px", fontFamily: FF, outline: "none", boxSizing: "border-box" }}
+                      />
+                      <div style={{ fontSize: "12px", color: T.textMuted, marginTop: "6px", fontFamily: FF }}>
+                        Saved per show — each show can have its own Descript account.
+                      </div>
+                    </div>
                   </div>
                 )}
 
