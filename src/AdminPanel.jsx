@@ -1556,22 +1556,29 @@ ${epfPasteText.substring(0, 8000)}`;
       `}</style>
 
       {/* ── TOP BAR ── */}
-      <div style={{ height: "56px", background: "#1A1A1A", borderBottom: "1px solid #2E2E2E", display: "flex", alignItems: "center", padding: "0 24px", flexShrink: 0, gap: "16px" }}>
-        <button onClick={onClose}
-          style={{ display: "flex", alignItems: "center", gap: "7px", background: T.coral, border: "none", borderRadius: "7px", color: "#fff", fontSize: "11px", fontWeight: "700", letterSpacing: ".8px", textTransform: "uppercase", padding: "8px 14px", cursor: "pointer", fontFamily: FF, flexShrink: 0 }}>
-          ← Back to Studio
-        </button>
-        <div style={{ flex: 1, display: "flex", alignItems: "center", gap: "8px" }}>
-          <span style={{ fontSize: "10px", fontWeight: "700", letterSpacing: "1.8px", textTransform: "uppercase", color: T.coral, fontFamily: FF }}>
-            {adminView === "settings" ? "Workspace & Team" : "Podcast Settings"}
-          </span>
-          {adminView !== "settings" && selKey && selKey !== "__new__" && shows[selKey]?.name && (
-            <><span style={{ color: "#333" }}>›</span><span style={{ fontSize: "13px", color: "#CCCCCC", fontFamily: FF }}>{shows[selKey].name}</span></>
-          )}
+      <div style={{ height: "56px", background: "#1A1A1A", borderBottom: "1px solid #2E2E2E", display: "flex", alignItems: "center", flexShrink: 0 }}>
+        {/* Logo block — same width as sidebar */}
+        <div style={{ width: "240px", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", borderRight: "1px solid #2E2E2E", height: "100%", padding: "0 16px" }}>
+          <img src="/logo-nav.png" alt="Podcast Impact Content Studio" style={{ height: "40px", objectFit: "contain", width: "100%" }} />
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <div style={{ width: "28px", height: "28px", borderRadius: "50%", background: T.coral, color: "#fff", fontSize: "11px", fontWeight: "700", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{adminUserInitial}</div>
-          <span style={{ fontSize: "12px", color: "#CCCCCC", fontFamily: FF }}>{adminUserName}</span>
+        {/* Breadcrumb + actions */}
+        <div style={{ flex: 1, display: "flex", alignItems: "center", padding: "0 24px", gap: "16px" }}>
+          <button onClick={onClose}
+            style={{ display: "flex", alignItems: "center", gap: "7px", background: T.coral, border: "none", borderRadius: "7px", color: "#fff", fontSize: "11px", fontWeight: "700", letterSpacing: ".8px", textTransform: "uppercase", padding: "8px 14px", cursor: "pointer", fontFamily: FF, flexShrink: 0 }}>
+            ← Back to Studio
+          </button>
+          <div style={{ flex: 1, display: "flex", alignItems: "center", gap: "8px" }}>
+            <span style={{ fontSize: "10px", fontWeight: "700", letterSpacing: "1.8px", textTransform: "uppercase", color: T.coral, fontFamily: FF }}>
+              {adminView === "settings" ? "Workspace & Team" : "Podcast Settings"}
+            </span>
+            {adminView !== "settings" && selKey && selKey !== "__new__" && shows[selKey]?.name && (
+              <><span style={{ color: "#333" }}>›</span><span style={{ fontSize: "13px", color: "#CCCCCC", fontFamily: FF }}>{shows[selKey].name}</span></>
+            )}
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <div style={{ width: "28px", height: "28px", borderRadius: "50%", background: T.coral, color: "#fff", fontSize: "11px", fontWeight: "700", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{adminUserInitial}</div>
+            <span style={{ fontSize: "12px", color: "#CCCCCC", fontFamily: FF }}>{adminUserName}</span>
+          </div>
         </div>
       </div>
 
