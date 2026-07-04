@@ -21,6 +21,7 @@ const T = {
 };
 const FF = "'DM Sans', system-ui, sans-serif";
 const PF = "'DM Sans', system-ui, sans-serif";
+const SF = "Georgia, 'Times New Roman', serif";
 const LS = { fontFamily: FF };
 const GA = { fontFamily: FF };
 
@@ -555,7 +556,7 @@ function SettingsView({ shows, globalSettings, setGlobalSettings, saveGlobalSett
         {activeSection === "integrations" && (
           <div style={{ maxWidth: "680px" }}>
             <div style={{ marginBottom: "28px" }}>
-              <div style={{ fontSize: "28px", fontWeight: "600", color: T.text, marginBottom: "6px", fontFamily: PF }}>Integrations</div>
+              <div style={{ fontSize: "28px", fontWeight: "normal", color: T.text, marginBottom: "6px", fontFamily: SF }}>Integrations</div>
               <div style={{ fontSize: "15px", color: T.textMuted, fontFamily: FF }}>Connect external tools to enhance your workflow.</div>
             </div>
             {/* Content Schedule URL */}
@@ -621,7 +622,7 @@ function SettingsView({ shows, globalSettings, setGlobalSettings, saveGlobalSett
         {activeSection === "workspace" && (
           <div style={{ maxWidth: "680px" }}>
             <div style={{ marginBottom: "28px" }}>
-              <div style={{ fontSize: "28px", fontWeight: "600", color: T.text, marginBottom: "6px", fontFamily: PF }}>Workspace</div>
+              <div style={{ fontSize: "28px", fontWeight: "normal", color: T.text, marginBottom: "6px", fontFamily: SF }}>Workspace</div>
               <div style={{ fontSize: "15px", color: T.textMuted, fontStyle: "italic" }}>Configure your production workspace.</div>
             </div>
 
@@ -690,7 +691,7 @@ function SettingsView({ shows, globalSettings, setGlobalSettings, saveGlobalSett
           return(
           <div style={{ maxWidth: "680px" }}>
             <div style={{ marginBottom: "28px" }}>
-              <div style={{ fontSize: "28px", fontWeight: "600", color: T.text, marginBottom: "6px", fontFamily: PF }}>Team</div>
+              <div style={{ fontSize: "28px", fontWeight: "normal", color: T.text, marginBottom: "6px", fontFamily: SF }}>Team</div>
               <div style={{ fontSize: "15px", color: T.textMuted, fontStyle: "italic" }}>Manage who has access to this workspace.</div>
             </div>
             {/* Role guide */}
@@ -886,7 +887,7 @@ function SettingsView({ shows, globalSettings, setGlobalSettings, saveGlobalSett
         {activeSection === "billing" && (
           <div style={{ maxWidth: "680px" }}>
             <div style={{ marginBottom: "28px" }}>
-              <div style={{ fontSize: "28px", fontWeight: "600", color: T.text, marginBottom: "6px", fontFamily: PF }}>Billing</div>
+              <div style={{ fontSize: "28px", fontWeight: "normal", color: T.text, marginBottom: "6px", fontFamily: SF }}>Billing</div>
               <div style={{ fontSize: "15px", color: T.textMuted, fontStyle: "italic" }}>Manage your subscription and usage.</div>
             </div>
             <div style={{ background: T.card, border: "1px solid " + T.cardBorder, borderRadius: "12px", padding: "24px" }}>
@@ -963,7 +964,7 @@ function AccessCodesSection({ supabase, T, PF, FF, inp }) {
   return (
     <div style={{ maxWidth: "680px" }}>
       <div style={{ marginBottom: "28px" }}>
-        <div style={{ fontSize: "28px", fontWeight: "600", color: T.text, marginBottom: "6px", fontFamily: PF }}>Access Codes</div>
+        <div style={{ fontSize: "28px", fontWeight: "normal", color: T.text, marginBottom: "6px", fontFamily: SF }}>Access Codes</div>
         <div style={{ fontSize: "15px", color: T.textMuted, fontStyle: "italic" }}>Control who can sign up. Every new account requires a valid code.</div>
       </div>
 
@@ -1644,7 +1645,7 @@ ${epfPasteText.substring(0, 8000)}`;
             <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 60px" }}>
               <div style={{ maxWidth: "760px", width: "100%" }}>
                 <div style={{ textAlign: "center", marginBottom: "48px" }}>
-                  <div style={{ fontSize: "30px", fontWeight: "700", color: T.text, fontFamily: PF, marginBottom: "10px" }}>How would you like to set up your show?</div>
+                  <div style={{ fontSize: "30px", fontWeight: "normal", color: T.text, fontFamily: SF, marginBottom: "10px" }}>How would you like to set up your show?</div>
                   <div style={{ fontSize: "16px", color: T.textSecondary, fontFamily: FF, lineHeight: "1.5" }}>
                     The more we know about your show, the more your content will sound like you.
                   </div>
@@ -1708,7 +1709,7 @@ ${epfPasteText.substring(0, 8000)}`;
             <div style={{ maxWidth: "640px", width: "100%" }}>
               <button onClick={() => setNewShowPath(null)} style={{ background: "none", border: "none", color: T.textMuted, fontSize: "13px", cursor: "pointer", fontFamily: FF, marginBottom: "24px", padding: 0, display: "flex", alignItems: "center", gap: "6px" }}>← Back</button>
               <div style={{ marginBottom: "28px" }}>
-                <div style={{ fontSize: "26px", fontWeight: "700", color: T.text, fontFamily: PF, marginBottom: "8px" }}>Paste your Show DNA</div>
+                <div style={{ fontSize: "26px", fontWeight: "normal", color: T.text, fontFamily: SF, marginBottom: "8px" }}>Paste your Show DNA</div>
                 <div style={{ fontSize: "14px", color: T.textSecondary, fontFamily: FF, lineHeight: "1.6" }}>Paste your existing Show DNA doc or detailed show brief below. AI will read it and fill in every field automatically.</div>
               </div>
               <textarea value={rawDna} onChange={e => setRawDna(e.target.value)}
@@ -1730,7 +1731,7 @@ ${epfPasteText.substring(0, 8000)}`;
             <div style={{ maxWidth: "640px", width: "100%" }}>
               <button onClick={() => setNewShowPath(null)} style={{ background: "none", border: "none", color: T.textMuted, fontSize: "13px", cursor: "pointer", fontFamily: FF, marginBottom: "24px", padding: 0, display: "flex", alignItems: "center", gap: "6px" }}>← Back</button>
               <div style={{ marginBottom: "28px" }}>
-                <div style={{ fontSize: "26px", fontWeight: "700", color: T.text, fontFamily: PF, marginBottom: "8px" }}>Paste episode transcripts</div>
+                <div style={{ fontSize: "26px", fontWeight: "normal", color: T.text, fontFamily: SF, marginBottom: "8px" }}>Paste episode transcripts</div>
                 <div style={{ fontSize: "14px", color: T.textSecondary, fontFamily: FF, lineHeight: "1.6" }}>Paste 3–5 of your best episode transcripts below (or upload .txt / .docx files). AI will draft your show's voice, audience, and style automatically.</div>
               </div>
               <div onDragOver={e => { e.preventDefault(); setTranscriptDragging(true); }} onDragLeave={() => setTranscriptDragging(false)} onDrop={handleTranscriptDrop}
@@ -1800,7 +1801,7 @@ ${epfPasteText.substring(0, 8000)}`;
                 <div onClick={() => !deleting && setDeleteConfirm(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: "20px" }}>
                   <div onClick={e => e.stopPropagation()} style={{ background: T.card, border: "1px solid " + T.cardBorder, borderRadius: "14px", padding: "28px", maxWidth: "460px", width: "100%", boxShadow: "0 24px 64px rgba(0,0,0,0.3)" }}>
                     <div style={{ fontSize: "32px", marginBottom: "12px" }}>🗑</div>
-                    <div style={{ fontSize: "20px", fontWeight: "700", color: T.text, marginBottom: "8px", fontFamily: PF }}>Delete "{form?.name || shows[selKey]?.name || "this show"}"?</div>
+                    <div style={{ fontSize: "20px", fontWeight: "normal", color: T.text, marginBottom: "8px", fontFamily: SF }}>Delete "{form?.name || shows[selKey]?.name || "this show"}"?</div>
                     <div style={{ background: "#D94F4F14", border: "1px solid #D94F4F44", borderRadius: "8px", padding: "12px 14px", marginBottom: "20px" }}>
                       <div style={{ fontSize: "14px", color: "#C0392B", fontWeight: "700", fontFamily: FF, marginBottom: "4px" }}>⚠️ This cannot be undone.</div>
                       <div style={{ fontSize: "13px", color: T.textSecondary, fontFamily: FF, lineHeight: "1.5" }}>This permanently deletes the show and all of its DNA — voice, audience, platforms, show notes builder, episode formats, and boilerplate. There is no way to get it back. You'll need to rebuild it from scratch.</div>
@@ -1881,7 +1882,7 @@ ${epfPasteText.substring(0, 8000)}`;
                 {tab === "basic" && (
                   <div>
                     <div style={{ marginBottom: "32px" }}>
-                      <div style={{ fontSize: "24px", fontWeight: "700", color: T.text, fontFamily: PF, marginBottom: "6px" }}>Basic Info</div>
+                      <div style={{ fontSize: "24px", fontWeight: "normal", color: T.text, fontFamily: SF, marginBottom: "6px" }}>Basic Info</div>
                       <div style={{ fontSize: "14px", color: T.textMuted, fontFamily: FF }}>Core show details used across all generated content.</div>
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
@@ -1911,7 +1912,7 @@ ${epfPasteText.substring(0, 8000)}`;
                 {tab === "voice" && (
                   <div>
                     <div style={{ marginBottom: "32px" }}>
-                      <div style={{ fontSize: "24px", fontWeight: "700", color: T.text, fontFamily: PF, marginBottom: "6px" }}>Voice &amp; Tone</div>
+                      <div style={{ fontSize: "24px", fontWeight: "normal", color: T.text, fontFamily: SF, marginBottom: "6px" }}>Voice &amp; Tone</div>
                       <div style={{ fontSize: "14px", color: T.textMuted, fontFamily: FF }}>How this show sounds — the personality, energy, and language that makes it distinct.</div>
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
@@ -1930,7 +1931,7 @@ ${epfPasteText.substring(0, 8000)}`;
                 {tab === "audience" && (
                   <div>
                     <div style={{ marginBottom: "32px" }}>
-                      <div style={{ fontSize: "24px", fontWeight: "700", color: T.text, fontFamily: PF, marginBottom: "6px" }}>Audience</div>
+                      <div style={{ fontSize: "24px", fontWeight: "normal", color: T.text, fontFamily: SF, marginBottom: "6px" }}>Audience</div>
                       <div style={{ fontSize: "14px", color: T.textMuted, fontFamily: FF }}>Who this show is made for — used to write hooks, permission slips, and episode structure.</div>
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
@@ -1955,7 +1956,7 @@ ${epfPasteText.substring(0, 8000)}`;
                 {tab === "platforms" && (
                   <div>
                     <div style={{ marginBottom: "32px" }}>
-                      <div style={{ fontSize: "24px", fontWeight: "700", color: T.text, fontFamily: PF, marginBottom: "6px" }}>Platforms</div>
+                      <div style={{ fontSize: "24px", fontWeight: "normal", color: T.text, fontFamily: SF, marginBottom: "6px" }}>Platforms</div>
                       <div style={{ fontSize: "14px", color: T.textMuted, fontFamily: FF }}>Select every platform this show publishes to. Content will be generated and optimized for each selected platform.</div>
                     </div>
                     <PlatformHub platforms={form.platforms || DEFAULT_PLATFORMS} onChange={pl => setForm(p => ({ ...p, platforms: pl }))} />
@@ -1965,7 +1966,7 @@ ${epfPasteText.substring(0, 8000)}`;
                 {tab === "snnotes" && (
                   <div>
                     <div style={{ marginBottom: "32px" }}>
-                      <div style={{ fontSize: "24px", fontWeight: "700", color: T.text, fontFamily: PF, marginBottom: "6px" }}>Show Notes</div>
+                      <div style={{ fontSize: "24px", fontWeight: "normal", color: T.text, fontFamily: SF, marginBottom: "6px" }}>Show Notes</div>
                       <div style={{ fontSize: "14px", color: T.textMuted, fontFamily: FF }}>Toggle which elements to include and drag to set their order.</div>
                     </div>
                     <SNBuilder elements={form.snElements} onChange={el => setForm(p => ({ ...p, snElements: el }))} />
@@ -1975,7 +1976,7 @@ ${epfPasteText.substring(0, 8000)}`;
                 {tab === "boilerplate" && (
                   <div>
                     <div style={{ marginBottom: "32px" }}>
-                      <div style={{ fontSize: "24px", fontWeight: "700", color: T.text, fontFamily: PF, marginBottom: "6px" }}>Boilerplate</div>
+                      <div style={{ fontSize: "24px", fontWeight: "normal", color: T.text, fontFamily: SF, marginBottom: "6px" }}>Boilerplate</div>
                       <div style={{ fontSize: "14px", color: T.textMuted, fontFamily: FF }}>Automatically appended to Show Notes and YouTube descriptions.</div>
                     </div>
                     <BoilerplateEditor value={form.bp} onChange={v => setForm(p => ({ ...p, bp: v }))} />
@@ -1985,7 +1986,7 @@ ${epfPasteText.substring(0, 8000)}`;
                 {tab === "editing" && (
                   <div>
                     <div style={{ marginBottom: "32px" }}>
-                      <div style={{ fontSize: "24px", fontWeight: "700", color: T.text, fontFamily: PF, marginBottom: "6px" }}>Editor</div>
+                      <div style={{ fontSize: "24px", fontWeight: "normal", color: T.text, fontFamily: SF, marginBottom: "6px" }}>Editor</div>
                       <div style={{ fontSize: "14px", color: T.textMuted, fontFamily: FF }}>Set the editing standard for this show. Editors will see this level as a coaching brief in the Editor Companion.</div>
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
@@ -2010,7 +2011,7 @@ ${epfPasteText.substring(0, 8000)}`;
                 {tab === "epprep" && (
                   <div>
                     <div style={{ marginBottom: "32px" }}>
-                      <div style={{ fontSize: "24px", fontWeight: "700", color: T.text, fontFamily: PF, marginBottom: "6px" }}>Episode Prep</div>
+                      <div style={{ fontSize: "24px", fontWeight: "normal", color: T.text, fontFamily: SF, marginBottom: "6px" }}>Episode Prep</div>
                       <div style={{ fontSize: "14px", color: T.textMuted, fontFamily: FF }}>Story mission and permission slips — used verbatim in episode structure and closing.</div>
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
@@ -2031,7 +2032,7 @@ ${epfPasteText.substring(0, 8000)}`;
                 {tab === "formats" && (
                   <div>
                     <div style={{ marginBottom: "32px" }}>
-                      <div style={{ fontSize: "24px", fontWeight: "700", color: T.text, fontFamily: PF, marginBottom: "6px" }}>Episode Formats</div>
+                      <div style={{ fontSize: "24px", fontWeight: "normal", color: T.text, fontFamily: SF, marginBottom: "6px" }}>Episode Formats</div>
                       <div style={{ fontSize: "14px", color: T.textMuted, fontFamily: FF }}>{(form.episodeFormats||[]).length} format{(form.episodeFormats||[]).length !== 1 ? "s" : ""} configured for this show.</div>
                     </div>
 
@@ -2172,7 +2173,7 @@ ${epfPasteText.substring(0, 8000)}`;
                 {tab === "airules" && (
                   <div>
                     <div style={{ marginBottom: "28px" }}>
-                      <div style={{ fontSize: "24px", fontWeight: "700", color: T.text, fontFamily: PF, marginBottom: "6px" }}>AI Rules</div>
+                      <div style={{ fontSize: "24px", fontWeight: "normal", color: T.text, fontFamily: SF, marginBottom: "6px" }}>AI Rules</div>
                       <div style={{ fontSize: "14px", color: T.textMuted, fontFamily: FF, lineHeight: "1.6" }}>
                         Define rules that fire automatically when your transcript matches a trigger phrase. Use these for episode types, recurring segments, or special formatting instructions the AI should apply when it detects a certain kind of episode.
                       </div>
