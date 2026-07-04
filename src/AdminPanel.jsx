@@ -1791,7 +1791,7 @@ ${epfPasteText.substring(0, 8000)}`;
                   </button>
                   <button onClick={handleSave} disabled={saving}
                     style={{ padding: "8px 20px", background: T.coral, border: "none", borderRadius: "6px", color: "#fff", fontSize: "13px", fontWeight: "700", cursor: saving ? "not-allowed" : "pointer", fontFamily: FF, letterSpacing: "0.5px", opacity: saving ? 0.6 : 1, whiteSpace: "nowrap" }}>
-                    {saving ? "Saving..." : "Save Show →"}
+                    {saving ? "Saving..." : "Save Show"}
                   </button>
                 </div>
               </div>
