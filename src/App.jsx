@@ -1902,12 +1902,12 @@ The email should:
           if(!navItems.length) return null;
           return(
           <div style={{padding:"8px 0",borderBottom:"1px solid #2E2E2E"}}>
-            <div style={{fontSize:"10px",color:"#555555",letterSpacing:"2px",textTransform:"uppercase",padding:"4px 16px 6px",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600"}}>NAVIGATE</div>
+            <div style={{fontSize:"12px",color:"#555555",letterSpacing:"2px",textTransform:"uppercase",padding:"4px 16px 6px",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600"}}>NAVIGATE</div>
             {navItems.map(item=>{
               const isActive = item.section==="home" ? step==="welcome" : item.section==="create" ? (mode==="full"||mode==="clips") : item.section==="guest" ? mode==="guest" : mode===item.section;
               return(
               <button key={item.label} onClick={item.action}
-                style={{width:"100%",padding:"9px 16px",background:isActive?"#2E2E2E":"transparent",border:"none",borderLeft:`3px solid ${isActive?T.coral:"transparent"}`,color:isActive?"#FFFFFF":"#8A8A8A",fontSize:"13px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",display:"flex",alignItems:"center",gap:"8px",transition:"all .15s"}}
+                style={{width:"100%",padding:"10px 16px",background:isActive?"#2E2E2E":"transparent",border:"none",borderLeft:`3px solid ${isActive?T.coral:"transparent"}`,color:isActive?"#FFFFFF":"#8A8A8A",fontSize:"15px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",display:"flex",alignItems:"center",gap:"10px",transition:"all .15s"}}
                 onMouseEnter={e=>{if(!isActive){e.currentTarget.style.background="#252525";e.currentTarget.style.color="#CCCCCC";}}}
                 onMouseLeave={e=>{if(!isActive){e.currentTarget.style.background="transparent";e.currentTarget.style.color="#8A8A8A";}}}>
                 <span style={{width:"6px",height:"6px",borderRadius:"50%",background:isActive?T.coral:"#444",flexShrink:0,display:"inline-block"}}/>
@@ -1939,7 +1939,7 @@ The email should:
           ].map(item=>(
             <button key={item.label} onClick={item.action}
               className="sidebar-nav-item"
-              style={{width:"100%",padding:"9px 16px",background:"transparent",border:"none",borderLeft:"3px solid transparent",color:"#8A8A8A",fontSize:"13px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",display:"block"}}>
+              style={{width:"100%",padding:"10px 16px",background:"transparent",border:"none",borderLeft:"3px solid transparent",color:"#8A8A8A",fontSize:"15px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",display:"block"}}>
               {item.label}
             </button>
           ))}
@@ -1949,7 +1949,7 @@ The email should:
           <button
             className="sidebar-nav-item"
             onClick={()=>isAdmin?setShowAdmin(true):setShowProfile(true)}
-            style={{width:"100%",padding:"9px 16px",background:"transparent",border:"none",borderLeft:"3px solid transparent",color:"#FFFFFF",fontSize:"13px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",display:"block"}}>
+            style={{width:"100%",padding:"10px 16px",background:"transparent",border:"none",borderLeft:"3px solid transparent",color:"#FFFFFF",fontSize:"15px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",display:"block"}}>
             Settings
           </button>
           <div style={{padding:"8px 16px 0"}}>
@@ -1959,7 +1959,7 @@ The email should:
                 style={{width:"100%",padding:"8px 0",background:"transparent",border:"none",cursor:"pointer",display:"flex",alignItems:"center",gap:"10px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>
                 <div style={{width:"30px",height:"30px",borderRadius:"50%",background:T.coral,color:"#fff",fontSize:"13px",fontWeight:"700",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{userInitial}</div>
                 <div style={{flex:1,overflow:"hidden",textAlign:"left"}}>
-                  <div style={{fontSize:"13px",color:"#FFFFFF",fontWeight:"500",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{displayName||currentUser?.email}</div>
+                  <div style={{fontSize:"15px",color:"#FFFFFF",fontWeight:"500",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{displayName||currentUser?.email}</div>
                 </div>
                 <div style={{fontSize:"14px",color:"#6B6B6B",flexShrink:0}}>→</div>
               </button>
@@ -2070,7 +2070,7 @@ The email should:
                 <div style={{marginBottom:"36px"}}>
                   <div style={{fontSize:"13px",fontWeight:"700",letterSpacing:"2.5px",textTransform:"uppercase",color:T.coral,marginBottom:"12px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Good morning, {displayName?displayName.split(" ")[0]:"there"}</div>
                   <h1 style={{fontFamily:SF,fontSize:"48px",fontWeight:"normal",color:T.text,margin:"0 0 12px",letterSpacing:"-1px",lineHeight:"1.1",textWrap:"balance"}}>Your podcast companion is ready.</h1>
-                  <p style={{fontSize:"17px",color:T.textMuted,margin:0,fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.6",maxWidth:"520px"}}>Select your show, then choose a workflow — everything generated will match your voice and audience.</p>
+                  <p style={{fontSize:"18px",color:T.textMuted,margin:0,fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.6",maxWidth:"560px"}}>Select your show, then choose a workflow — everything generated will match your voice and audience.</p>
                 </div>
 
                 {/* Show picker */}
@@ -2125,7 +2125,7 @@ The email should:
                       <span style={{fontSize:"18px",color:T.cardBorder,flexShrink:0}}>→</span>
                     </div>
                     <div style={{padding:"18px 28px 24px"}}>
-                      <p style={{fontSize:"15px",color:T.textMuted,lineHeight:"1.65",margin:"0 0 16px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Paste your transcript and get show notes, YouTube, social, email, and blog — all written in your show's voice.</p>
+                      <p style={{fontSize:"16px",color:T.textMuted,lineHeight:"1.65",margin:"0 0 16px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Paste your transcript and get show notes, YouTube, social, email, and blog — all written in your show's voice.</p>
                       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"12px"}}>
                         {showFull&&(
                         <button onClick={()=>handleSidebarNav("full")} {...subBtnHover}
@@ -2163,7 +2163,7 @@ The email should:
                         <span style={{fontSize:"16px",color:T.cardBorder,flexShrink:0}}>→</span>
                       </div>
                       <div style={{padding:"14px 22px 20px"}}>
-                        <p style={{fontSize:"14px",color:T.textMuted,lineHeight:"1.65",margin:0,fontFamily:"'DM Sans', system-ui, sans-serif"}}>Hook picks, timestamps, and a complete brief for your editor — built from your show's DNA.</p>
+                        <p style={{fontSize:"15px",color:T.textMuted,lineHeight:"1.65",margin:0,fontFamily:"'DM Sans', system-ui, sans-serif"}}>Hook picks, timestamps, and a complete brief for your editor — built from your show's DNA.</p>
                       </div>
                     </div>
                     )}
@@ -2182,7 +2182,7 @@ The email should:
                         <span style={{fontSize:"16px",color:T.cardBorder,flexShrink:0}}>→</span>
                       </div>
                       <div style={{padding:"14px 22px 20px"}}>
-                        <p style={{fontSize:"14px",color:T.textMuted,lineHeight:"1.65",margin:0,fontFamily:"'DM Sans', system-ui, sans-serif"}}>Scripted hooks, talking points, and a full structure — before the mic is on.</p>
+                        <p style={{fontSize:"15px",color:T.textMuted,lineHeight:"1.65",margin:0,fontFamily:"'DM Sans', system-ui, sans-serif"}}>Scripted hooks, talking points, and a full structure — before the mic is on.</p>
                       </div>
                     </div>
                     )}
@@ -2201,7 +2201,7 @@ The email should:
                         <span style={{fontSize:"16px",color:T.cardBorder,flexShrink:0}}>→</span>
                       </div>
                       <div style={{padding:"14px 22px 20px"}}>
-                        <p style={{fontSize:"14px",color:T.textMuted,lineHeight:"1.65",margin:0,fontFamily:"'DM Sans', system-ui, sans-serif"}}>Find shows your host should appear on — pitches drafted from your audience DNA.</p>
+                        <p style={{fontSize:"15px",color:T.textMuted,lineHeight:"1.65",margin:0,fontFamily:"'DM Sans', system-ui, sans-serif"}}>Find shows your host should appear on — pitches drafted from your audience DNA.</p>
                       </div>
                     </div>
                     )}
