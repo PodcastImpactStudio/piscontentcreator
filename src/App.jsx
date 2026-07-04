@@ -2364,7 +2364,7 @@ The email should:
             {/* GENERATING */}
             {step==="generating"&&<div style={{textAlign:"center",padding:"100px 20px",animation:"fadeUp .4s ease"}}>
               <div style={{width:"40px",height:"40px",border:`2px solid ${T.cardBorder}`,borderTopColor:T.coral,borderRadius:"50%",animation:"spin 1s linear infinite",margin:"0 auto 28px"}}/>
-              <h2 style={{fontSize:"38px",fontWeight:"600",color:T.text,marginBottom:"12px",fontFamily:PF,lineHeight:"1.2"}}>{mode==="editor"?"Preparing your editor companion brief…":mode==="clips"?"Writing your short-form copy…":mode==="prep"?"Building your episode prep package…":"Building your content package…"}</h2>
+              <h2 style={{fontSize:"38px",fontWeight:"normal",color:T.text,marginBottom:"12px",fontFamily:SF,lineHeight:"1.2"}}>{mode==="editor"?"Preparing your editor companion brief…":mode==="clips"?"Writing your short-form copy…":mode==="prep"?"Building your episode prep package…":"Building your content package…"}</h2>
               <p style={{fontSize:"16px",color:T.textMuted,margin:"0 0 8px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{d?.name} · {MODES.find(m=>m.id===mode)?.label}</p>
               <p style={{fontSize:"13px",color:T.coral,animation:"pulse 2s ease-in-out infinite",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1px"}}>THIS TAKES ABOUT 30 SECONDS</p>
             </div>}
