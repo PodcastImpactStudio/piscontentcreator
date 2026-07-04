@@ -1536,6 +1536,7 @@ ${epfPasteText.substring(0, 8000)}`;
     { id: "boilerplate", label: "Boilerplate" },
     { id: "editing", label: "Editor" },
     { id: "formats", label: "Formats" },
+    { id: "airules", label: "AI Rules" },
   ];
 
   const adminUserName = userName || (userEmail ? userEmail.split("@")[0] : "");
@@ -2153,6 +2154,93 @@ ${epfPasteText.substring(0, 8000)}`;
                         </div>
                       </div>
                     )}
+                  </div>
+                )}
+
+                {tab === "airules" && (
+                  <div>
+                    <div style={{ marginBottom: "28px" }}>
+                      <div style={{ fontSize: "24px", fontWeight: "700", color: T.text, fontFamily: PF, marginBottom: "6px" }}>AI Rules</div>
+                      <div style={{ fontSize: "14px", color: T.textMuted, fontFamily: FF, lineHeight: "1.6" }}>
+                        Define rules that fire automatically when your transcript matches a trigger phrase. Use these for episode types, recurring segments, or special formatting instructions the AI should apply when it detects a certain kind of episode.
+                      </div>
+                    </div>
+
+                    {/* Existing rules */}
+                    {(form.episodeRules || []).length === 0 ? (
+                      <div style={{ background: T.surface, border: "1px solid " + T.cardBorder, borderRadius: "10px", padding: "32px", textAlign: "center", marginBottom: "20px" }}>
+                        <div style={{ fontSize: "28px", marginBottom: "10px", opacity: 0.4 }}>⚡</div>
+                        <div style={{ fontSize: "15px", color: T.textSecondary, fontFamily: FF, marginBottom: "4px" }}>No AI rules yet</div>
+                        <div style={{ fontSize: "13px", color: T.textMuted, fontFamily: FF }}>Add a rule below to get started.</div>
+                      </div>
+                    ) : (
+                      <div style={{ marginBottom: "20px", display: "flex", flexDirection: "column", gap: "12px" }}>
+                        {(form.episodeRules || []).map((rule, idx) => (
+                          <div key={rule.id} style={{ background: T.card, border: "1px solid " + T.cardBorder, borderRadius: "10px", overflow: "hidden" }}>
+                            <div style={{ padding: "14px 20px", borderBottom: "1px solid " + T.cardBorder, background: T.surface, display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px" }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                                <span style={{ fontSize: "13px", fontWeight: "700", color: T.text, fontFamily: FF }}>{rule.name || "Unnamed Rule"}</span>
+                                <span style={{ fontSize: "11px", background: T.coralSoft, border: "1px solid " + T.coralMid, color: T.coral, borderRadius: "20px", padding: "2px 10px", fontFamily: FF, fontWeight: "600" }}>
+                                  trigger: "{rule.trigger}"
+                                </span>
+                              </div>
+                              <button onClick={() => setForm(p => ({ ...p, episodeRules: (p.episodeRules || []).filter((_, i) => i !== idx) }))}
+                                style={{ background: "none", border: "none", color: T.textMuted, fontSize: "13px", cursor: "pointer", fontFamily: FF, padding: "2px 6px", opacity: 0.6 }}
+                                onMouseEnter={e => e.currentTarget.style.opacity = "1"}
+                                onMouseLeave={e => e.currentTarget.style.opacity = "0.6"}>
+                                ✕ Remove
+                              </button>
+                            </div>
+                            <div style={{ padding: "14px 20px" }}>
+                              <div style={{ fontSize: "12px", letterSpacing: "1.5px", textTransform: "uppercase", color: T.textMuted, fontFamily: FF, marginBottom: "6px" }}>Instructions for AI</div>
+                              <textarea value={rule.instructions} onChange={e => setForm(p => ({ ...p, episodeRules: (p.episodeRules || []).map((r, i) => i === idx ? { ...r, instructions: e.target.value } : r) }))}
+                                rows={3} style={{ width: "100%", padding: "10px 12px", border: "1px solid " + T.cardBorder, borderRadius: "8px", background: T.surface, color: T.text, fontSize: "13px", fontFamily: FF, resize: "vertical", boxSizing: "border-box", lineHeight: "1.6" }} />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Add new rule form */}
+                    <div style={{ background: T.card, border: "1px dashed " + T.cardBorder, borderRadius: "10px", padding: "20px" }}>
+                      <div style={{ fontSize: "13px", fontWeight: "700", color: T.text, fontFamily: FF, marginBottom: "16px", letterSpacing: "0.3px" }}>+ Add New Rule</div>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "12px" }}>
+                        <div>
+                          <label style={{ fontSize: "11px", letterSpacing: "1.5px", textTransform: "uppercase", color: T.textMuted, display: "block", marginBottom: "6px", fontFamily: FF }}>Rule Name</label>
+                          <input id="airule-name" placeholder="e.g. Mailbag Episode" style={{ width: "100%", padding: "9px 12px", border: "1px solid " + T.cardBorder, borderRadius: "8px", background: T.surface, color: T.text, fontSize: "14px", fontFamily: FF, boxSizing: "border-box", outline: "none" }} />
+                        </div>
+                        <div>
+                          <label style={{ fontSize: "11px", letterSpacing: "1.5px", textTransform: "uppercase", color: T.textMuted, display: "block", marginBottom: "6px", fontFamily: FF }}>Trigger Phrase</label>
+                          <input id="airule-trigger" placeholder="e.g. mailbag" style={{ width: "100%", padding: "9px 12px", border: "1px solid " + T.cardBorder, borderRadius: "8px", background: T.surface, color: T.text, fontSize: "14px", fontFamily: FF, boxSizing: "border-box", outline: "none" }} />
+                          <div style={{ fontSize: "11px", color: T.textMuted, fontFamily: FF, marginTop: "4px", fontStyle: "italic" }}>Found in transcript → rule fires</div>
+                        </div>
+                      </div>
+                      <div style={{ marginBottom: "14px" }}>
+                        <label style={{ fontSize: "11px", letterSpacing: "1.5px", textTransform: "uppercase", color: T.textMuted, display: "block", marginBottom: "6px", fontFamily: FF }}>Instructions for AI</label>
+                        <textarea id="airule-instructions" rows={3} placeholder={'e.g. This is a Mailbag episode. Prefix every SEO title with "Mailbag:" — for example: "Mailbag: Your Questions About Fat Loss Answered"'}
+                          style={{ width: "100%", padding: "10px 12px", border: "1px solid " + T.cardBorder, borderRadius: "8px", background: T.surface, color: T.text, fontSize: "13px", fontFamily: FF, resize: "vertical", boxSizing: "border-box", lineHeight: "1.6", outline: "none" }} />
+                      </div>
+                      <button onClick={() => {
+                        const name = document.getElementById("airule-name")?.value?.trim();
+                        const trigger = document.getElementById("airule-trigger")?.value?.trim();
+                        const instructions = document.getElementById("airule-instructions")?.value?.trim();
+                        if (!name || !trigger || !instructions) return;
+                        const newRule = { id: Date.now().toString(), name, trigger, instructions };
+                        setForm(p => ({ ...p, episodeRules: [...(p.episodeRules || []), newRule] }));
+                        if (document.getElementById("airule-name")) document.getElementById("airule-name").value = "";
+                        if (document.getElementById("airule-trigger")) document.getElementById("airule-trigger").value = "";
+                        if (document.getElementById("airule-instructions")) document.getElementById("airule-instructions").value = "";
+                      }}
+                        style={{ padding: "10px 22px", background: T.coral, border: "none", borderRadius: "8px", color: "#fff", fontSize: "13px", fontWeight: "700", cursor: "pointer", fontFamily: FF, letterSpacing: "0.5px" }}>
+                        Add Rule
+                      </button>
+                    </div>
+
+                    <div style={{ marginTop: "20px", padding: "14px 16px", background: T.coralSoft, border: "1px solid " + T.coralMid, borderRadius: "8px" }}>
+                      <div style={{ fontSize: "13px", color: T.textSecondary, fontFamily: FF, lineHeight: "1.6" }}>
+                        <strong style={{ color: T.coral }}>How it works:</strong> When you generate content, the app scans your transcript for each trigger phrase (case-insensitive). Any matching rules are automatically added to the AI's instructions for that episode only — no manual steps needed. Rules don't affect episodes where the trigger isn't found.
+                      </div>
+                    </div>
                   </div>
                 )}
 
