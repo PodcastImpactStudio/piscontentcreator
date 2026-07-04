@@ -1540,83 +1540,45 @@ ${epfPasteText.substring(0, 8000)}`;
   const showKeys = Object.keys(shows);
 
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 1000, display: "flex", flexDirection: "row" }}>
-      <style>{`.sidebar-nav-item:hover{background:#252525}`}</style>
+    <div style={{ position: "fixed", inset: 0, zIndex: 1000, display: "flex", flexDirection: "column" }}>
+      <style>{`
+        .admin-show-select:focus{outline:none;border-color:#7A0019;box-shadow:0 0 0 3px rgba(122,0,25,.08);}
+        .admin-tab-btn{transition:color .1s,border-color .1s;}
+      `}</style>
 
-      {/* ── DARK SIDEBAR ── */}
-      <div style={{ width: "240px", minWidth: "240px", height: "100vh", background: "#222222", display: "flex", flexDirection: "column", borderRight: "1px solid #2E2E2E", flexShrink: 0, overflowY: "auto" }}>
-
-        {/* Logo */}
-        <div style={{ padding: "24px 20px 20px", display: "flex", alignItems: "center", justifyContent: "center", borderBottom: "1px solid #2E2E2E" }}>
-          <img src="/logo-nav.png" alt="Podcast Impact Content Studio" style={{ height: "120px", objectFit: "contain", width: "100%" }} />
-        </div>
-
-
-        {/* Back to Studio — top of sidebar, always visible */}
-        <div style={{ padding: "12px 16px", borderBottom: "1px solid #2E2E2E" }}>
-          <button onClick={onClose}
-            style={{ width: "100%", padding: "9px 14px", background: T.coral, border: "none", borderRadius: "6px", color: "#fff", fontSize: "13px", fontWeight: "700", cursor: "pointer", fontFamily: "'DM Sans', system-ui, sans-serif", textAlign: "center", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}>
-            ← Back to Studio
-          </button>
-        </div>
-
-        {/* Nav sections */}
-        <nav style={{ flex: 1, padding: "4px 0" }}>
-          <div style={{ marginBottom: "4px" }}>
-            <div style={{ fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase", color: "#6B6B6B", padding: "10px 16px 4px", fontFamily: "'DM Sans', system-ui, sans-serif", fontWeight: "600" }}>MANAGE</div>
-            <button className="sidebar-nav-item"
-              onClick={() => setAdminView("shows")}
-              style={{ width: "100%", padding: "9px 16px", background: adminView === "shows" ? "#252525" : "transparent", border: "none", borderLeft: adminView === "shows" ? "3px solid #7A0019" : "3px solid transparent", color: "#FFFFFF", fontSize: "14px", fontWeight: adminView === "shows" ? "600" : "400", cursor: "pointer", textAlign: "left", fontFamily: "'DM Sans', system-ui, sans-serif", transition: "all .1s", display: "block" }}>
-              Show DNA Manager
-            </button>
-          </div>
-          <div style={{ marginBottom: "4px" }}>
-            <div style={{ fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase", color: "#6B6B6B", padding: "10px 16px 4px", fontFamily: "'DM Sans', system-ui, sans-serif", fontWeight: "600" }}>CONFIGURE</div>
-            <button className="sidebar-nav-item"
-              onClick={() => setAdminView("settings")}
-              style={{ width: "100%", padding: "9px 16px", background: adminView === "settings" ? "#252525" : "transparent", border: "none", borderLeft: adminView === "settings" ? "3px solid #7A0019" : "3px solid transparent", color: "#FFFFFF", fontSize: "14px", fontWeight: adminView === "settings" ? "600" : "400", cursor: "pointer", textAlign: "left", fontFamily: "'DM Sans', system-ui, sans-serif", transition: "all .1s", display: "block" }}>
-              Settings
-            </button>
-          </div>
-          <div style={{ marginBottom: "4px" }}>
-            <div style={{ fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase", color: "#6B6B6B", padding: "10px 16px 4px", fontFamily: "'DM Sans', system-ui, sans-serif", fontWeight: "600" }}>INTEGRATIONS</div>
-            <div style={{ padding: "9px 16px", color: "#4A4A4A", fontSize: "14px", fontFamily: "'DM Sans', system-ui, sans-serif" }}>Coming Soon</div>
-          </div>
-        </nav>
-
-        {/* Divider */}
-        <div style={{ height: "1px", background: "#2E2E2E", margin: "0 16px" }} />
-
-        {/* Bottom: user + actions */}
-        <div style={{ padding: "12px 16px 20px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "12px" }}>
-            <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: T.coral, color: "#fff", fontSize: "14px", fontWeight: "700", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{adminUserInitial}</div>
-            <div style={{ flex: 1, overflow: "hidden" }}>
-              <div style={{ fontSize: "13px", color: "#FFFFFF", fontWeight: "600", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontFamily: "'DM Sans', system-ui, sans-serif" }}>{adminUserName}</div>
-              <div style={{ fontSize: "11px", color: "#6B6B6B", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontFamily: "'DM Sans', system-ui, sans-serif", marginTop: "1px" }}>{userEmail}</div>
-            </div>
-          </div>
-          <button onClick={onClose}
-            style={{ width: "100%", padding: "8px 12px", background: "#2E2E2E", border: "1px solid #3A3A3A", borderRadius: "6px", color: "#FFFFFF", fontSize: "13px", cursor: "pointer", fontFamily: "'DM Sans', system-ui, sans-serif", fontWeight: "500", marginBottom: "6px", textAlign: "center" }}>
-            Back to Studio
-          </button>
-          {onSignOut && (
-            <button onClick={onSignOut}
-              style={{ width: "100%", padding: "8px 12px", background: "transparent", border: "none", borderRadius: "6px", color: "#F09090", fontSize: "13px", cursor: "pointer", fontFamily: "'DM Sans', system-ui, sans-serif", fontWeight: "500", textAlign: "center" }}>
-              Sign Out
-            </button>
+      {/* ── TOP BAR ── */}
+      <div style={{ height: "56px", background: "#1A1A1A", borderBottom: "1px solid #2E2E2E", display: "flex", alignItems: "center", padding: "0 24px", flexShrink: 0, gap: "16px" }}>
+        <button onClick={onClose}
+          style={{ display: "flex", alignItems: "center", gap: "7px", background: T.coral, border: "none", borderRadius: "7px", color: "#fff", fontSize: "11px", fontWeight: "700", letterSpacing: ".8px", textTransform: "uppercase", padding: "8px 14px", cursor: "pointer", fontFamily: FF, flexShrink: 0 }}>
+          ← Back to Studio
+        </button>
+        <div style={{ flex: 1, display: "flex", alignItems: "center", gap: "8px" }}>
+          <span style={{ fontSize: "10px", fontWeight: "700", letterSpacing: "1.8px", textTransform: "uppercase", color: T.coral, fontFamily: FF }}>
+            {adminView === "settings" ? "Workspace & Team" : "Podcast Settings"}
+          </span>
+          {adminView !== "settings" && selKey && selKey !== "__new__" && shows[selKey]?.name && (
+            <><span style={{ color: "#333" }}>›</span><span style={{ fontSize: "13px", color: "#CCCCCC", fontFamily: FF }}>{shows[selKey].name}</span></>
           )}
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <div style={{ width: "28px", height: "28px", borderRadius: "50%", background: T.coral, color: "#fff", fontSize: "11px", fontWeight: "700", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{adminUserInitial}</div>
+          <span style={{ fontSize: "12px", color: "#CCCCCC", fontFamily: FF }}>{adminUserName}</span>
         </div>
       </div>
 
-      {/* ── RIGHT CONTENT AREA ── */}
+      {/* ── CONTENT AREA ── */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", background: T.bg }}>
 
-        {/* Thin 48px top bar */}
-        <div style={{ height: "48px", background: T.surface, borderBottom: "1px solid " + T.cardBorder, display: "flex", alignItems: "center", padding: "0 28px", flexShrink: 0 }}>
-          <div style={{ fontSize: "12px", color: T.textMuted, fontFamily: "'DM Sans', system-ui, sans-serif", letterSpacing: "1px" }}>
-            {adminView === "settings" ? "Settings" : (selKey && selKey !== "__new__" && shows[selKey]?.name) ? shows[selKey].name : "Show DNA Manager"}
-          </div>
+        {/* Thin secondary bar: title + switcher tabs */}
+        <div style={{ height: "48px", background: T.surface, borderBottom: "1px solid " + T.cardBorder, display: "flex", alignItems: "center", padding: "0 32px", flexShrink: 0, gap: "0" }}>
+          <button className="admin-tab-btn" onClick={() => setAdminView("shows")}
+            style={{ fontSize: "12px", fontWeight: "600", color: adminView === "shows" ? T.coral : T.textMuted, padding: "0 16px", height: "100%", background: "none", border: "none", borderBottom: adminView === "shows" ? `2px solid ${T.coral}` : "2px solid transparent", cursor: "pointer", fontFamily: FF, letterSpacing: ".3px" }}>
+            Show DNA Manager
+          </button>
+          <button className="admin-tab-btn" onClick={() => setAdminView("settings")}
+            style={{ fontSize: "12px", fontWeight: "600", color: adminView === "settings" ? T.coral : T.textMuted, padding: "0 16px", height: "100%", background: "none", border: "none", borderBottom: adminView === "settings" ? `2px solid ${T.coral}` : "2px solid transparent", cursor: "pointer", fontFamily: FF, letterSpacing: ".3px" }}>
+            Workspace &amp; Team
+          </button>
         </div>
 
         {adminView === "settings" ? (
@@ -1625,64 +1587,39 @@ ${epfPasteText.substring(0, 8000)}`;
         <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
 
         {!form ? (
-          /* ── EMPTY STATE with show list ──────────────────────────── */
-          <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
-            {/* Left show list */}
-            <div style={{ width: "200px", background: T.surface, borderRight: "1px solid " + T.cardBorder, display: "flex", flexDirection: "column", flexShrink: 0 }}>
-              <div style={{ flex: 1, overflowY: "auto" }}>
-                {[...Object.entries(shows)].sort(([,a],[,b]) => a.name.localeCompare(b.name)).map(([k, s]) => (
-                  <button key={k} onClick={() => selectShow(k)}
-                    style={{ width: "100%", padding: "10px 14px", background: "transparent", border: "none", borderLeft: "3px solid transparent", color: T.text, fontSize: "13px", cursor: "pointer", textAlign: "left", fontFamily: FF, fontWeight: "500", display: "block", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
-                    onMouseEnter={e => { e.currentTarget.style.background = T.coralSoft; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
-                    {s.name}
-                  </button>
-                ))}
+          /* ── EMPTY STATE — show picker at top ── */
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+            {/* Show picker bar */}
+            <div style={{ padding: "20px 32px", borderBottom: "1px solid " + T.cardBorder, background: T.surface, display: "flex", alignItems: "center", gap: "14px", flexShrink: 0 }}>
+              <span style={{ fontSize: "10px", fontWeight: "700", letterSpacing: "2px", textTransform: "uppercase", color: T.textMuted, whiteSpace: "nowrap", fontFamily: FF }}>Show</span>
+              <div style={{ flex: 1, position: "relative", maxWidth: "400px" }}>
+                <select className="admin-show-select" onChange={e => e.target.value && selectShow(e.target.value)} defaultValue=""
+                  style={{ width: "100%", appearance: "none", background: "#fff", border: "1px solid " + T.cardBorder, borderRadius: "8px", padding: "9px 32px 9px 13px", fontSize: "14px", fontWeight: "600", color: T.textMuted, fontFamily: FF, cursor: "pointer", outline: "none" }}>
+                  <option value="">Select a show to edit…</option>
+                  {[...Object.entries(shows)].sort(([,a],[,b]) => a.name.localeCompare(b.name)).map(([k, s]) => (
+                    <option key={k} value={k}>{s.name}</option>
+                  ))}
+                </select>
+                <span style={{ position: "absolute", right: "11px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: T.textMuted, fontSize: "11px" }}>▾</span>
               </div>
-              <div style={{ borderTop: "1px solid " + T.cardBorder, padding: "10px" }}>
-                <button onClick={startNew}
-                  style={{ width: "100%", padding: "9px 14px", background: T.coral, border: "none", borderRadius: "6px", color: "#fff", fontSize: "13px", fontWeight: "700", cursor: "pointer", fontFamily: FF, letterSpacing: "0.5px" }}>
-                  + Add Show
-                </button>
-              </div>
+              <button onClick={startNew}
+                style={{ fontSize: "11px", fontWeight: "700", color: T.coral, background: T.coralSoft, border: "1px solid " + T.coralMid, padding: "8px 14px", borderRadius: "7px", cursor: "pointer", fontFamily: FF, whiteSpace: "nowrap", letterSpacing: ".3px" }}>
+                + Add Show
+              </button>
             </div>
-            {/* Empty main area */}
+            {/* Empty state body */}
             <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
               <div style={{ textAlign: "center", color: T.textMuted }}>
-                <div style={{ fontSize: "40px", marginBottom: "16px", opacity: 0.4 }}>◈</div>
-                <div style={{ fontSize: "15px", ...LS, letterSpacing: "1px", color: T.textSecondary, marginBottom: "6px" }}>Select a show to edit</div>
-                <div style={{ fontSize: "13px", color: T.textMuted, fontFamily: FF }}>or click <strong style={{ color: T.coral }}>+ Add Show</strong> below the list to create a new one</div>
+                <div style={{ fontSize: "40px", marginBottom: "16px", opacity: 0.4 }}>🎙️</div>
+                <div style={{ fontFamily: "Georgia, serif", fontSize: "20px", color: T.textSecondary, marginBottom: "6px", fontWeight: "normal" }}>Select a show to edit its DNA</div>
+                <div style={{ fontSize: "13px", color: T.textMuted, fontFamily: FF }}>or click <strong style={{ color: T.coral }}>+ Add Show</strong> to create a new one</div>
               </div>
             </div>
           </div>
 
         ) : selKey === "__new__" && newShowPath === null ? (
-          /* ── PATH CHOOSER ─────────────────────────────────────────── */
+          /* ── PATH CHOOSER ── */
           <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
-            {/* Left show list */}
-            <div style={{ width: "200px", background: T.surface, borderRight: "1px solid " + T.cardBorder, display: "flex", flexDirection: "column", flexShrink: 0 }}>
-              <div style={{ flex: 1, overflowY: "auto" }}>
-                {[...Object.entries(shows)].sort(([,a],[,b]) => a.name.localeCompare(b.name)).map(([k, s]) => (
-                  <button key={k} onClick={() => selectShow(k)}
-                    style={{ width: "100%", padding: "10px 14px", background: "transparent", border: "none", borderLeft: "3px solid transparent", color: T.text, fontSize: "13px", cursor: "pointer", textAlign: "left", fontFamily: FF, fontWeight: "500", display: "block", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
-                    onMouseEnter={e => { e.currentTarget.style.background = T.coralSoft; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
-                    {s.name}
-                  </button>
-                ))}
-                <button
-                  style={{ width: "100%", padding: "10px 14px", background: T.coralSoft, border: "none", borderLeft: "3px solid " + T.coral, color: T.coral, fontSize: "13px", cursor: "pointer", textAlign: "left", fontFamily: FF, fontWeight: "700", display: "block" }}>
-                  New Show
-                </button>
-              </div>
-              <div style={{ borderTop: "1px solid " + T.cardBorder, padding: "10px" }}>
-                <button onClick={startNew}
-                  style={{ width: "100%", padding: "9px 14px", background: T.coral, border: "none", borderRadius: "6px", color: "#fff", fontSize: "13px", fontWeight: "700", cursor: "pointer", fontFamily: FF, letterSpacing: "0.5px" }}>
-                  + Add Show
-                </button>
-              </div>
-            </div>
-            {/* Path chooser main area */}
             <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 60px" }}>
               <div style={{ maxWidth: "760px", width: "100%" }}>
                 <div style={{ textAlign: "center", marginBottom: "48px" }}>
@@ -1797,36 +1734,29 @@ ${epfPasteText.substring(0, 8000)}`;
           </div>
 
         ) : (
-          /* ── MAIN SHOW EDITOR ────────────────────────────────────── */
-          <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
+          /* ── MAIN SHOW EDITOR ── */
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
 
-            {/* ── Left show list ── */}
-            <div style={{ width: "200px", background: T.surface, borderRight: "1px solid " + T.cardBorder, display: "flex", flexDirection: "column", flexShrink: 0 }}>
-              <div style={{ flex: 1, overflowY: "auto" }}>
-                {[...Object.entries(shows)].sort(([,a],[,b]) => a.name.localeCompare(b.name)).map(([k, s]) => (
-                  <button key={k} onClick={() => selectShow(k)}
-                    style={{ width: "100%", padding: "10px 14px", background: selKey === k ? T.coralSoft : "transparent", border: "none", borderLeft: "3px solid " + (selKey === k ? T.coral : "transparent"), color: selKey === k ? T.coral : T.text, fontSize: "13px", cursor: "pointer", textAlign: "left", fontFamily: FF, fontWeight: selKey === k ? "700" : "500", display: "block", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", transition: "all .1s" }}
-                    onMouseEnter={e => { if (selKey !== k) { e.currentTarget.style.background = T.coralSoft + "88"; } }}
-                    onMouseLeave={e => { if (selKey !== k) { e.currentTarget.style.background = "transparent"; } }}>
-                    {s.name}
-                  </button>
-                ))}
-                {selKey === "__new__" && (
-                  <button
-                    style={{ width: "100%", padding: "10px 14px", background: T.coralSoft, border: "none", borderLeft: "3px solid " + T.coral, color: T.coral, fontSize: "13px", cursor: "pointer", textAlign: "left", fontFamily: FF, fontWeight: "700", display: "block" }}>
-                    New Show
-                  </button>
-                )}
+            {/* Show picker bar */}
+            <div style={{ padding: "12px 24px", borderBottom: "1px solid " + T.cardBorder, background: T.surface, display: "flex", alignItems: "center", gap: "14px", flexShrink: 0 }}>
+              <span style={{ fontSize: "10px", fontWeight: "700", letterSpacing: "2px", textTransform: "uppercase", color: T.textMuted, whiteSpace: "nowrap", fontFamily: FF }}>Show</span>
+              <div style={{ flex: 1, position: "relative", maxWidth: "400px" }}>
+                <select className="admin-show-select" value={selKey || ""} onChange={e => e.target.value && selectShow(e.target.value)}
+                  style={{ width: "100%", appearance: "none", background: "#fff", border: "1px solid " + T.cardBorder, borderRadius: "8px", padding: "7px 32px 7px 13px", fontSize: "13px", fontWeight: "600", color: T.text, fontFamily: FF, cursor: "pointer", outline: "none" }}>
+                  {selKey === "__new__" && <option value="__new__">New Show</option>}
+                  {[...Object.entries(shows)].sort(([,a],[,b]) => a.name.localeCompare(b.name)).map(([k, s]) => (
+                    <option key={k} value={k}>{s.name}</option>
+                  ))}
+                </select>
+                <span style={{ position: "absolute", right: "11px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: T.textMuted, fontSize: "11px" }}>▾</span>
               </div>
-              <div style={{ borderTop: "1px solid " + T.cardBorder, padding: "10px" }}>
-                <button onClick={startNew}
-                  style={{ width: "100%", padding: "9px 14px", background: T.coral, border: "none", borderRadius: "6px", color: "#fff", fontSize: "13px", fontWeight: "700", cursor: "pointer", fontFamily: FF, letterSpacing: "0.5px" }}>
-                  + Add Show
-                </button>
-              </div>
+              <button onClick={startNew}
+                style={{ fontSize: "11px", fontWeight: "700", color: T.coral, background: T.coralSoft, border: "1px solid " + T.coralMid, padding: "6px 12px", borderRadius: "7px", cursor: "pointer", fontFamily: FF, whiteSpace: "nowrap", letterSpacing: ".3px" }}>
+                + Add Show
+              </button>
             </div>
 
-            {/* ── Right: top bar + two-col layout ── */}
+            {/* ── Editor content ── */}
             <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
 
               {/* Top action bar */}
