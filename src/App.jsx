@@ -1231,6 +1231,9 @@ export default function App(){
   const[epMoments,setEpMoments]=useState("");
   const[epPanelists,setEpPanelists]=useState("");
   const[epPlanRequest,setEpPlanRequest]=useState("");
+  const[showSaveFormat,setShowSaveFormat]=useState(false);
+  const[saveFormatName,setSaveFormatName]=useState("");
+  const[saveFormatOk,setSaveFormatOk]=useState(false);
   const[guestHostName,setGuestHostName]=useState("");
   const[guestQuery,setGuestQuery]=useState("");
   const[guestResults,setGuestResults]=useState([]);
@@ -1720,7 +1723,7 @@ The email should:
     }
   }
 
-  function reset(){setStep("welcome");setMode(null);if(Object.keys(shows).length>1)setShow(null);setGuest(null);setEp("");setTx("");setRaw("");setSecs([]);setErr("");setEditing(false);setESec(null);setETxt("");setExtraPlatforms([]);setClipCount(3);setClipTexts(Array(10).fill(""));setClipResults([]);setClipPlatforms(["YouTube"]);setSelectedFormat(null);setEpGuest("");setEpGuestUrl("");setEpTopic("");setEpTakeaway("");setEpMoments("");setEpPanelists("");setEpPlanRequest("");setGuestResults([]);setGuestHostName("");setGuestQuery("");setGuestEmails({});}
+  function reset(){setStep("welcome");setMode(null);if(Object.keys(shows).length>1)setShow(null);setGuest(null);setEp("");setTx("");setRaw("");setSecs([]);setErr("");setEditing(false);setESec(null);setETxt("");setExtraPlatforms([]);setClipCount(3);setClipTexts(Array(10).fill(""));setClipResults([]);setClipPlatforms(["YouTube"]);setSelectedFormat(null);setEpGuest("");setEpGuestUrl("");setEpTopic("");setEpTakeaway("");setEpMoments("");setEpPanelists("");setEpPlanRequest("");setShowSaveFormat(false);setSaveFormatName("");setSaveFormatOk(false);setGuestResults([]);setGuestHostName("");setGuestQuery("");setGuestEmails({});}
 
   function goBack(){
     setErr("");
@@ -2566,7 +2569,7 @@ The email should:
                   <p style={{fontSize:"16px",color:T.textMuted,margin:0,fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1px"}}>{d?.name.toUpperCase()}{ep?` · EP ${ep}`:""}{mode==="clips"?` · ${clipResults.filter(r=>!r.skipped).length} CLIPS`:` · ${secs.length} SECTIONS`}</p>
                 </div>
                 <div style={{display:"flex",gap:"8px"}}>
-                  {mode!=="clips"&&<button onClick={()=>{copyText(raw);setCpAll(true);setTimeout(()=>setCpAll(false),2000);}} style={{...ghost,background:cpAll?T.coralSoft:"transparent",borderColor:cpAll?T.coralMid:T.cardBorder,color:cpAll?T.coral:T.textMuted}}>{cpAll?"✓ COPIED":"COPY ALL"}</button>}
+                  {mode!=="clips"&&<button onClick={()=>{const bpH=secs.find(s=>s.bpHtml)?.bpHtml||"";copyText(raw,bpH);setCpAll(true);setTimeout(()=>setCpAll(false),2000);}} style={{...ghost,background:cpAll?T.coralSoft:"transparent",borderColor:cpAll?T.coralMid:T.cardBorder,color:cpAll?T.coral:T.textMuted}}>{cpAll?"✓ COPIED":"COPY ALL"}</button>}
                   {mode!=="clips"&&<button onClick={()=>{dlDoc(raw,`${d?.name}${mode==="prep"?` — Episode Prep${epTopic?` — ${epTopic}`:""}`:ep?` — Ep ${ep}`:""} Content Package`,d?.bp);setDlOk(true);setTimeout(()=>setDlOk(false),2500);}} style={{...ghost,background:dlOk?T.coralSoft:"transparent",borderColor:dlOk?T.coralMid:T.cardBorder,color:dlOk?T.coral:T.textMuted}}>{dlOk?"✓ DOWNLOADED":"📄 WORD DOC"}</button>}
                   {mode==="clips"&&<button onClick={()=>{const clipDoc=clipResults.filter(r=>!r.skipped).map(r=>`CLIP ${r.index}\n\n${r.content}`).join("\n\n");dlDoc(clipDoc,`${d?.name}${ep?` — Ep ${ep}`:""} — Clips`);setDlOk(true);setTimeout(()=>setDlOk(false),2500);}} style={{...ghost,background:dlOk?T.coralSoft:"transparent",borderColor:dlOk?T.coralMid:T.cardBorder,color:dlOk?T.coral:T.textMuted}}>{dlOk?"✓ DOWNLOADED":"📄 WORD DOC"}</button>}
                   {mode!=="clips"&&<button onClick={uploadToGDrive} disabled={gDriveStatus==="uploading"} title="Export to Google Drive as a Google Doc" style={{...ghost,background:gDriveStatus==="ok"?T.coralSoft:gDriveStatus==="error"||gDriveStatus==="disconnected"?"#D94F4F18":"transparent",borderColor:gDriveStatus==="ok"?T.coralMid:gDriveStatus==="error"||gDriveStatus==="disconnected"?"#D94F4F44":T.cardBorder,color:gDriveStatus==="ok"?T.coral:gDriveStatus==="error"||gDriveStatus==="disconnected"?"#D94F4F":T.textMuted,opacity:gDriveStatus==="uploading"?.6:1}}>{gDriveStatus==="uploading"?"UPLOADING…":gDriveStatus==="ok"?"✓ EXPORTED TO DRIVE":gDriveStatus==="error"?"✕ EXPORT FAILED":gDriveStatus==="disconnected"?"⚙ CONNECT IN SETTINGS":"📁 EXPORT TO GOOGLE DRIVE"}</button>}
@@ -2574,6 +2577,7 @@ The email should:
                 </div>
               </div>
               {d?.publishDay&&d?.publishTime&&d?.publishTz&&(()=>{try{const sched=formatPublishSchedule(d,userProfile?.timezone);if(!sched)return null;return(<div style={{background:T.coralSoft,border:"1px solid "+T.coralMid,borderRadius:"8px",padding:"12px 18px",marginBottom:"20px",display:"flex",alignItems:"center",gap:"10px"}}><span style={{fontSize:"18px"}}>📅</span><div><div style={{fontSize:"11px",color:T.coral,fontWeight:"700",letterSpacing:"1.5px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>PUBLISH SCHEDULE</div><div style={{fontSize:"14px",color:T.textSecondary,marginTop:"2px",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"500"}}>{sched.showTime}{sched.isDifferent?" · "+sched.localTime+" your time":""}</div></div></div>);}catch{return null;}})()}
+              {mode==="editor"&&(()=>{const lvl=d?.editingLevel||"1";const lvlLabels={"1":"Level 1 — Basic Clean Edit","2":"Level 2 — Paced & Polished","3":"Level 3 — Creative & Strategic"};const lvlDesc={"1":"Removing filler, stumbles, and repetition. Flagging the best moments for this show's audience.","2":"Tightening pacing, restructuring for flow, and optimizing hooks for audience engagement.","3":"Deep structural decisions, storytelling arc, and audience-specific content strategy."};return(<div style={{background:"rgba(30,20,10,.04)",border:"1px solid "+T.cardBorder,borderRadius:"8px",padding:"12px 18px",marginBottom:"20px",display:"flex",alignItems:"center",gap:"10px"}}><span style={{fontSize:"16px"}}>🎬</span><div><div style={{fontSize:"11px",color:T.textMuted,fontWeight:"700",letterSpacing:"1.5px",fontFamily:"'DM Sans', system-ui, sans-serif",textTransform:"uppercase"}}>{lvlLabels[lvl]}</div><div style={{fontSize:"13px",color:T.textSecondary,marginTop:"2px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{lvlDesc[lvl]}</div></div></div>);})()}
               {err&&<div style={{background:"#D94F4F18",border:"1px solid #D94F4F44",borderRadius:"8px",padding:"12px 16px",color:"#F09090",fontSize:"14px",marginBottom:"12px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{err}</div>}
               {mode==="clips"?(
                 <div>
@@ -2593,8 +2597,32 @@ The email should:
                   <div style={{display:"flex",gap:"10px",marginTop:"16px",flexWrap:"wrap"}}>
                     <button onClick={()=>setEditing(!editing)} style={{flex:1,padding:"13px",background:editing?T.coralSoft:T.card,border:`1px solid ${editing?T.coralMid:T.cardBorder}`,borderRadius:"8px",color:editing?T.coral:T.textSecondary,fontSize:"14px",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1.5px",textTransform:"uppercase",transition:"all .2s"}}>{editing?"CLOSE EDITOR":"✏️  REVISE A SECTION"}</button>
                     {mode!=="editor"&&<button onClick={()=>{dlDoc(raw,`${d?.name}${mode==="prep"?` — Episode Prep${epTopic?` — ${epTopic}`:""}`:ep?` — Ep ${ep}`:""} Content Package`,d?.bp);setDlOk(true);setTimeout(()=>setDlOk(false),2500);}} style={{flex:1,padding:"13px",background:dlOk?T.coralSoft:T.card,border:`1px solid ${dlOk?T.coralMid:T.cardBorder}`,borderRadius:"8px",color:dlOk?T.coral:T.textSecondary,fontSize:"14px",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1.5px",textTransform:"uppercase",transition:"all .2s"}}>{dlOk?"✓ DOWNLOADED":"📄  WORD DOC"}</button>}
+                    {mode==="prep"&&!showSaveFormat&&<button onClick={()=>{setSaveFormatName(epTopic||"");setShowSaveFormat(true);}} style={{flex:1,padding:"13px",background:T.card,border:"1px solid "+T.cardBorder,borderRadius:"8px",color:T.textSecondary,fontSize:"14px",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1.5px",textTransform:"uppercase",transition:"all .2s"}}>💾  SAVE AS FORMAT</button>}
                     {mode!=="editor"&&<button onClick={uploadToGDrive} disabled={gDriveStatus==="uploading"} title="Export to Google Drive as a Google Doc" style={{flex:1,padding:"13px",background:gDriveStatus==="ok"?T.coralSoft:gDriveStatus==="error"||gDriveStatus==="disconnected"?"#D94F4F18":T.card,border:`1px solid ${gDriveStatus==="ok"?T.coralMid:gDriveStatus==="error"||gDriveStatus==="disconnected"?"#D94F4F44":T.cardBorder}`,borderRadius:"8px",color:gDriveStatus==="ok"?T.coral:gDriveStatus==="error"||gDriveStatus==="disconnected"?"#D94F4F":T.textSecondary,fontSize:"14px",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1.5px",textTransform:"uppercase",transition:"all .2s",opacity:gDriveStatus==="uploading"?.6:1}}>{gDriveStatus==="uploading"?"UPLOADING…":gDriveStatus==="ok"?"✓ EXPORTED TO DRIVE":gDriveStatus==="error"?"✕ EXPORT FAILED":gDriveStatus==="disconnected"?"⚙ CONNECT IN SETTINGS":"📁 EXPORT TO GOOGLE DRIVE"}</button>}
                   </div>
+                  {mode==="prep"&&showSaveFormat&&(
+                    <div style={{background:T.card,border:"1px solid "+T.coralMid,borderRadius:"10px",padding:"18px 20px",marginTop:"10px"}}>
+                      <div style={{fontSize:"11px",fontWeight:"700",letterSpacing:"1.5px",textTransform:"uppercase",color:T.coral,marginBottom:"10px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>💾 Save as Episode Format Template</div>
+                      <p style={{fontSize:"13px",color:T.textMuted,margin:"0 0 12px",fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.5"}}>This will save the structure used for this plan to <strong style={{color:T.text}}>{d?.name}</strong>'s episode formats, so you can reuse it next time.</p>
+                      <div style={{display:"flex",gap:"8px",flexWrap:"wrap"}}>
+                        <input value={saveFormatName} onChange={e=>setSaveFormatName(e.target.value)} placeholder="Format name (e.g. Solo Deep Dive, Guest Interview)"
+                          style={{flex:1,minWidth:"180px",background:T.surface,border:"1px solid "+T.cardBorder,borderRadius:"7px",padding:"10px 14px",color:T.text,fontSize:"14px",outline:"none",fontFamily:"'DM Sans', system-ui, sans-serif"}}/>
+                        <button onClick={async()=>{
+                          if(!saveFormatName.trim()||!show||!d)return;
+                          const newFmt={id:"fmt-"+Date.now(),name:saveFormatName.trim(),type:selectedFormat?.type||"Custom",targetLength:selectedFormat?.targetLength||"",structure:selectedFormat?.structure||"",signOffLine:selectedFormat?.signOffLine||"",ratingSystem:selectedFormat?.ratingSystem||""};
+                          const updatedFormats=[...(d.episodeFormats||[]),newFmt];
+                          await saveShow(show,{...d,episodeFormats:updatedFormats});
+                          await refreshShows();
+                          setSaveFormatOk(true);
+                          setTimeout(()=>{setShowSaveFormat(false);setSaveFormatOk(false);setSaveFormatName("");},2000);
+                        }} disabled={!saveFormatName.trim()||saveFormatOk}
+                          style={{padding:"10px 18px",background:saveFormatOk?"#3A6B3A":T.coral,border:"none",borderRadius:"7px",color:"#fff",fontSize:"13px",fontWeight:"700",cursor:saveFormatName.trim()&&!saveFormatOk?"pointer":"not-allowed",fontFamily:"'DM Sans', system-ui, sans-serif",whiteSpace:"nowrap",transition:"background .2s"}}>
+                          {saveFormatOk?"✓ Saved!":"Save Template"}
+                        </button>
+                        <button onClick={()=>setShowSaveFormat(false)} style={{padding:"10px 14px",background:"transparent",border:"1px solid "+T.cardBorder,borderRadius:"7px",color:T.textMuted,fontSize:"13px",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Cancel</button>
+                      </div>
+                    </div>
+                  )}
                   {mode==="editor"&&<div style={{background:T.card,border:"1px solid "+T.cardBorder,borderRadius:"10px",padding:"18px 20px",marginTop:"14px"}}>
                     <div style={{fontSize:"13px",color:T.coral,letterSpacing:"2px",fontFamily:"'DM Sans', system-ui, sans-serif",marginBottom:"12px",fontWeight:"700"}}>🎬 SEND CLIPS TO DESCRIPT</div>
                     <div style={{fontSize:"13px",color:T.textSecondary,fontFamily:"'DM Sans', system-ui, sans-serif",fontStyle:"italic",marginBottom:"12px"}}>Paste your Descript Project ID (last part of the project URL) to highlight clips in Descript.</div>
