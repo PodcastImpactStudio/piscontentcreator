@@ -1504,6 +1504,7 @@ ${epfPasteText.substring(0, 8000)}`;
           permissionSlips: form.epPrep.permissionSlips.split("\n").map(s => s.trim()).filter(Boolean),
         },
         episodeFormats: form.episodeFormats || [],
+        episodeRules: form.episodeRules || [],
         tpl: { sn: "", yt: "", sm: "", gk: "", em: "", bl: "" },
       };
       await saveShow(id, dna, orgId);
