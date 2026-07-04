@@ -1590,25 +1590,36 @@ ${epfPasteText.substring(0, 8000)}`;
         <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
 
         {!form ? (
-          /* ── EMPTY STATE — show picker at top ── */
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-            {/* Show picker bar */}
-            <div style={{ padding: "20px 32px", borderBottom: "1px solid " + T.cardBorder, background: T.surface, display: "flex", alignItems: "center", gap: "14px", flexShrink: 0 }}>
-              <span style={{ fontSize: "10px", fontWeight: "700", letterSpacing: "2px", textTransform: "uppercase", color: T.textMuted, whiteSpace: "nowrap", fontFamily: FF }}>Show</span>
-              <div style={{ flex: 1, position: "relative", maxWidth: "400px" }}>
-                <select className="admin-show-select" onChange={e => e.target.value && selectShow(e.target.value)} defaultValue=""
-                  style={{ width: "100%", appearance: "none", background: "#fff", border: "1px solid " + T.cardBorder, borderRadius: "8px", padding: "9px 32px 9px 13px", fontSize: "14px", fontWeight: "600", color: T.textMuted, fontFamily: FF, cursor: "pointer", outline: "none" }}>
-                  <option value="">Select a show to edit…</option>
-                  {[...Object.entries(shows)].sort(([,a],[,b]) => a.name.localeCompare(b.name)).map(([k, s]) => (
-                    <option key={k} value={k}>{s.name}</option>
-                  ))}
-                </select>
-                <span style={{ position: "absolute", right: "11px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: T.textMuted, fontSize: "11px" }}>▾</span>
+          /* ── EMPTY STATE — sidebar + empty body ── */
+          <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
+            {/* Sidebar */}
+            <div style={{ width: "200px", background: T.surface, borderRight: "1px solid " + T.cardBorder, flexShrink: 0, display: "flex", flexDirection: "column", overflowY: "auto" }}>
+              {/* Show picker */}
+              <div style={{ padding: "16px 12px", borderBottom: "1px solid " + T.cardBorder }}>
+                <div style={{ position: "relative", marginBottom: "8px" }}>
+                  <select className="admin-show-select" onChange={e => e.target.value && selectShow(e.target.value)} defaultValue=""
+                    style={{ width: "100%", appearance: "none", background: "#fff", border: "1px solid " + T.cardBorder, borderRadius: "8px", padding: "8px 28px 8px 11px", fontSize: "13px", fontWeight: "600", color: T.textMuted, fontFamily: FF, cursor: "pointer", outline: "none" }}>
+                    <option value="">Select a show…</option>
+                    {[...Object.entries(shows)].sort(([,a],[,b]) => a.name.localeCompare(b.name)).map(([k, s]) => (
+                      <option key={k} value={k}>{s.name}</option>
+                    ))}
+                  </select>
+                  <span style={{ position: "absolute", right: "9px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: T.textMuted, fontSize: "10px" }}>▾</span>
+                </div>
+                <button onClick={startNew}
+                  style={{ width: "100%", fontSize: "11px", fontWeight: "700", color: T.coral, background: T.coralSoft, border: "1px solid " + T.coralMid, padding: "7px 12px", borderRadius: "7px", cursor: "pointer", fontFamily: FF, letterSpacing: ".3px" }}>
+                  + Add Show
+                </button>
               </div>
-              <button onClick={startNew}
-                style={{ fontSize: "11px", fontWeight: "700", color: T.coral, background: T.coralSoft, border: "1px solid " + T.coralMid, padding: "8px 14px", borderRadius: "7px", cursor: "pointer", fontFamily: FF, whiteSpace: "nowrap", letterSpacing: ".3px" }}>
-                + Add Show
-              </button>
+              {/* Section nav (dimmed — no show selected) */}
+              <div style={{ padding: "12px 8px" }}>
+                {TABS.map(t => (
+                  <div key={t.id}
+                    style={{ width: "100%", padding: "9px 14px", background: "transparent", borderLeft: "3px solid transparent", color: T.textMuted, fontSize: "14px", fontWeight: "400", textAlign: "left", fontFamily: FF, display: "block", marginBottom: "2px", borderRadius: "0 6px 6px 0", opacity: 0.45 }}>
+                    {t.label}
+                  </div>
+                ))}
+              </div>
             </div>
             {/* Empty state body */}
             <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -1740,25 +1751,6 @@ ${epfPasteText.substring(0, 8000)}`;
           /* ── MAIN SHOW EDITOR ── */
           <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
 
-            {/* Show picker bar */}
-            <div style={{ padding: "12px 24px", borderBottom: "1px solid " + T.cardBorder, background: T.surface, display: "flex", alignItems: "center", gap: "14px", flexShrink: 0 }}>
-              <span style={{ fontSize: "10px", fontWeight: "700", letterSpacing: "2px", textTransform: "uppercase", color: T.textMuted, whiteSpace: "nowrap", fontFamily: FF }}>Show</span>
-              <div style={{ flex: 1, position: "relative", maxWidth: "400px" }}>
-                <select className="admin-show-select" value={selKey || ""} onChange={e => e.target.value && selectShow(e.target.value)}
-                  style={{ width: "100%", appearance: "none", background: "#fff", border: "1px solid " + T.cardBorder, borderRadius: "8px", padding: "7px 32px 7px 13px", fontSize: "13px", fontWeight: "600", color: T.text, fontFamily: FF, cursor: "pointer", outline: "none" }}>
-                  {selKey === "__new__" && <option value="__new__">New Show</option>}
-                  {[...Object.entries(shows)].sort(([,a],[,b]) => a.name.localeCompare(b.name)).map(([k, s]) => (
-                    <option key={k} value={k}>{s.name}</option>
-                  ))}
-                </select>
-                <span style={{ position: "absolute", right: "11px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: T.textMuted, fontSize: "11px" }}>▾</span>
-              </div>
-              <button onClick={startNew}
-                style={{ fontSize: "11px", fontWeight: "700", color: T.coral, background: T.coralSoft, border: "1px solid " + T.coralMid, padding: "6px 12px", borderRadius: "7px", cursor: "pointer", fontFamily: FF, whiteSpace: "nowrap", letterSpacing: ".3px" }}>
-                + Add Show
-              </button>
-            </div>
-
             {/* ── Editor content ── */}
             <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
 
@@ -1838,7 +1830,26 @@ ${epfPasteText.substring(0, 8000)}`;
               <div style={{ flex: 1, display: "flex", overflow: "hidden", position: "relative" }}>
 
                 {/* Vertical section nav */}
-                <div style={{ width: "180px", background: T.surface, borderRight: "1px solid " + T.cardBorder, flexShrink: 0, overflowY: "auto", padding: "16px 8px" }}>
+                <div style={{ width: "200px", background: T.surface, borderRight: "1px solid " + T.cardBorder, flexShrink: 0, overflowY: "auto", display: "flex", flexDirection: "column" }}>
+                  {/* Show picker */}
+                  <div style={{ padding: "16px 12px", borderBottom: "1px solid " + T.cardBorder, flexShrink: 0 }}>
+                    <div style={{ position: "relative", marginBottom: "8px" }}>
+                      <select className="admin-show-select" value={selKey || ""} onChange={e => e.target.value && selectShow(e.target.value)}
+                        style={{ width: "100%", appearance: "none", background: "#fff", border: "1px solid " + T.cardBorder, borderRadius: "8px", padding: "8px 28px 8px 11px", fontSize: "13px", fontWeight: "600", color: T.text, fontFamily: FF, cursor: "pointer", outline: "none" }}>
+                        {selKey === "__new__" && <option value="__new__">New Show</option>}
+                        {[...Object.entries(shows)].sort(([,a],[,b]) => a.name.localeCompare(b.name)).map(([k, s]) => (
+                          <option key={k} value={k}>{s.name}</option>
+                        ))}
+                      </select>
+                      <span style={{ position: "absolute", right: "9px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: T.textMuted, fontSize: "10px" }}>▾</span>
+                    </div>
+                    <button onClick={startNew}
+                      style={{ width: "100%", fontSize: "11px", fontWeight: "700", color: T.coral, background: T.coralSoft, border: "1px solid " + T.coralMid, padding: "7px 12px", borderRadius: "7px", cursor: "pointer", fontFamily: FF, letterSpacing: ".3px" }}>
+                      + Add Show
+                    </button>
+                  </div>
+                  {/* Section tabs */}
+                  <div style={{ padding: "12px 8px", flex: 1 }}>
                   {TABS.map(t => (
                     <button key={t.id} onClick={() => setTab(t.id)}
                       style={{ width: "100%", padding: "9px 14px", background: tab === t.id ? T.coralSoft : "transparent", border: "none", borderLeft: "3px solid " + (tab === t.id ? T.coral : "transparent"), color: tab === t.id ? T.coral : T.textSecondary, fontSize: "14px", fontWeight: tab === t.id ? "700" : "400", cursor: "pointer", textAlign: "left", fontFamily: FF, display: "block", marginBottom: "2px", borderRadius: "0 6px 6px 0", transition: "all .1s" }}
@@ -1847,6 +1858,7 @@ ${epfPasteText.substring(0, 8000)}`;
                       {t.label}
                     </button>
                   ))}
+                  </div>
                 </div>
 
                 {/* Main content area */}
