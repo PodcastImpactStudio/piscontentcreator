@@ -513,11 +513,11 @@ function SettingsView({ shows, globalSettings, setGlobalSettings, saveGlobalSett
   }
 
   const sections = [
-    { id: "integrations", label: "Integrations", icon: "🔌" },
-    { id: "workspace", label: "Workspace", icon: "🏢" },
-    ...(accountType === "agency" ? [{ id: "team", label: "Team", icon: "👥" }] : []),
-    ...(accountType === "agency" ? [{ id: "codes", label: "Access Codes", icon: "🔑" }] : []),
-    { id: "billing", label: "Billing", icon: "💳" },
+    { id: "integrations", label: "Integrations" },
+    { id: "workspace", label: "Workspace" },
+    ...(accountType === "agency" ? [{ id: "team", label: "Team" }] : []),
+    ...(accountType === "agency" ? [{ id: "codes", label: "Access Codes" }] : []),
+    { id: "billing", label: "Billing" },
   ];
 
   const inp = { width: "100%", background: T.surface, border: "1px solid " + T.cardBorder, borderRadius: "6px", padding: "10px 14px", color: T.text, fontSize: "16px", outline: "none", boxSizing: "border-box", fontFamily: FF };
@@ -538,11 +538,14 @@ function SettingsView({ shows, globalSettings, setGlobalSettings, saveGlobalSett
 
   return (
     <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
-      <div style={{ width: "200px", background: T.surface, borderRight: "1px solid " + T.cardBorder, flexShrink: 0, padding: "16px 8px" }}>
+      <div style={{ width: "200px", background: "#222222", borderRight: "1px solid #2E2E2E", flexShrink: 0, padding: "8px 0" }}>
         {sections.map(s => (
           <button key={s.id} onClick={() => setActiveSection(s.id)}
-            style={{ width: "100%", display: "flex", alignItems: "center", gap: "10px", padding: "10px 14px", background: activeSection === s.id ? T.coralSoft : "transparent", border: "none", borderRadius: "6px", color: activeSection === s.id ? T.coral : T.textSecondary, fontSize: "14px", cursor: "pointer", textAlign: "left", marginBottom: "2px", fontFamily: "'DM Sans', system-ui, sans-serif", fontWeight: activeSection === s.id ? "700" : "500", transition: "all .15s" }}>
-            <span>{s.icon}</span><span>{s.label}</span>
+            style={{ width: "100%", display: "flex", alignItems: "center", gap: "10px", padding: "10px 16px", background: activeSection === s.id ? "#2E2E2E" : "transparent", border: "none", borderLeft: `3px solid ${activeSection === s.id ? T.coral : "transparent"}`, color: activeSection === s.id ? "#FFFFFF" : "#8A8A8A", fontSize: "15px", cursor: "pointer", textAlign: "left", fontFamily: FF, fontWeight: activeSection === s.id ? "600" : "400", transition: "all .15s" }}
+            onMouseEnter={e => { if (activeSection !== s.id) { e.currentTarget.style.background = "#252525"; e.currentTarget.style.color = "#CCCCCC"; } }}
+            onMouseLeave={e => { if (activeSection !== s.id) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#8A8A8A"; } }}>
+            <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: activeSection === s.id ? T.coral : "#444", flexShrink: 0, display: "inline-block" }} />
+            <span>{s.label}</span>
           </button>
         ))}
       </div>
