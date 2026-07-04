@@ -1084,6 +1084,7 @@ export function AdminPanel({ shows, orgId, onClose, onSaved, accountType = "agen
   const [epfMsg, setEpfMsg] = useState("");
   const [showPresetsPanel, setShowPresetsPanel] = useState(false);
   const [showAIPanel, setShowAIPanel] = useState(false);
+  const [showUserMenuAdmin, setShowUserMenuAdmin] = useState(false);
 
   useEffect(() => {
     async function loadGlobalSettings() {
@@ -1549,103 +1550,153 @@ ${epfPasteText.substring(0, 8000)}`;
   const showKeys = Object.keys(shows);
 
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 1000, display: "flex", flexDirection: "column" }}>
+    <div style={{ position: "fixed", inset: 0, zIndex: 1000, display: "flex", flexDirection: "row" }}>
       <style>{`
         .admin-show-select:focus{outline:none;border-color:#7A0019;box-shadow:0 0 0 3px rgba(122,0,25,.08);}
-        .admin-tab-btn{transition:color .1s,border-color .1s;}
+        .admin-sidebar-nav-btn{transition:background .15s,color .15s;}
+        .admin-sidebar-nav-btn:hover{background:#252525 !important;color:#CCCCCC !important;}
       `}</style>
 
-      {/* ── TOP BAR ── */}
-      <div style={{ height: "56px", background: "#1A1A1A", borderBottom: "1px solid #2E2E2E", display: "flex", alignItems: "center", flexShrink: 0 }}>
-        {/* Logo block — same width as sidebar */}
-        <div style={{ width: "240px", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", borderRight: "1px solid #2E2E2E", height: "100%", padding: "0 16px" }}>
-          <img src="/logo-nav.png" alt="Podcast Impact Content Studio" style={{ height: "40px", objectFit: "contain", width: "100%" }} />
+      {/* ── STUDIO-STYLE LEFT SIDEBAR ── */}
+      <div style={{ width: "240px", minWidth: "240px", height: "100vh", background: "#222222", display: "flex", flexDirection: "column", flexShrink: 0, borderRight: "1px solid #2E2E2E", overflowY: "auto" }}>
+
+        {/* Logo */}
+        <div style={{ padding: "24px 20px 20px", display: "flex", alignItems: "center", justifyContent: "center", borderBottom: "1px solid #2E2E2E" }}>
+          <img src="/logo-nav.png" alt="Podcast Impact Content Studio" style={{ height: "120px", objectFit: "contain", width: "100%" }} />
         </div>
-        {/* Breadcrumb + actions */}
-        <div style={{ flex: 1, display: "flex", alignItems: "center", padding: "0 24px", gap: "16px" }}>
+
+        {/* Back to Studio */}
+        <div style={{ padding: "10px 16px", borderBottom: "1px solid #2E2E2E" }}>
           <button onClick={onClose}
-            style={{ display: "flex", alignItems: "center", gap: "7px", background: T.coral, border: "none", borderRadius: "7px", color: "#fff", fontSize: "11px", fontWeight: "700", letterSpacing: ".8px", textTransform: "uppercase", padding: "8px 14px", cursor: "pointer", fontFamily: FF, flexShrink: 0 }}>
+            style={{ width: "100%", padding: "9px 14px", background: T.coral, border: "1px solid " + T.coral, borderRadius: "6px", color: "#FFFFFF", fontSize: "13px", fontWeight: "700", cursor: "pointer", textAlign: "left", fontFamily: FF, display: "flex", alignItems: "center", gap: "8px" }}>
             ← Back to Studio
           </button>
-          <div style={{ flex: 1, display: "flex", alignItems: "center", gap: "8px" }}>
-            <span style={{ fontSize: "10px", fontWeight: "700", letterSpacing: "1.8px", textTransform: "uppercase", color: T.coral, fontFamily: FF }}>
-              {adminView === "settings" ? "Workspace & Team" : "Podcast Settings"}
-            </span>
-            {adminView !== "settings" && selKey && selKey !== "__new__" && shows[selKey]?.name && (
-              <><span style={{ color: "#333" }}>›</span><span style={{ fontSize: "13px", color: "#CCCCCC", fontFamily: FF }}>{shows[selKey].name}</span></>
+        </div>
+
+        {/* NAVIGATE — DNA section tabs */}
+        <div style={{ padding: "8px 0", borderBottom: "1px solid #2E2E2E", flex: 1 }}>
+          <div style={{ fontSize: "12px", color: "#555555", letterSpacing: "2px", textTransform: "uppercase", padding: "4px 16px 6px", fontFamily: FF, fontWeight: "600" }}>NAVIGATE</div>
+          {TABS.map(t => {
+            const isActive = !!form && tab === t.id && adminView === "shows";
+            const isEnabled = !!form && adminView === "shows";
+            return (
+              <button key={t.id}
+                className="admin-sidebar-nav-btn"
+                onClick={() => { if (isEnabled) { setAdminView("shows"); setTab(t.id); } }}
+                style={{ width: "100%", padding: "10px 16px", background: isActive ? "#2E2E2E" : "transparent", border: "none", borderLeft: `3px solid ${isActive ? T.coral : "transparent"}`, color: isActive ? "#FFFFFF" : isEnabled ? "#8A8A8A" : "#444444", fontSize: "15px", fontWeight: isActive ? "600" : "400", cursor: isEnabled ? "pointer" : "default", textAlign: "left", fontFamily: FF, display: "flex", alignItems: "center", gap: "10px" }}>
+                <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: isActive ? T.coral : isEnabled ? "#444" : "#333", flexShrink: 0, display: "inline-block" }} />
+                {t.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Spacer */}
+        <div style={{ flex: 1 }} />
+
+        {/* Bottom links */}
+        <div style={{ borderTop: "1px solid #2E2E2E", padding: "8px 0" }}>
+          {[
+            { label: "Share Feedback", action: () => { window.location.href = "mailto:info@podimpactstudio.com?subject=PIS Content Creator Feedback"; } },
+            { label: "What's New", action: () => {} },
+            { label: "Help & Guide", action: () => {} },
+          ].map(item => (
+            <button key={item.label} onClick={item.action}
+              className="admin-sidebar-nav-btn"
+              style={{ width: "100%", padding: "10px 16px", background: "transparent", border: "none", borderLeft: "3px solid transparent", color: "#8A8A8A", fontSize: "15px", cursor: "pointer", textAlign: "left", fontFamily: FF, display: "block" }}>
+              {item.label}
+            </button>
+          ))}
+        </div>
+        <div style={{ height: "1px", background: "#2E2E2E", margin: "0 16px" }} />
+        <div style={{ padding: "8px 0 4px" }}>
+          <button onClick={() => setAdminView("settings")}
+            className="admin-sidebar-nav-btn"
+            style={{ width: "100%", padding: "10px 16px", background: adminView === "settings" ? "#2E2E2E" : "transparent", border: "none", borderLeft: `3px solid ${adminView === "settings" ? T.coral : "transparent"}`, color: adminView === "settings" ? "#FFFFFF" : "#FFFFFF", fontSize: "15px", cursor: "pointer", textAlign: "left", fontFamily: FF, display: "block" }}>
+            Settings
+          </button>
+          {/* User button */}
+          <div style={{ padding: "8px 16px 0", position: "relative" }}>
+            <button onClick={() => setShowUserMenuAdmin(v => !v)}
+              style={{ width: "100%", padding: "8px 0", background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: "10px", fontFamily: FF }}>
+              <div style={{ width: "30px", height: "30px", borderRadius: "50%", background: T.coral, color: "#fff", fontSize: "13px", fontWeight: "700", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{adminUserInitial}</div>
+              <div style={{ flex: 1, overflow: "hidden", textAlign: "left" }}>
+                <div style={{ fontSize: "15px", color: "#FFFFFF", fontWeight: "500", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{adminUserName}</div>
+              </div>
+              <div style={{ fontSize: "14px", color: "#6B6B6B", flexShrink: 0 }}>→</div>
+            </button>
+            {showUserMenuAdmin && (
+              <div style={{ position: "absolute", bottom: "calc(100% + 8px)", left: "16px", right: "16px", background: "#252525", border: "1px solid #3A3A3A", borderRadius: "10px", boxShadow: "0 8px 32px rgba(0,0,0,.6)", zIndex: 999, overflow: "hidden" }}>
+                <div style={{ padding: "10px 14px", borderBottom: "1px solid #3A3A3A" }}>
+                  <div style={{ fontSize: "12px", color: "#6B6B6B", fontFamily: FF, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{userEmail}</div>
+                </div>
+                <div style={{ padding: "4px 0" }}>
+                  {[
+                    { label: "Workspace & Team", action: () => { setAdminView("settings"); setShowUserMenuAdmin(false); } },
+                  ].map(item => (
+                    <button key={item.label} onClick={item.action}
+                      style={{ width: "100%", padding: "9px 14px", background: "transparent", border: "none", color: "#FFFFFF", fontSize: "13px", fontFamily: FF, cursor: "pointer", textAlign: "left", transition: "background .1s" }}
+                      onMouseEnter={e => e.currentTarget.style.background = "#3A3A3A"}
+                      onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                      {item.label}
+                    </button>
+                  ))}
+                  <div style={{ height: "1px", background: "#3A3A3A", margin: "4px 0" }} />
+                  <button onClick={() => { onSignOut?.(); setShowUserMenuAdmin(false); }}
+                    style={{ width: "100%", padding: "9px 14px", background: "transparent", border: "none", color: "#F09090", fontSize: "13px", fontFamily: FF, cursor: "pointer", textAlign: "left", transition: "background .1s" }}
+                    onMouseEnter={e => e.currentTarget.style.background = "#3A3A3A"}
+                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                    Sign out
+                  </button>
+                </div>
+              </div>
             )}
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <div style={{ width: "28px", height: "28px", borderRadius: "50%", background: T.coral, color: "#fff", fontSize: "11px", fontWeight: "700", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{adminUserInitial}</div>
-            <span style={{ fontSize: "12px", color: "#CCCCCC", fontFamily: FF }}>{adminUserName}</span>
           </div>
         </div>
       </div>
 
-      {/* ── CONTENT AREA ── */}
+      {/* ── MAIN CONTENT AREA ── */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", background: T.bg }}>
-
-        {/* Thin secondary bar: title + switcher tabs */}
-        <div style={{ height: "48px", background: "#1A1A1A", borderBottom: "1px solid #2E2E2E", display: "flex", alignItems: "center", padding: "0 24px", flexShrink: 0, gap: "0" }}>
-          <button className="admin-tab-btn" onClick={() => setAdminView("shows")}
-            style={{ fontSize: "13px", fontWeight: "600", color: adminView === "shows" ? "#FFFFFF" : "#8A8A8A", padding: "0 18px", height: "100%", background: "none", border: "none", borderBottom: adminView === "shows" ? `2px solid ${T.coral}` : "2px solid transparent", cursor: "pointer", fontFamily: FF, letterSpacing: ".3px", transition: "color .15s" }}>
-            Show DNA Manager
-          </button>
-          <button className="admin-tab-btn" onClick={() => setAdminView("settings")}
-            style={{ fontSize: "13px", fontWeight: "600", color: adminView === "settings" ? "#FFFFFF" : "#8A8A8A", padding: "0 18px", height: "100%", background: "none", border: "none", borderBottom: adminView === "settings" ? `2px solid ${T.coral}` : "2px solid transparent", cursor: "pointer", fontFamily: FF, letterSpacing: ".3px", transition: "color .15s" }}>
-            Workspace &amp; Team
-          </button>
-        </div>
 
         {adminView === "settings" ? (
           <SettingsView shows={shows} globalSettings={globalSettings} setGlobalSettings={setGlobalSettings} saveGlobalSettings={saveGlobalSettings} globalSettingsSaved={globalSettingsSaved} globalSettingsLoading={globalSettingsLoading} orgId={orgId} accountType={accountType} userEmail={userEmail} orgData={orgData} setOrgData={setOrgData} saveOrgData={saveOrgData} orgDataSaved={orgDataSaved} />
-        ) : (
+        ) : (<>
+
+        {/* ── STUDIO-STYLE SHOW SELECTOR BAR ── */}
+        <div style={{ background: T.card, borderBottom: `1px solid ${T.cardBorder}`, padding: "14px 32px", display: "flex", alignItems: "center", gap: "16px", flexShrink: 0, boxShadow: "0 1px 4px rgba(30,20,10,.05)" }}>
+          <div style={{ width: "26px", height: "26px", borderRadius: "50%", background: T.coral, color: "#fff", fontSize: "12px", fontWeight: "700", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>1</div>
+          <div style={{ fontSize: "12px", fontWeight: "700", letterSpacing: "2px", textTransform: "uppercase", color: T.textMuted, whiteSpace: "nowrap", fontFamily: FF }}>Select Show</div>
+          <div style={{ flex: 1, position: "relative" }}>
+            <select className="admin-show-select"
+              value={selKey && selKey !== "__new__" ? selKey : ""}
+              onChange={e => e.target.value ? selectShow(e.target.value) : null}
+              style={{ width: "100%", appearance: "none", background: "#fff", border: `1px solid ${T.cardBorder}`, borderRadius: "8px", padding: "11px 36px 11px 15px", fontSize: "16px", fontWeight: "600", color: selKey && selKey !== "__new__" ? T.text : T.textMuted, fontFamily: FF, cursor: "pointer", outline: "none" }}>
+              <option value="">Choose a show…</option>
+              {[...Object.entries(shows)].sort(([,a],[,b]) => a.name.localeCompare(b.name)).map(([k, s]) => (
+                <option key={k} value={k}>{s.name}</option>
+              ))}
+            </select>
+            <span style={{ position: "absolute", right: "13px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: T.textMuted, fontSize: "12px" }}>▾</span>
+          </div>
+          <div style={{ fontSize: "13px", color: selKey && selKey !== "__new__" ? "#3A6B3A" : T.textMuted, whiteSpace: "nowrap", fontFamily: FF, fontWeight: selKey && selKey !== "__new__" ? "600" : "400" }}>
+            {selKey && selKey !== "__new__" ? "DNA loaded ✓" : "Show DNA loads automatically"}
+          </div>
+          <button onClick={startNew}
+            style={{ flexShrink: 0, fontSize: "13px", fontWeight: "700", color: T.coral, background: "transparent", border: "1px solid " + T.coral + "55", padding: "8px 14px", borderRadius: "7px", cursor: "pointer", fontFamily: FF, whiteSpace: "nowrap" }}>
+            + Add Show
+          </button>
+        </div>
+
+        {/* ── CONTENT ── */}
         <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
 
         {!form ? (
-          /* ── EMPTY STATE — sidebar + empty body ── */
-          <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
-            {/* Sidebar */}
-            <div style={{ width: "240px", background: "#222222", borderRight: "1px solid #2E2E2E", flexShrink: 0, display: "flex", flexDirection: "column", overflowY: "auto" }}>
-              {/* Show picker — studio-style */}
-              <div style={{ padding: "14px 16px", borderBottom: "1px solid #2E2E2E" }}>
-                <div style={{ background: "#2A2A2A", border: "1px solid #3A3A3A", borderRadius: "10px", padding: "12px 14px" }}>
-                  <div style={{ fontSize: "11px", fontWeight: "700", letterSpacing: "2px", textTransform: "uppercase", color: "#666", marginBottom: "8px", fontFamily: FF }}>Select Show</div>
-                  <div style={{ position: "relative" }}>
-                    <select className="admin-show-select" onChange={e => e.target.value && selectShow(e.target.value)} defaultValue=""
-                      style={{ width: "100%", appearance: "none", background: "#1A1A1A", border: "1px solid #3A3A3A", borderRadius: "8px", padding: "10px 30px 10px 12px", fontSize: "14px", fontWeight: "600", color: "#AAAAAA", fontFamily: FF, cursor: "pointer", outline: "none", boxSizing: "border-box" }}>
-                      <option value="">Choose a show…</option>
-                      {[...Object.entries(shows)].sort(([,a],[,b]) => a.name.localeCompare(b.name)).map(([k, s]) => (
-                        <option key={k} value={k}>{s.name}</option>
-                      ))}
-                    </select>
-                    <span style={{ position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: "#666", fontSize: "11px" }}>▾</span>
-                  </div>
-                  <button onClick={startNew}
-                    style={{ width: "100%", marginTop: "8px", fontSize: "12px", fontWeight: "700", color: T.coral, background: "transparent", border: "1px solid " + T.coral + "55", padding: "8px 12px", borderRadius: "7px", cursor: "pointer", fontFamily: FF, letterSpacing: ".3px", textAlign: "center", boxSizing: "border-box" }}>
-                    + Add Show
-                  </button>
-                </div>
-              </div>
-              {/* Section nav (dimmed — no show selected) */}
-              <div style={{ padding: "8px 0" }}>
-                <div style={{ fontSize: "12px", color: "#555555", letterSpacing: "2px", textTransform: "uppercase", padding: "4px 16px 6px", fontFamily: FF, fontWeight: "600" }}>Sections</div>
-                {TABS.map(t => (
-                  <div key={t.id}
-                    style={{ width: "100%", padding: "10px 16px", color: "#444", fontSize: "15px", fontFamily: FF, display: "flex", alignItems: "center", gap: "10px" }}>
-                    <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#333", flexShrink: 0, display: "inline-block" }} />
-                    {t.label}
-                  </div>
-                ))}
-              </div>
-            </div>
-            {/* Empty state body */}
-            <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <div style={{ textAlign: "center", color: T.textMuted }}>
-                <div style={{ fontSize: "40px", marginBottom: "16px", opacity: 0.4 }}>🎙️</div>
-                <div style={{ fontFamily: "Georgia, serif", fontSize: "20px", color: T.textSecondary, marginBottom: "6px", fontWeight: "normal" }}>Select a show to edit its DNA</div>
-                <div style={{ fontSize: "13px", color: T.textMuted, fontFamily: FF }}>or click <strong style={{ color: T.coral }}>+ Add Show</strong> to create a new one</div>
-              </div>
+          /* ── EMPTY STATE ── */
+          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ textAlign: "center", color: T.textMuted }}>
+              <div style={{ fontSize: "40px", marginBottom: "16px", opacity: 0.4 }}>🎙️</div>
+              <div style={{ fontFamily: "Georgia, serif", fontSize: "20px", color: T.textSecondary, marginBottom: "6px", fontWeight: "normal" }}>Select a show to edit its DNA</div>
+              <div style={{ fontSize: "13px", color: T.textMuted, fontFamily: FF }}>or click <strong style={{ color: T.coral }}>+ Add Show</strong> to create a new one</div>
             </div>
           </div>
 
@@ -1844,49 +1895,8 @@ ${epfPasteText.substring(0, 8000)}`;
                 </div>
               )}
 
-              {/* Two-col: section nav + content */}
-              <div style={{ flex: 1, display: "flex", overflow: "hidden", position: "relative" }}>
-
-                {/* Vertical section nav */}
-                <div style={{ width: "240px", background: "#222222", borderRight: "1px solid #2E2E2E", flexShrink: 0, overflowY: "auto", display: "flex", flexDirection: "column" }}>
-                  {/* Show picker — studio-style */}
-                  <div style={{ padding: "14px 16px", borderBottom: "1px solid #2E2E2E", flexShrink: 0 }}>
-                    <div style={{ background: "#2A2A2A", border: "1px solid #3A3A3A", borderRadius: "10px", padding: "12px 14px" }}>
-                      <div style={{ fontSize: "11px", fontWeight: "700", letterSpacing: "2px", textTransform: "uppercase", color: "#666", marginBottom: "8px", fontFamily: FF }}>Select Show</div>
-                      <div style={{ position: "relative" }}>
-                        <select className="admin-show-select" value={selKey || ""} onChange={e => e.target.value && selectShow(e.target.value)}
-                          style={{ width: "100%", appearance: "none", background: "#1A1A1A", border: "1px solid #3A3A3A", borderRadius: "8px", padding: "10px 30px 10px 12px", fontSize: "14px", fontWeight: "600", color: selKey && selKey !== "__new__" ? "#FFFFFF" : "#AAAAAA", fontFamily: FF, cursor: "pointer", outline: "none", boxSizing: "border-box" }}>
-                          {selKey === "__new__" && <option value="__new__">New Show</option>}
-                          <option value="">Choose a show…</option>
-                          {[...Object.entries(shows)].sort(([,a],[,b]) => a.name.localeCompare(b.name)).map(([k, s]) => (
-                            <option key={k} value={k}>{s.name}</option>
-                          ))}
-                        </select>
-                        <span style={{ position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: "#666", fontSize: "11px" }}>▾</span>
-                      </div>
-                      <button onClick={startNew}
-                        style={{ width: "100%", marginTop: "8px", fontSize: "12px", fontWeight: "700", color: T.coral, background: "transparent", border: "1px solid " + T.coral + "55", padding: "8px 12px", borderRadius: "7px", cursor: "pointer", fontFamily: FF, letterSpacing: ".3px", textAlign: "center", boxSizing: "border-box" }}>
-                        + Add Show
-                      </button>
-                    </div>
-                  </div>
-                  {/* Section tabs */}
-                  <div style={{ padding: "8px 0", flex: 1 }}>
-                    <div style={{ fontSize: "12px", color: "#555555", letterSpacing: "2px", textTransform: "uppercase", padding: "4px 16px 6px", fontFamily: FF, fontWeight: "600" }}>Sections</div>
-                    {TABS.map(t => (
-                      <button key={t.id} onClick={() => setTab(t.id)}
-                        style={{ width: "100%", padding: "10px 16px", background: tab === t.id ? "#2E2E2E" : "transparent", border: "none", borderLeft: "3px solid " + (tab === t.id ? T.coral : "transparent"), color: tab === t.id ? "#FFFFFF" : "#8A8A8A", fontSize: "15px", fontWeight: tab === t.id ? "600" : "400", cursor: "pointer", textAlign: "left", fontFamily: FF, display: "flex", alignItems: "center", gap: "10px", transition: "all .15s" }}
-                        onMouseEnter={e => { if (tab !== t.id) { e.currentTarget.style.background = "#252525"; e.currentTarget.style.color = "#CCCCCC"; } }}
-                        onMouseLeave={e => { if (tab !== t.id) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#8A8A8A"; } }}>
-                        <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: tab === t.id ? T.coral : "#444", flexShrink: 0, display: "inline-block" }} />
-                        {t.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Main content area */}
-                <div style={{ flex: 1, overflowY: "auto", padding: "40px 48px", position: "relative" }}>
+              {/* Form content */}
+              <div style={{ flex: 1, overflowY: "auto", padding: "40px 48px", position: "relative" }}>
                   <div style={{ maxWidth: "800px" }}>
 
                 {tab === "basic" && (
@@ -2268,7 +2278,6 @@ ${epfPasteText.substring(0, 8000)}`;
                 )}
 
                   </div>
-                </div>
 
                 {/* Right slide-in AI Fill panel */}
                 {showAIPanel && (() => {
@@ -2344,7 +2353,7 @@ ${epfPasteText.substring(0, 8000)}`;
           </div>
         )}
         </div>
-        )}
+        </>)}
       </div>
     </div>
   );
