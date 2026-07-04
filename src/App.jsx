@@ -1728,17 +1728,17 @@ The email should:
   function goBack(){
     setErr("");
     if(step==="show-select"){setStep("welcome");setMode(null);}
-    else if(step==="configure"){setStep(Object.keys(shows).length>1?"show-select":"welcome");}
+    else if(step==="configure"){setStep("welcome");}
     else if(step==="clips-setup"){setStep("configure");}
     else if(step==="input"){
-      if(mode==="editor")setStep(Object.keys(shows).length>1?"show-select":"welcome");
+      if(mode==="editor")setStep("welcome");
       else if(mode==="clips")setStep("clips-setup");
       else setStep("configure");
     }
     else if(step==="result"){if(mode==="prep")setStep("prep-details");else setStep("input");}
-    else if(step==="prep-format"){setStep(Object.keys(shows).length>1?"show-select":"welcome");}
-    else if(step==="prep-details"){const hasFmts=d?.episodeFormats?.length>0;setStep(hasFmts?"prep-format":(Object.keys(shows).length>1?"show-select":"welcome"));}
-    else if(step==="guest-setup"){setStep(Object.keys(shows).length>1?"show-select":"welcome");}
+    else if(step==="prep-format"){setStep("welcome");}
+    else if(step==="prep-details"){const hasFmts=d?.episodeFormats?.length>0;setStep(hasFmts?"prep-format":"welcome");}
+    else if(step==="guest-setup"){setStep("welcome");}
     else if(step==="guest-results"){setStep("guest-setup");}
   }
 
@@ -1840,9 +1840,9 @@ The email should:
       // Single show — auto-select and go
       advanceToMode(newMode, showKeys[0]);
     } else {
-      // Multiple shows — ask which one
-      setMode(newMode);
-      setStep("show-select");
+      // No show selected — go home so user can pick from the dropdown
+      setMode(null);
+      setStep("welcome");
     }
   }
 
