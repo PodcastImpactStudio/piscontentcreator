@@ -1594,29 +1594,29 @@ ${epfPasteText.substring(0, 8000)}`;
           /* ── EMPTY STATE — sidebar + empty body ── */
           <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
             {/* Sidebar */}
-            <div style={{ width: "200px", background: T.surface, borderRight: "1px solid " + T.cardBorder, flexShrink: 0, display: "flex", flexDirection: "column", overflowY: "auto" }}>
-              {/* Show picker */}
-              <div style={{ padding: "16px 12px", borderBottom: "1px solid " + T.cardBorder }}>
-                <div style={{ position: "relative", marginBottom: "8px" }}>
-                  <select className="admin-show-select" onChange={e => e.target.value && selectShow(e.target.value)} defaultValue=""
-                    style={{ width: "100%", appearance: "none", background: "#fff", border: "1px solid " + T.cardBorder, borderRadius: "8px", padding: "8px 28px 8px 11px", fontSize: "13px", fontWeight: "600", color: T.textMuted, fontFamily: FF, cursor: "pointer", outline: "none" }}>
-                    <option value="">Select a show…</option>
-                    {[...Object.entries(shows)].sort(([,a],[,b]) => a.name.localeCompare(b.name)).map(([k, s]) => (
-                      <option key={k} value={k}>{s.name}</option>
-                    ))}
-                  </select>
-                  <span style={{ position: "absolute", right: "9px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: T.textMuted, fontSize: "10px" }}>▾</span>
-                </div>
+            <div style={{ width: "220px", background: T.surface, borderRight: "1px solid " + T.cardBorder, flexShrink: 0, display: "flex", flexDirection: "column", overflowY: "auto" }}>
+              {/* Shows list */}
+              <div style={{ padding: "12px 8px", borderBottom: "1px solid " + T.cardBorder }}>
+                <div style={{ fontSize: "10px", fontWeight: "700", letterSpacing: "2px", textTransform: "uppercase", color: T.textMuted, padding: "4px 10px 8px", fontFamily: FF }}>Shows</div>
+                {[...Object.entries(shows)].sort(([,a],[,b]) => a.name.localeCompare(b.name)).map(([k, s]) => (
+                  <button key={k} onClick={() => selectShow(k)}
+                    style={{ width: "100%", padding: "9px 12px", background: "transparent", border: "none", borderLeft: "3px solid transparent", color: T.textSecondary, fontSize: "14px", fontWeight: "500", cursor: "pointer", textAlign: "left", fontFamily: FF, display: "block", marginBottom: "2px", borderRadius: "0 6px 6px 0", transition: "all .1s", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
+                    onMouseEnter={e => { e.currentTarget.style.background = T.coralSoft + "55"; e.currentTarget.style.color = T.text; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = T.textSecondary; }}>
+                    {s.name}
+                  </button>
+                ))}
                 <button onClick={startNew}
-                  style={{ width: "100%", fontSize: "11px", fontWeight: "700", color: T.coral, background: T.coralSoft, border: "1px solid " + T.coralMid, padding: "7px 12px", borderRadius: "7px", cursor: "pointer", fontFamily: FF, letterSpacing: ".3px" }}>
+                  style={{ width: "100%", marginTop: "6px", fontSize: "12px", fontWeight: "700", color: T.coral, background: "transparent", border: "1px dashed " + T.coralMid, padding: "8px 12px", borderRadius: "7px", cursor: "pointer", fontFamily: FF, letterSpacing: ".3px", textAlign: "left" }}>
                   + Add Show
                 </button>
               </div>
               {/* Section nav (dimmed — no show selected) */}
               <div style={{ padding: "12px 8px" }}>
+                <div style={{ fontSize: "10px", fontWeight: "700", letterSpacing: "2px", textTransform: "uppercase", color: T.textMuted, padding: "4px 10px 8px", fontFamily: FF }}>Sections</div>
                 {TABS.map(t => (
                   <div key={t.id}
-                    style={{ width: "100%", padding: "9px 14px", background: "transparent", borderLeft: "3px solid transparent", color: T.textMuted, fontSize: "14px", fontWeight: "400", textAlign: "left", fontFamily: FF, display: "block", marginBottom: "2px", borderRadius: "0 6px 6px 0", opacity: 0.45 }}>
+                    style={{ width: "100%", padding: "8px 12px", color: T.textMuted, fontSize: "14px", fontFamily: FF, display: "block", marginBottom: "2px", opacity: 0.4 }}>
                     {t.label}
                   </div>
                 ))}
@@ -1831,34 +1831,40 @@ ${epfPasteText.substring(0, 8000)}`;
               <div style={{ flex: 1, display: "flex", overflow: "hidden", position: "relative" }}>
 
                 {/* Vertical section nav */}
-                <div style={{ width: "200px", background: T.surface, borderRight: "1px solid " + T.cardBorder, flexShrink: 0, overflowY: "auto", display: "flex", flexDirection: "column" }}>
-                  {/* Show picker */}
-                  <div style={{ padding: "16px 12px", borderBottom: "1px solid " + T.cardBorder, flexShrink: 0 }}>
-                    <div style={{ position: "relative", marginBottom: "8px" }}>
-                      <select className="admin-show-select" value={selKey || ""} onChange={e => e.target.value && selectShow(e.target.value)}
-                        style={{ width: "100%", appearance: "none", background: "#fff", border: "1px solid " + T.cardBorder, borderRadius: "8px", padding: "8px 28px 8px 11px", fontSize: "13px", fontWeight: "600", color: T.text, fontFamily: FF, cursor: "pointer", outline: "none" }}>
-                        {selKey === "__new__" && <option value="__new__">New Show</option>}
-                        {[...Object.entries(shows)].sort(([,a],[,b]) => a.name.localeCompare(b.name)).map(([k, s]) => (
-                          <option key={k} value={k}>{s.name}</option>
-                        ))}
-                      </select>
-                      <span style={{ position: "absolute", right: "9px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: T.textMuted, fontSize: "10px" }}>▾</span>
-                    </div>
+                <div style={{ width: "220px", background: T.surface, borderRight: "1px solid " + T.cardBorder, flexShrink: 0, overflowY: "auto", display: "flex", flexDirection: "column" }}>
+                  {/* Shows list */}
+                  <div style={{ padding: "12px 8px", borderBottom: "1px solid " + T.cardBorder, flexShrink: 0 }}>
+                    <div style={{ fontSize: "10px", fontWeight: "700", letterSpacing: "2px", textTransform: "uppercase", color: T.textMuted, padding: "4px 10px 8px", fontFamily: FF }}>Shows</div>
+                    {selKey === "__new__" && (
+                      <div style={{ padding: "9px 12px", background: T.coralSoft, borderLeft: "3px solid " + T.coral, color: T.coral, fontSize: "13px", fontWeight: "700", fontFamily: FF, marginBottom: "2px", borderRadius: "0 6px 6px 0" }}>New Show</div>
+                    )}
+                    {[...Object.entries(shows)].sort(([,a],[,b]) => a.name.localeCompare(b.name)).map(([k, s]) => {
+                      const active = selKey === k;
+                      return (
+                        <button key={k} onClick={() => selectShow(k)}
+                          style={{ width: "100%", padding: "9px 12px", background: active ? T.coralSoft : "transparent", border: "none", borderLeft: "3px solid " + (active ? T.coral : "transparent"), color: active ? T.coral : T.textSecondary, fontSize: "14px", fontWeight: active ? "700" : "500", cursor: "pointer", textAlign: "left", fontFamily: FF, display: "block", marginBottom: "2px", borderRadius: "0 6px 6px 0", transition: "all .1s", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
+                          onMouseEnter={e => { if (!active) { e.currentTarget.style.background = T.coralSoft + "55"; e.currentTarget.style.color = T.text; } }}
+                          onMouseLeave={e => { if (!active) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = T.textSecondary; } }}>
+                          {s.name}
+                        </button>
+                      );
+                    })}
                     <button onClick={startNew}
-                      style={{ width: "100%", fontSize: "11px", fontWeight: "700", color: T.coral, background: T.coralSoft, border: "1px solid " + T.coralMid, padding: "7px 12px", borderRadius: "7px", cursor: "pointer", fontFamily: FF, letterSpacing: ".3px" }}>
+                      style={{ width: "100%", marginTop: "6px", fontSize: "12px", fontWeight: "700", color: T.coral, background: "transparent", border: "1px dashed " + T.coralMid, padding: "8px 12px", borderRadius: "7px", cursor: "pointer", fontFamily: FF, letterSpacing: ".3px", textAlign: "left" }}>
                       + Add Show
                     </button>
                   </div>
                   {/* Section tabs */}
                   <div style={{ padding: "12px 8px", flex: 1 }}>
-                  {TABS.map(t => (
-                    <button key={t.id} onClick={() => setTab(t.id)}
-                      style={{ width: "100%", padding: "9px 14px", background: tab === t.id ? T.coralSoft : "transparent", border: "none", borderLeft: "3px solid " + (tab === t.id ? T.coral : "transparent"), color: tab === t.id ? T.coral : T.textSecondary, fontSize: "14px", fontWeight: tab === t.id ? "700" : "400", cursor: "pointer", textAlign: "left", fontFamily: FF, display: "block", marginBottom: "2px", borderRadius: "0 6px 6px 0", transition: "all .1s" }}
-                      onMouseEnter={e => { if (tab !== t.id) { e.currentTarget.style.background = T.coralSoft + "55"; e.currentTarget.style.color = T.text; } }}
-                      onMouseLeave={e => { if (tab !== t.id) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = T.textSecondary; } }}>
-                      {t.label}
-                    </button>
-                  ))}
+                    <div style={{ fontSize: "10px", fontWeight: "700", letterSpacing: "2px", textTransform: "uppercase", color: T.textMuted, padding: "4px 10px 8px", fontFamily: FF }}>Sections</div>
+                    {TABS.map(t => (
+                      <button key={t.id} onClick={() => setTab(t.id)}
+                        style={{ width: "100%", padding: "9px 12px", background: tab === t.id ? T.coralSoft : "transparent", border: "none", borderLeft: "3px solid " + (tab === t.id ? T.coral : "transparent"), color: tab === t.id ? T.coral : T.textSecondary, fontSize: "14px", fontWeight: tab === t.id ? "700" : "400", cursor: "pointer", textAlign: "left", fontFamily: FF, display: "block", marginBottom: "2px", borderRadius: "0 6px 6px 0", transition: "all .1s" }}
+                        onMouseEnter={e => { if (tab !== t.id) { e.currentTarget.style.background = T.coralSoft + "55"; e.currentTarget.style.color = T.text; } }}
+                        onMouseLeave={e => { if (tab !== t.id) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = T.textSecondary; } }}>
+                        {t.label}
+                      </button>
+                    ))}
                   </div>
                 </div>
 
