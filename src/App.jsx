@@ -1884,7 +1884,7 @@ The email should:
             <button onClick={()=>setShowAdmin(true)}
               className="sidebar-nav-item"
               style={{width:"100%",padding:"9px 14px",background:T.coral,border:"1px solid "+T.coral,borderRadius:"6px",color:"#FFFFFF",fontSize:"13px",fontWeight:"700",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",display:"flex",alignItems:"center",gap:"8px"}}>
-              <span>⚙</span><span>Podcast Settings</span>
+              <span>Podcast Settings</span>
             </button>
           </div>
         )}
@@ -1893,11 +1893,11 @@ The email should:
         {(()=>{
           const allowed = isClient && clientConfig?.allowedModes?.length > 0 ? clientConfig.allowedModes : null;
           const navItems = [
-            {label:"Home",               icon:"🏠", section:"home",   action:()=>{setMode(null);setStep("welcome");},  visible:true},
-            {label:"Content Generation", icon:"📦", section:"create", action:()=>{setMode(null);setStep("welcome");},  visible:!allowed||allowed.includes("full")||allowed.includes("clips")},
-            {label:"Editorial",          icon:"🎬", section:"editor", action:()=>handleSidebarNav("editor"),           visible:!allowed||allowed.includes("editor")},
-            {label:"Episode Planning",   icon:"📋", section:"prep",   action:()=>handleSidebarNav("prep"),             visible:!allowed||allowed.includes("prep")},
-            {label:"Guest Finder",       icon:"🎙️", section:"guest",  action:()=>handleSidebarNav("guest"),            visible:!allowed||allowed.includes("guest")},
+            {label:"Home",               section:"home",   action:()=>{setMode(null);setStep("welcome");},  visible:true},
+            {label:"Content Generation", section:"create", action:()=>{setMode(null);setStep("welcome");},  visible:!allowed||allowed.includes("full")||allowed.includes("clips")},
+            {label:"Editorial",          section:"editor", action:()=>handleSidebarNav("editor"),           visible:!allowed||allowed.includes("editor")},
+            {label:"Episode Planning",   section:"prep",   action:()=>handleSidebarNav("prep"),             visible:!allowed||allowed.includes("prep")},
+            {label:"Guest Finder",       section:"guest",  action:()=>handleSidebarNav("guest"),            visible:!allowed||allowed.includes("guest")},
           ].filter(i=>i.visible);
           if(!navItems.length) return null;
           return(
@@ -1910,7 +1910,7 @@ The email should:
                 style={{width:"100%",padding:"9px 16px",background:isActive?"#2E2E2E":"transparent",border:"none",borderLeft:`3px solid ${isActive?T.coral:"transparent"}`,color:isActive?"#FFFFFF":"#8A8A8A",fontSize:"13px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",display:"flex",alignItems:"center",gap:"8px",transition:"all .15s"}}
                 onMouseEnter={e=>{if(!isActive){e.currentTarget.style.background="#252525";e.currentTarget.style.color="#CCCCCC";}}}
                 onMouseLeave={e=>{if(!isActive){e.currentTarget.style.background="transparent";e.currentTarget.style.color="#8A8A8A";}}}>
-                <span style={{fontSize:"14px"}}>{item.icon}</span>
+                <span style={{width:"6px",height:"6px",borderRadius:"50%",background:isActive?T.coral:"#444",flexShrink:0,display:"inline-block"}}/>
                 <span>{item.label}</span>
               </button>
               );
@@ -1929,7 +1929,7 @@ The email should:
             <a href={clientConfig.scheduleUrl} target="_blank" rel="noopener noreferrer"
               className="sidebar-nav-item"
               style={{width:"100%",padding:"9px 16px",background:"transparent",border:"none",borderLeft:"3px solid transparent",color:"#52B788",fontSize:"13px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",display:"block",textDecoration:"none",fontWeight:"600"}}>
-              📅 View Schedule
+              View Schedule
             </a>
           )}
           {[
@@ -2036,7 +2036,7 @@ The email should:
 
         {/* Scrollable content */}
         <div style={{flex:1,overflowY:"auto",padding:"40px 48px"}}>
-          <div style={{maxWidth:"900px",margin:"0 auto",width:"100%"}}>
+          <div style={{maxWidth:"1100px",margin:"0 auto",width:"100%"}}>
 
             {/* WELCOME SCREEN */}
             {step==="welcome"&&(()=>{
@@ -2108,7 +2108,7 @@ The email should:
                 )}
 
                 {/* Workflow cards — dimmed until show selected */}
-                <div style={{opacity:show?1:0.3,pointerEvents:show?"auto":"none",transition:"opacity .3s",maxWidth:"820px"}}>
+                <div style={{opacity:show?1:0.3,pointerEvents:show?"auto":"none",transition:"opacity .3s"}}>
 
                   {/* Featured: Content Generation */}
                   {(showFull||showClips)&&(
@@ -2116,7 +2116,7 @@ The email should:
                     <div style={{height:"2px",background:`linear-gradient(90deg,${T.coral},rgba(122,0,25,.2) 80%,transparent)`}}/>
                     <div style={{padding:"15px 20px 13px",borderBottom:`1px solid ${T.cardBorder}`,display:"flex",alignItems:"center",justifyContent:"space-between",gap:"12px"}}>
                       <div style={{display:"flex",alignItems:"center",gap:"10px"}}>
-                        <div style={{width:"36px",height:"36px",borderRadius:"8px",background:T.coralSoft,display:"flex",alignItems:"center",justifyContent:"center",fontSize:"15px",flexShrink:0}}>📦</div>
+                        <div style={{width:"36px",height:"36px",borderRadius:"8px",background:T.coralSoft,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="4" width="14" height="10" rx="1.5" stroke={T.coral} strokeWidth="1.5"/><path d="M5 4V3a3 3 0 016 0v1" stroke={T.coral} strokeWidth="1.5" strokeLinecap="round"/><path d="M1 8h14" stroke={T.coral} strokeWidth="1" strokeOpacity=".4"/></svg></div>
                         <div>
                           <div style={{fontSize:"8px",fontWeight:"700",letterSpacing:"2px",textTransform:"uppercase",color:T.coral,marginBottom:"3px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Content Generation</div>
                           <div style={{fontFamily:SF,fontSize:"15px",fontWeight:"normal",color:T.text,letterSpacing:"-0.1px"}}>Turn your transcript into a full content package</div>
@@ -2130,14 +2130,14 @@ The email should:
                         {showFull&&(
                         <button onClick={()=>handleSidebarNav("full")} {...subBtnHover}
                           style={{background:"#fff",border:`1px solid ${T.cardBorder}`,borderRadius:"8px",padding:"10px 12px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",transition:"border-color .13s"}}>
-                          <div style={{fontSize:"12px",fontWeight:"600",color:T.text,marginBottom:"2px"}}>📄 Full Episode Package</div>
+                          <div style={{fontSize:"12px",fontWeight:"600",color:T.text,marginBottom:"2px"}}>Full Episode Package</div>
                           <div style={{fontSize:"10.5px",color:T.textMuted,lineHeight:"1.4"}}>Show notes, YouTube, social, email &amp; blog</div>
                         </button>
                         )}
                         {showClips&&(
                         <button onClick={()=>handleSidebarNav("clips")} {...subBtnHover}
                           style={{background:"#fff",border:`1px solid ${T.cardBorder}`,borderRadius:"8px",padding:"10px 12px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",transition:"border-color .13s"}}>
-                          <div style={{fontSize:"12px",fontWeight:"600",color:T.text,marginBottom:"2px"}}>✂️ Clips &amp; Shorts</div>
+                          <div style={{fontSize:"12px",fontWeight:"600",color:T.text,marginBottom:"2px"}}>Clips &amp; Shorts</div>
                           <div style={{fontSize:"10.5px",color:T.textMuted,lineHeight:"1.4"}}>Titles, captions &amp; hashtags per clip</div>
                         </button>
                         )}
@@ -2154,7 +2154,7 @@ The email should:
                       style={{background:T.card,border:`1px solid ${T.cardBorder}`,borderRadius:"13px",overflow:"hidden",cursor:"pointer",boxShadow:"0 1px 4px rgba(30,20,10,.06),0 4px 14px rgba(30,20,10,.05)",transition:"box-shadow .16s,transform .16s,border-color .16s"}}>
                       <div style={{padding:"14px 18px 12px",borderBottom:`1px solid ${T.cardBorder}`,display:"flex",alignItems:"center",justifyContent:"space-between",gap:"10px"}}>
                         <div style={{display:"flex",alignItems:"center",gap:"9px"}}>
-                          <div style={{width:"32px",height:"32px",borderRadius:"7px",background:"rgba(100,85,70,.09)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"14px",flexShrink:0}}>🎬</div>
+                          <div style={{width:"32px",height:"32px",borderRadius:"7px",background:"rgba(100,85,70,.09)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="2.5" width="8" height="9" rx="1" stroke="#7A5C4A" strokeWidth="1.4"/><path d="M9 5l4-2v8l-4-2V5z" stroke="#7A5C4A" strokeWidth="1.4" strokeLinejoin="round"/></svg></div>
                           <div>
                             <div style={{fontSize:"8px",fontWeight:"700",letterSpacing:"2px",textTransform:"uppercase",color:"#5A4F45",marginBottom:"3px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Editorial</div>
                             <div style={{fontFamily:SF,fontSize:"14px",fontWeight:"normal",color:T.text}}>Editor briefs &amp; clip guidance</div>
@@ -2173,7 +2173,7 @@ The email should:
                       style={{background:T.card,border:`1px solid ${T.cardBorder}`,borderRadius:"13px",overflow:"hidden",cursor:"pointer",boxShadow:"0 1px 4px rgba(30,20,10,.06),0 4px 14px rgba(30,20,10,.05)",transition:"box-shadow .16s,transform .16s,border-color .16s"}}>
                       <div style={{padding:"14px 18px 12px",borderBottom:`1px solid ${T.cardBorder}`,display:"flex",alignItems:"center",justifyContent:"space-between",gap:"10px"}}>
                         <div style={{display:"flex",alignItems:"center",gap:"9px"}}>
-                          <div style={{width:"32px",height:"32px",borderRadius:"7px",background:"rgba(60,70,90,.08)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"14px",flexShrink:0}}>📋</div>
+                          <div style={{width:"32px",height:"32px",borderRadius:"7px",background:"rgba(60,70,90,.08)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><svg width="13" height="14" viewBox="0 0 13 14" fill="none"><rect x="1" y="1.5" width="11" height="11" rx="1.5" stroke="#485060" strokeWidth="1.4"/><path d="M3.5 5h6M3.5 7.5h6M3.5 10h4" stroke="#485060" strokeWidth="1.2" strokeLinecap="round"/></svg></div>
                           <div>
                             <div style={{fontSize:"8px",fontWeight:"700",letterSpacing:"2px",textTransform:"uppercase",color:"#485060",marginBottom:"3px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Episode Planning</div>
                             <div style={{fontFamily:SF,fontSize:"14px",fontWeight:"normal",color:T.text}}>Plan before you record</div>
@@ -2192,7 +2192,7 @@ The email should:
                       style={{background:T.card,border:`1px solid ${T.cardBorder}`,borderRadius:"13px",overflow:"hidden",cursor:"pointer",boxShadow:"0 1px 4px rgba(30,20,10,.06),0 4px 14px rgba(30,20,10,.05)",transition:"box-shadow .16s,transform .16s,border-color .16s"}}>
                       <div style={{padding:"14px 18px 12px",borderBottom:`1px solid ${T.cardBorder}`,display:"flex",alignItems:"center",justifyContent:"space-between",gap:"10px"}}>
                         <div style={{display:"flex",alignItems:"center",gap:"9px"}}>
-                          <div style={{width:"32px",height:"32px",borderRadius:"7px",background:"rgba(30,30,30,.06)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"14px",flexShrink:0}}>🎙️</div>
+                          <div style={{width:"32px",height:"32px",borderRadius:"7px",background:"rgba(30,30,30,.06)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><svg width="13" height="14" viewBox="0 0 13 14" fill="none"><rect x="4" y="1" width="5" height="7" rx="2.5" stroke="#707070" strokeWidth="1.4"/><path d="M1.5 7.5A5 5 0 0011.5 7.5" stroke="#707070" strokeWidth="1.4" strokeLinecap="round"/><line x1="6.5" y1="12.5" x2="6.5" y2="10" stroke="#707070" strokeWidth="1.4" strokeLinecap="round"/></svg></div>
                           <div>
                             <div style={{fontSize:"8px",fontWeight:"700",letterSpacing:"2px",textTransform:"uppercase",color:"#707070",marginBottom:"3px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Podcast Assistant</div>
                             <div style={{fontFamily:SF,fontSize:"14px",fontWeight:"normal",color:T.text,display:"flex",alignItems:"baseline",gap:"7px"}}>Guest Finder <span style={{fontFamily:"'DM Sans', system-ui, sans-serif",fontSize:"7.5px",fontWeight:"800",letterSpacing:".8px",background:T.coral,color:"#fff",padding:"2px 5px",borderRadius:"3px",verticalAlign:"middle"}}>NEW</span></div>
