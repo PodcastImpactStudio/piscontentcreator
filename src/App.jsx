@@ -1813,7 +1813,7 @@ The email should:
     try {
       const systemPrompt = `You are an expert podcast editor coach helping the editor of "${d?.name || "this podcast"}".
 Show DNA context:
-- Voice/Tone: ${d?.voice?.traits?.join(", ") || "not specified"}
+- Voice/Tone: ${Array.isArray(d?.voice?.traits) ? d.voice.traits.join(", ") : (d?.voice?.traits || "not specified")}
 - Audience: ${d?.aud?.who || "not specified"}
 - Editing Level: ${{"1":"Level 1 — Clean & Clear (light touch, remove stumbles only)","2":"Level 2 — Crafted (tighten pacing, restructure if needed)","3":"Level 3 — Story-Driven (aggressive edits, documentary style)"}[d?.editingLevel||"1"]}
 - Episode Rules: ${d?.episodeRules?.join("; ") || "none"}
@@ -1853,7 +1853,7 @@ ${tx.substring(0, 40000)}`;
         setEditorLeftTab("transcript");
       }
     } catch (e) {
-      setEditorChat([...newMessages, { role: "assistant", content: "Error: " + (e?.message || JSON.stringify(e)) }]);
+      setEditorChat([...newMessages, { role: "assistant", content: "Sorry, something went wrong. Please try again." }]);
     } finally {
       setEditorChatLoading(false);
     }
