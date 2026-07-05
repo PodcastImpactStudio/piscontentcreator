@@ -2081,7 +2081,7 @@ The email should:
 
                 {/* Greeting */}
                 <div style={{marginBottom:"36px"}}>
-                  <div style={{fontSize:"13px",fontWeight:"700",letterSpacing:"2.5px",textTransform:"uppercase",color:T.coral,marginBottom:"12px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Good morning, {displayName?displayName.split(" ")[0]:"there"}</div>
+                  <div style={{fontSize:"13px",fontWeight:"700",letterSpacing:"2.5px",textTransform:"uppercase",color:T.coral,marginBottom:"12px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{(()=>{const h=new Date().getHours();return h<12?"Good morning":h<17?"Good afternoon":"Good evening";})()}, {displayName?displayName.split(" ")[0]:"there"}</div>
                   <h1 style={{fontFamily:SF,fontSize:"48px",fontWeight:"normal",color:T.text,margin:"0 0 12px",letterSpacing:"-1px",lineHeight:"1.1",textWrap:"balance"}}>Your podcast companion is ready.</h1>
                   <p style={{fontSize:"18px",color:T.textMuted,margin:0,fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.6",maxWidth:"560px"}}>Select your show, then choose a workflow — everything generated will match your voice and audience.</p>
                 </div>
