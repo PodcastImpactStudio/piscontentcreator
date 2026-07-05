@@ -1905,15 +1905,12 @@ ${tx.substring(0, 40000)}`;
   // Sidebar nav click handler
   function handleSidebarNav(newMode){
     if(Object.keys(shows).length===0&&isAdmin){setShowAdmin(true);return;}
-    const showKeys=Object.keys(shows);
+    const showKeys=Object.keys(shows).sort((a,b)=>shows[a].name.localeCompare(shows[b].name));
     if(show){
       advanceToMode(newMode, show);
-    } else if(showKeys.length===1){
+    } else if(showKeys.length>=1){
+      // Auto-select first show (alphabetically) and navigate directly
       advanceToMode(newMode, showKeys[0]);
-    } else {
-      // No show selected — go to welcome with mode pre-set so show selector auto-advances
-      setMode(newMode);
-      setStep("welcome");
     }
   }
 
@@ -1960,35 +1957,18 @@ ${tx.substring(0, 40000)}`;
           </div>
         )}
 
-        {/* Section Navigation */}
-        {(()=>{
-          const allowed = isClient && clientConfig?.allowedModes?.length > 0 ? clientConfig.allowedModes : null;
-          const navItems = [
-            {label:"Home",               section:"home",   action:()=>{setMode(null);setStep("welcome");setShow(null);},  visible:true},
-            {label:"Content Generation", section:"create", action:()=>{setMode(null);setStep("welcome");},              visible:!allowed||allowed.includes("full")||allowed.includes("clips")},
-            {label:"Editing Assistant",          section:"editor", action:()=>handleSidebarNav("editor"),           visible:!allowed||allowed.includes("editor")},
-            {label:"Episode Planning",   section:"prep",   action:()=>handleSidebarNav("prep"),             visible:!allowed||allowed.includes("prep")},
-            {label:"Guest Finder",       section:"guest",  action:()=>handleSidebarNav("guest"),            visible:!allowed||allowed.includes("guest")},
-          ].filter(i=>i.visible);
-          if(!navItems.length) return null;
-          return(
-          <div style={{padding:"8px 0",borderBottom:"1px solid #2E2E2E"}}>
-            <div style={{fontSize:"12px",color:"#555555",letterSpacing:"2px",textTransform:"uppercase",padding:"4px 16px 6px",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600"}}>NAVIGATE</div>
-            {navItems.map(item=>{
-              const isActive = item.section==="home" ? step==="welcome" : item.section==="create" ? (mode==="full"||mode==="clips") : item.section==="guest" ? mode==="guest" : mode===item.section;
-              return(
-              <button key={item.label} onClick={item.action}
-                style={{width:"100%",padding:"10px 16px",background:isActive?"#2E2E2E":"transparent",border:"none",borderLeft:`3px solid ${isActive?T.coral:"transparent"}`,color:isActive?"#FFFFFF":"#8A8A8A",fontSize:"15px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",display:"flex",alignItems:"center",gap:"10px",transition:"all .15s"}}
-                onMouseEnter={e=>{if(!isActive){e.currentTarget.style.background="#252525";e.currentTarget.style.color="#CCCCCC";}}}
-                onMouseLeave={e=>{if(!isActive){e.currentTarget.style.background="transparent";e.currentTarget.style.color="#8A8A8A";}}}>
-                <span style={{width:"6px",height:"6px",borderRadius:"50%",background:isActive?T.coral:"#444",flexShrink:0,display:"inline-block"}}/>
-                <span>{item.label}</span>
-              </button>
-              );
-            })}
-          </div>
-          );
-        })()}
+        {/* Home nav */}
+        <div style={{padding:"8px 0",borderBottom:"1px solid #2E2E2E"}}>
+          {(()=>{const isActive=step==="welcome";return(
+            <button onClick={()=>{setMode(null);setStep("welcome");setShow(null);}}
+              style={{width:"100%",padding:"10px 16px",background:isActive?"#2E2E2E":"transparent",border:"none",borderLeft:`3px solid ${isActive?T.coral:"transparent"}`,color:isActive?"#FFFFFF":"#8A8A8A",fontSize:"15px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",display:"flex",alignItems:"center",gap:"10px",transition:"all .15s"}}
+              onMouseEnter={e=>{if(!isActive){e.currentTarget.style.background="#252525";e.currentTarget.style.color="#CCCCCC";}}}
+              onMouseLeave={e=>{if(!isActive){e.currentTarget.style.background="transparent";e.currentTarget.style.color="#8A8A8A";}}}>
+              <span style={{width:"6px",height:"6px",borderRadius:"50%",background:isActive?T.coral:"#444",flexShrink:0,display:"inline-block"}}/>
+              <span>Home</span>
+            </button>
+          );})()}
+        </div>
 
         {/* Spacer */}
         <div style={{flex:1}}/>
@@ -2093,6 +2073,15 @@ ${tx.substring(0, 40000)}`;
           </div>
           {/* Progress + nav buttons */}
           <div style={{display:"flex",alignItems:"center",gap:"12px"}}>
+            {/* Compact show switcher — visible in all non-welcome steps */}
+            {step!=="welcome"&&Object.keys(shows).length>1&&(
+              <select value={show||""} onChange={e=>{if(e.target.value)advanceToMode(mode,e.target.value);}}
+                style={{height:"30px",padding:"0 8px",background:T.card,border:"1px solid "+T.cardBorder,borderRadius:"6px",color:T.textSecondary,fontSize:"12px",fontFamily:PF,cursor:"pointer",outline:"none",maxWidth:"140px"}}>
+                {[...Object.entries(shows)].sort(([,a],[,b])=>a.name.localeCompare(b.name)).map(([k,s])=>(
+                  <option key={k} value={k}>{s.name}</option>
+                ))}
+              </select>
+            )}
             {step!=="welcome"&&step!=="generating"&&(
               <>
                 {ci>0&&<div style={{display:"flex",gap:"3px",alignItems:"center"}}>
@@ -2162,7 +2151,7 @@ ${tx.substring(0, 40000)}`;
                     <div style={{flex:1,position:"relative"}}>
                       <select
                         value={show||""}
-                        onChange={e=>{const k=e.target.value;if(k){if(mode&&step==="welcome")advanceToMode(mode,k);else setShow(k);}else setShow(null);}}
+                        onChange={e=>{const k=e.target.value;if(k)setShow(k);else setShow(null);}}
                         className="sidebar-show-select"
                         style={{width:"100%",appearance:"none",background:"#fff",border:`1px solid ${T.cardBorder}`,borderRadius:"8px",padding:"11px 36px 11px 15px",fontSize:"16px",fontWeight:"600",color:show?T.text:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",cursor:"pointer",outline:"none"}}>
                         <option value="">Choose a show…</option>
@@ -2173,7 +2162,7 @@ ${tx.substring(0, 40000)}`;
                       <span style={{position:"absolute",right:"13px",top:"50%",transform:"translateY(-50%)",pointerEvents:"none",color:T.textMuted,fontSize:"12px"}}>▾</span>
                     </div>
                     <div style={{fontSize:"13px",color:show?"#3A6B3A":T.textMuted,whiteSpace:"nowrap",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:show?"600":"400"}}>
-                      {show?"DNA loaded ✓":mode&&step==="welcome"?<span style={{color:T.coral,fontWeight:"700"}}>Select a show to continue →</span>:"Show DNA loads automatically"}
+                      {show?"DNA loaded ✓":"Show DNA loads automatically"}
                     </div>
                   </div>
                 )}
