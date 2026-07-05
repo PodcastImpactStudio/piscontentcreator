@@ -1832,12 +1832,14 @@ When referencing specific moments in the transcript, quote the exact words verba
 Full transcript available for context (first 40,000 chars):
 ${tx.substring(0, 40000)}`;
 
-      const reply = await claudeAPI({
+      const j = await claudeAPI({
         model: "claude-sonnet-4-6",
         max_tokens: 1000,
         system: systemPrompt,
         messages: newMessages.map(m => ({ role: m.role, content: m.content })),
       });
+      const reply = j.content?.filter(i => i.type === "text").map(i => i.text).join("\n") || "";
+      if (!reply) throw new Error("Empty response");
       setEditorChat([...newMessages, { role: "assistant", content: reply }]);
       // Extract quoted phrases from the reply to highlight in transcript
       const quoted = [];
