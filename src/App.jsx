@@ -1212,6 +1212,7 @@ export default function App(){
   const[editorLeftTab,setEditorLeftTab]=useState("transcript");
   const[transcriptHighlights,setTranscriptHighlights]=useState([]);
   const[editorSelections,setEditorSelections]=useState({brief:true,clips:true,hook:false,pullquotes:false});
+  const[editorGenerating,setEditorGenerating]=useState(false);
   const[clipTexts,setClipTexts]=useState(Array(10).fill(""));
   const[clipResults,setClipResults]=useState([]);
   const[clipPlatforms,setClipPlatforms]=useState(["YouTube"]);
@@ -1817,17 +1818,17 @@ The email should:
     if(editorSelections.hook)sections.push(`INTRO HOOK RECOMMENDATIONS\n\nFind the 3 best moments for a podcast intro hook (spliced before theme music). Each under 60 seconds. For each:\n\nHOOK #[N] — [RECOMMENDED / ALTERNATE 1 / ALTERNATE 2]\nTIMESTAMP: [approx time]\nDURATION: [estimated]\nQUOTE: [exact words — [Speaker]]\nWHY THIS WORKS: [why it hooks this show's audience specifically]\nAUDIENCE TRIGGER: [emotional hook — e.g. Curiosity, Validation, Relief]`);
     if(editorSelections.pullquotes)sections.push(`PULL QUOTES\n\nFind 6-8 of the most shareable, standalone quotes. Each must be meaningful without episode context. For each:\n\nQUOTE: "[exact words]" — [Speaker]\nWHY IT RESONATES: [1 sentence — tied to audience pain points]\nBEST USE: [social graphic / newsletter / caption / article pull quote]`);
     const dnaBase=`You are an expert editor coach and content strategist for ${d.name}.\n\nOUTPUT FORMAT: PLAIN TEXT only. Zero markdown. No asterisks. No bold. ALL section headers in ALL CAPS. Separate major sections with ---.\n\nCRITICAL: Every quote pulled from the transcript must attribute the speaker by name — format as "quote text" — [Name]. Never leave a quote unattributed.\n\nSHOW DNA (all outputs must reflect this):\nShow: ${d.name} — "${d.tag}"\nHost(s): ${d.hosts}\n${guest?"GUEST episode.":"SOLO episode."}\nVoice/Tone: ${voiceTraits}\nEnergy: ${d.voice?.energy||""}\nAudience: ${d.aud?.who||""}\nAudience pain points: ${(d.aud?.pains||[]).join(", ")}\nWhat resonates with this audience: ${d.voice?.use||""}\nPhrases this show uses: ${(d.voice?.phrases||[]).join(" | ")}\nAvoid: ${d.voice?.avoid||""}\nEditing level: ${lvl.name} — ${lvl.desc}\nShow rules: ${d.rules||"none"}\n\nGenerate ONLY the sections below. Analyze the full transcript carefully before writing. Every output must be grounded in what actually appears in this specific transcript — not generic podcast advice.`;
-    setBusy(true);setErr("");setSecs([]);setStep("generating");
+    setEditorGenerating(true);setErr("");setSecs([]);
     try{
-      const j=await claudeAPI({model:"claude-sonnet-4-6",max_tokens:6000,system:dnaBase,messages:[{role:"user",content:`Analyze this transcript and generate the following sections:\n\n${sections.join("\n\n---\n\n")}\n\nTRANSCRIPT:\n${tx.substring(0,90000)}`}]});
-      if(j.error){setErr(j.error.message||"Error generating.");setStep("result");return;}
+      const j=await claudeAPI({model:"claude-sonnet-4-6",max_tokens:6000,system:dnaBase,messages:[{role:"user",content:`Analyze this transcript and generate ONLY the following sections. Do not add any other sections or content beyond what is listed below:\n\n${sections.join("\n\n---\n\n")}\n\nTRANSCRIPT:\n${tx.substring(0,90000)}`}]});
+      if(j.error){setErr(j.error.message||"Error generating.");return;}
       const t=j.content?.filter(i=>i.type==="text").map(i=>i.text).join("\n")||"";
-      if(!t.trim()){setErr("No content generated. Please try again.");setStep("result");return;}
+      if(!t.trim()){setErr("No content generated. Please try again.");return;}
       setRaw(strip(t));const parsed=parse(t);
       setSecs(parsed.length?parsed:[{id:"full",title:"Editor Brief",content:strip(t)}]);
-      setEditorLeftTab("brief");setStep("result");
-    }catch(e){setErr(e.message||"Network error.");setStep("result");}
-    finally{setBusy(false);}
+      setEditorLeftTab("brief");
+    }catch(e){setErr(e.message||"Network error.");}
+    finally{setEditorGenerating(false);}
   }
 
   async function sendEditorChat(messageText) {
@@ -2698,7 +2699,7 @@ ${tx.substring(0, 40000)}`;
                 </div>
               ):(<>
               {/* Editor mode — show generator when empty, results when populated */}
-              {mode==="editor"&&secs.length===0?(
+              {mode==="editor"&&(secs.length===0||editorGenerating)?(
                 <div>
                   {/* DNA context banner */}
                   {(()=>{const lvl=d?.editingLevel||"1";const lvlLabels={"1":"Level 1 — Clean & Clear","2":"Level 2 — Paced & Polished","3":"Level 3 — Story-Driven"};const voiceTraits=Array.isArray(d?.voice?.traits)?d.voice.traits.join(", "):(d?.voice?.traits||"");return(<div style={{background:T.coralSoft,border:"1px solid "+T.coralMid,borderRadius:"10px",padding:"16px 20px",marginBottom:"20px"}}>
@@ -2740,10 +2741,18 @@ ${tx.substring(0, 40000)}`;
                       ))}
                     </div>
                   </div>}
-                  <button onClick={genEditorSelective} disabled={!tx.trim()||!Object.values(editorSelections).some(Boolean)} style={{width:"100%",padding:"14px",background:tx.trim()&&Object.values(editorSelections).some(Boolean)?T.coral:"#ccc",border:"none",borderRadius:"8px",color:"#fff",fontSize:"15px",fontWeight:"700",cursor:tx.trim()&&Object.values(editorSelections).some(Boolean)?"pointer":"not-allowed",fontFamily:PF,letterSpacing:"0.5px",transition:"all .2s"}}>
-                    Generate Selected Outputs →
-                  </button>
-                  {!tx.trim()&&<div style={{fontSize:"12px",color:T.textMuted,fontFamily:PF,textAlign:"center",marginTop:"8px"}}>Paste your transcript in the Transcript tab first</div>}
+                  {editorGenerating?(
+                    <div style={{textAlign:"center",padding:"32px 0"}}>
+                      <div style={{width:"32px",height:"32px",border:`2px solid ${T.cardBorder}`,borderTopColor:T.coral,borderRadius:"50%",animation:"spin 1s linear infinite",margin:"0 auto 14px"}}/>
+                      <div style={{fontSize:"14px",color:T.textMuted,fontFamily:PF}}>Analyzing transcript and generating…</div>
+                      <div style={{fontSize:"12px",color:T.coral,marginTop:"6px",fontFamily:PF,letterSpacing:"1px"}}>THIS TAKES ABOUT 30 SECONDS</div>
+                    </div>
+                  ):(
+                    <button onClick={genEditorSelective} disabled={!tx.trim()||!Object.values(editorSelections).some(Boolean)} style={{width:"100%",padding:"14px",background:tx.trim()&&Object.values(editorSelections).some(Boolean)?T.coral:"#ccc",border:"none",borderRadius:"8px",color:"#fff",fontSize:"15px",fontWeight:"700",cursor:tx.trim()&&Object.values(editorSelections).some(Boolean)?"pointer":"not-allowed",fontFamily:PF,letterSpacing:"0.5px",transition:"all .2s"}}>
+                      Generate Selected Outputs →
+                    </button>
+                  )}
+                  {!editorGenerating&&!tx.trim()&&<div style={{fontSize:"12px",color:T.textMuted,fontFamily:PF,textAlign:"center",marginTop:"8px"}}>Paste your transcript in the Transcript tab first</div>}
                 </div>
               ):(
               <>
