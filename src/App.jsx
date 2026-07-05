@@ -744,8 +744,8 @@ function OnboardingScreen({ step, user, orgId, orgName, userProfile, onProfileDo
     <div style={{ minHeight:"100vh", background:T.bg, display:"flex", alignItems:"center", justifyContent:"center", padding:"24px" }}>
       <div style={{ width:"100%", maxWidth:"520px" }}>
         {/* Logo */}
-        <div style={{ display:"flex", justifyContent:"center", marginBottom:"48px" }}>
-          <img src="/logo-nav.png" alt="Podcast Impact Content Studio" style={{ height:"240px", objectFit:"contain" }} />
+        <div style={{ display:"flex", justifyContent:"center", marginBottom:"40px" }}>
+          <img src="/logo-nav.png" alt="Podcast Impact Content Studio" style={{ height:"96px", objectFit:"contain" }} />
         </div>
 
         {step === "profile" && (
@@ -786,35 +786,37 @@ function OnboardingScreen({ step, user, orgId, orgName, userProfile, onProfileDo
 
         {step === "guide" && (
           <div style={{ animation:"fadeUp .4s ease", maxWidth:"600px" }}>
-            <div style={{ textAlign:"center", marginBottom:"40px" }}>
-              <div style={{ fontSize:"48px", marginBottom:"16px" }}>🎉</div>
-              <h1 style={{ fontSize:"36px", fontWeight:"700", color:T.text, margin:"0 0 12px", fontFamily:PF, lineHeight:"1.2" }}>You're all set up!</h1>
-              <p style={{ fontSize:"16px", color:T.textMuted, margin:0, lineHeight:"1.7", fontFamily:"'DM Sans', system-ui, sans-serif" }}>
-                Here's how Podcast Impact Content Studio works:
+            <div style={{ textAlign:"center", marginBottom:"36px" }}>
+              <div style={{ fontSize:"40px", marginBottom:"14px" }}>🎉</div>
+              <h1 style={{ fontSize:"32px", fontWeight:"700", color:T.text, margin:"0 0 10px", fontFamily:PF, lineHeight:"1.2" }}>Welcome to the studio!</h1>
+              <p style={{ fontSize:"15px", color:T.textMuted, margin:0, lineHeight:"1.7", fontFamily:PF }}>
+                Here's everything this tool can do for you:
               </p>
             </div>
-            <div style={{ display:"flex", flexDirection:"column", gap:"16px", marginBottom:"40px" }}>
+            <div style={{ display:"flex", flexDirection:"column", gap:"12px", marginBottom:"36px" }}>
               {[
-                { n:"01", icon:"🧬", title:"Set up your Show DNA", desc:"Add your show's voice, audience, platforms, and boilerplate once. The AI uses this to write in your exact style every time." },
-                { n:"02", icon:"📋", title:"Paste a transcript", desc:"Copy and paste any episode transcript — or upload a .txt or .docx file. No formatting needed." },
-                { n:"03", icon:"✨", title:"Get your full content package", desc:"Show notes, YouTube description, social posts, newsletter, blog post — all generated in your show's voice, ready to use." },
+                { icon:"🧬", title:"Show DNA", desc:"Your show's identity — voice, audience, platforms, boilerplate. Set it once and every piece of content is written in your exact style." },
+                { icon:"📦", title:"Full Content Package", desc:"Paste a transcript and get show notes, YouTube description, social captions, email newsletter, and blog post — all at once." },
+                { icon:"✂️", title:"Clips & Shorts", desc:"Add individual clip timestamps and get platform-specific content written around each clip." },
+                { icon:"🎬", title:"Editor Companion", desc:"Hook recommendations, pacing notes, clip timestamps, and a structured brief for your video editor — with Descript jump links." },
+                { icon:"📋", title:"Episode Prep + Sage", desc:"Plan upcoming episodes with Sage, your AI planning buddy. Generate guest research, discussion questions, and a full run-of-show." },
+                { icon:"🔍", title:"Guest Research", desc:"Deep-dive research on any guest — background, talking points, suggested questions — in your show's voice." },
               ].map(s=>(
-                <div key={s.n} style={{ background:T.card, border:`1px solid ${T.cardBorder}`, borderRadius:"12px", padding:"20px 24px", display:"flex", gap:"16px", alignItems:"flex-start" }}>
-                  <div style={{ fontSize:"28px", flexShrink:0 }}>{s.icon}</div>
+                <div key={s.title} style={{ background:T.bg, border:`1px solid ${T.cardBorder}`, borderRadius:"10px", padding:"16px 20px", display:"flex", gap:"14px", alignItems:"flex-start" }}>
+                  <div style={{ fontSize:"22px", flexShrink:0, marginTop:"1px" }}>{s.icon}</div>
                   <div>
-                    <div style={{ fontSize:"11px", color:T.coral, fontWeight:"700", letterSpacing:"2px", marginBottom:"4px" }}>{s.n}</div>
-                    <div style={{ fontSize:"16px", fontWeight:"700", color:T.text, marginBottom:"6px", fontFamily:PF }}>{s.title}</div>
-                    <div style={{ fontSize:"14px", color:T.textSecondary, lineHeight:"1.6", fontFamily:"'DM Sans', system-ui, sans-serif" }}>{s.desc}</div>
+                    <div style={{ fontSize:"14px", fontWeight:"700", color:T.text, marginBottom:"3px", fontFamily:PF }}>{s.title}</div>
+                    <div style={{ fontSize:"13px", color:T.textSecondary, lineHeight:"1.6", fontFamily:PF }}>{s.desc}</div>
                   </div>
                 </div>
               ))}
             </div>
             <div style={{ textAlign:"center" }}>
-              <button onClick={onAddShow} style={{ padding:"16px 40px", background:T.coral, border:"none", borderRadius:"8px", color:"#fff", fontSize:"16px", fontWeight:"700", cursor:"pointer", letterSpacing:"1px", fontFamily:"'DM Sans', system-ui, sans-serif" }}>
+              <button onClick={onAddShow} style={{ padding:"15px 40px", background:T.coral, border:"none", borderRadius:"8px", color:"#fff", fontSize:"16px", fontWeight:"700", cursor:"pointer", fontFamily:PF }}>
                 Set Up My First Show →
               </button>
-              <p style={{ fontSize:"13px", color:T.textMuted, marginTop:"12px", fontFamily:"'DM Sans', system-ui, sans-serif" }}>
-                You can always update your show DNA later from the Admin panel.
+              <p style={{ fontSize:"13px", color:T.textMuted, marginTop:"12px", fontFamily:PF }}>
+                Your Show DNA is the foundation — everything gets generated from it.
               </p>
             </div>
           </div>
@@ -856,7 +858,7 @@ function BetaDisclaimerModal({ onAcknowledge }) {
   const FF = "'DM Sans', system-ui, sans-serif";
   const points = [
     { icon: "🔄", title: "Regular Updates", text: "We're actively building and improving the app. You may notice new features and occasional changes." },
-    { icon: "🐛", title: "Found a Bug? Tell Us.", text: "Email info@podcastimpactstudio.com — your feedback directly shapes what we build next." },
+    { icon: "🐛", title: "Found a Bug? Tell Us.", text: "Email tamar@podcastimpactstudio.com — your feedback directly shapes what we build next." },
     { icon: "🎁", title: "Free During Beta", text: "As a beta tester you have full access at no cost. Pricing takes effect at public launch." },
   ];
   return (
@@ -892,40 +894,59 @@ function BetaDisclaimerModal({ onAcknowledge }) {
 
 // ── ONBOARDING TOUR ────────────────────────────────────────────────────────────
 const TOUR_STEPS = [
-  { icon: "🎙️", title: "Welcome to Your Content Studio", body: "Podcast Impact Content Studio turns your episode transcripts into complete, publish-ready content packages — show notes, social captions, YouTube descriptions, newsletters, and more. All written in your show's voice." },
-  { icon: "📋", title: "Start by Selecting a Show", body: "Your show library lives on the home screen. Each card represents a show with its own DNA — voice, audience, platforms, and style. Click a show to start creating content for it. Admins can manage shows in the Show DNA Manager (⚙️ icon)." },
-  { icon: "🎬", title: "Four Powerful Modes", body: "Full Content Package — everything from one transcript.\nClips & Shorts — content written around specific clip timestamps.\nEditor Companion — hook recs, pacing notes, and a brief for your editor.\nEpisode Prep — AI-generated research docs, guest prep, and run-of-show." },
-  { icon: "📝", title: "Add Your Transcript", body: "Paste your full episode transcript directly into the text area, or upload a .txt file. The AI reads the whole thing — the longer and more complete it is, the better the output. Show notes, social, email, blog — all generated at once." },
-  { icon: "✨", title: "Your Content Package is Ready", body: "Generated content appears in organized sections you can copy individually or download as a formatted Word doc. You can also revise any section with a custom instruction — just click 'Edit' next to any section and type what you want changed." },
+  {
+    icon: "🧬",
+    title: "Start with Your Show DNA",
+    body: "Your Show DNA is the foundation of everything. Set your show's voice, audience, platforms, boilerplate, and episode format once — and every piece of content will be written to match. You can update it anytime from the Admin panel.",
+  },
+  {
+    icon: "📦",
+    title: "Full Content Package",
+    body: "Select a show, choose Full Content Package, and paste your transcript. The AI generates show notes, a YouTube description, social captions for every platform, an email newsletter, and a blog post — all at once, all in your show's voice.",
+  },
+  {
+    icon: "✂️",
+    title: "Clips & Shorts + Editor Companion",
+    body: "Clips & Shorts lets you add individual clip timestamps and get short-form content written around each one.\n\nEditor Companion generates hook recommendations, pacing notes, clip timestamps, and a brief for your video editor — complete with Descript jump links so your editor can jump straight to any moment.",
+  },
+  {
+    icon: "📋",
+    title: "Episode Prep + Sage",
+    body: "Episode Prep helps you plan before you record. Choose your episode format and let Sage — your AI planning buddy — help you think through the episode structure, talking points, and flow.\n\nFor guest episodes, paste the guest's bio and website to generate tailored discussion questions and a full run-of-show.",
+  },
+  {
+    icon: "🔍",
+    title: "Guest Research",
+    body: "Enter a guest's name and links to get a deep-dive research document — background, key talking points, and suggested questions — all written in your show's style.\n\nYou can copy any section, download a Word doc, or use the Edit button on any section to rewrite it with a specific instruction.",
+  },
 ];
 
 function TourModal({ onDone }) {
   const [step, setStep] = useState(0);
-  const FF = "'DM Sans', system-ui, sans-serif";
   const s = TOUR_STEPS[step];
   const isLast = step === TOUR_STEPS.length - 1;
   return (
-    <div style={{ position:"fixed", inset:0, background:"rgba(26,26,26,0.6)", backdropFilter:"blur(4px)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:9998, padding:"20px" }}>
-      <div style={{ background:T.card, border:"1px solid "+T.cardBorder, borderRadius:"20px", padding:"44px 40px", maxWidth:"540px", width:"100%", boxShadow:"0 24px 64px rgba(0,0,0,0.22)" }}>
+    <div style={{ position:"fixed", inset:0, background:"rgba(26,26,26,0.55)", backdropFilter:"blur(4px)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:9998, padding:"20px" }}>
+      <div style={{ background:T.card, border:"1px solid "+T.cardBorder, borderRadius:"20px", padding:"40px", maxWidth:"560px", width:"100%", boxShadow:"0 24px 64px rgba(0,0,0,0.18)" }}>
         {/* Step dots */}
-        <div style={{ display:"flex", justifyContent:"center", gap:"6px", marginBottom:"32px" }}>
+        <div style={{ display:"flex", justifyContent:"center", gap:"6px", marginBottom:"28px" }}>
           {TOUR_STEPS.map((_, i) => (
             <div key={i} onClick={() => setStep(i)} style={{ width: i === step ? "20px" : "6px", height:"6px", borderRadius:"3px", background: i === step ? T.coral : T.cardBorder, transition:"all .25s", cursor:"pointer" }} />
           ))}
         </div>
         <div style={{ textAlign:"center", marginBottom:"28px" }}>
-          <div style={{ fontSize:"48px", marginBottom:"16px" }}>{s.icon}</div>
-          <div style={{ fontSize:"22px", fontWeight:"700", color:T.text, fontFamily:FF, marginBottom:"14px", lineHeight:"1.3" }}>{s.title}</div>
-          <div style={{ fontSize:"14px", color:T.textSecondary, fontFamily:FF, lineHeight:"1.8", whiteSpace:"pre-line" }}>{s.body}</div>
+          <div style={{ fontSize:"44px", marginBottom:"14px" }}>{s.icon}</div>
+          <div style={{ fontSize:"20px", fontWeight:"700", color:T.text, fontFamily:PF, marginBottom:"14px", lineHeight:"1.3" }}>{s.title}</div>
+          <div style={{ fontSize:"14px", color:T.textSecondary, fontFamily:PF, lineHeight:"1.85", whiteSpace:"pre-line", textAlign:"left" }}>{s.body}</div>
         </div>
         <div style={{ display:"flex", gap:"10px" }}>
-          {step > 0 && <button onClick={() => setStep(s => s - 1)} style={{ flex:1, padding:"13px", background:"transparent", border:"1px solid "+T.cardBorder, borderRadius:"10px", color:T.textSecondary, fontSize:"14px", fontWeight:"600", cursor:"pointer", fontFamily:FF }}>← Back</button>}
-          <button onClick={() => isLast ? onDone() : setStep(s => s + 1)} style={{ flex:1, padding:"13px", background:T.coral, border:"none", borderRadius:"10px", color:"#fff", fontSize:"14px", fontWeight:"700", cursor:"pointer", fontFamily:FF }}>
-            {isLast ? "Let's Create! 🚀" : "Next →"}
+          {step > 0 && <button onClick={() => setStep(s => s - 1)} style={{ flex:1, padding:"13px", background:"transparent", border:"1px solid "+T.cardBorder, borderRadius:"10px", color:T.textMuted, fontSize:"14px", fontWeight:"600", cursor:"pointer", fontFamily:PF }}>← Back</button>}
+          <button onClick={() => isLast ? onDone() : setStep(s => s + 1)} style={{ flex:1, padding:"13px", background:T.coral, border:"none", borderRadius:"10px", color:"#fff", fontSize:"14px", fontWeight:"700", cursor:"pointer", fontFamily:PF }}>
+            {isLast ? "Start Creating →" : "Next →"}
           </button>
         </div>
         <div style={{ textAlign:"center", marginTop:"14px" }}>
-          <button onClick={onDone} style={{ background:"none", border:"none", color:T.textMuted, fontSize:"12px", cursor:"pointer", fontFamily:FF }}>Skip tour</button>
+          <button onClick={onDone} style={{ background:"none", border:"none", color:T.textMuted, fontSize:"12px", cursor:"pointer", fontFamily:PF }}>Skip tour</button>
         </div>
       </div>
     </div>
