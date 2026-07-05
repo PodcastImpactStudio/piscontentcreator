@@ -1231,6 +1231,8 @@ export default function App(){
   const[onboardingComplete,setOnboardingComplete]=useState(true);
   const[onboardingStep,setOnboardingStep]=useState(null);
   const[accountType,setAccountType]=useState("agency");
+  const[orgPlan,setOrgPlan]=useState("beta");
+  const[betaExpired,setBetaExpired]=useState(false);
   const fileRef=useRef(null);
   const[showUserMenu,setShowUserMenu]=useState(false);
   const userMenuRef=useRef(null);
@@ -1730,11 +1732,17 @@ The email should:
       // Load onboarding state
       if (myOrgId) {
         const { data: orgData } = await supabase.from("organizations")
-          .select("onboarding_complete, account_type").eq("id", myOrgId).single();
+          .select("onboarding_complete, account_type, plan, beta_expires_at").eq("id", myOrgId).single();
         const complete = orgData?.onboarding_complete ?? true;
         setOnboardingComplete(complete);
         setAccountType(orgData?.account_type || "agency");
         if (!complete) setOnboardingStep("profile");
+        const plan = orgData?.plan || "beta";
+        setOrgPlan(plan);
+        if (orgData?.beta_expires_at && plan === "beta") {
+          const expired = new Date(orgData.beta_expires_at) < new Date();
+          setBetaExpired(expired);
+        }
       }
     } catch {
       // If no profile yet, check by email
@@ -1757,6 +1765,8 @@ The email should:
     setOnboardingComplete(true);
     setOnboardingStep(null);
     setAccountType("agency");
+    setOrgPlan("beta");
+    setBetaExpired(false);
     reset();
   }
 
@@ -1955,6 +1965,40 @@ ${tx.substring(0, 40000)}`;
   // Show auth screen if not logged in
   if(!authReady||!currentUser){
     return <Auth onAuthenticated={handleAuthenticated}/>;
+  }
+
+  // Show beta-expired screen
+  if(betaExpired){
+    return(
+      <div style={{minHeight:"100vh",width:"100%",background:T.bg,display:"flex",alignItems:"center",justifyContent:"center",padding:"24px"}}>
+        <style>{`*{box-sizing:border-box}@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}`}</style>
+        <div style={{width:"100%",maxWidth:"520px",animation:"fadeUp .4s ease"}}>
+          <div style={{display:"flex",justifyContent:"center",marginBottom:"40px"}}>
+            <img src="/logo-nav.png" alt="Podcast Impact Content Studio" style={{height:"180px",objectFit:"contain"}}/>
+          </div>
+          <div style={{background:T.card,border:`1px solid ${T.cardBorder}`,borderRadius:"16px",padding:"40px",textAlign:"center"}}>
+            <div style={{fontSize:"40px",marginBottom:"16px"}}>⏰</div>
+            <h1 style={{fontSize:"28px",fontWeight:"700",color:T.text,margin:"0 0 12px",fontFamily:PF,lineHeight:"1.2"}}>Your free beta has ended</h1>
+            <p style={{fontSize:"15px",color:T.textMuted,margin:"0 0 28px",lineHeight:"1.7",fontFamily:"'DM Sans', system-ui, sans-serif"}}>
+              Thank you for being one of our beta users — your feedback has been invaluable.
+              To continue using Podcast Impact Content Studio, reach out to us about our early adopter pricing.
+            </p>
+            <a href="mailto:tamar@podcastimpactstudio.com?subject=Continuing after beta"
+               style={{display:"inline-block",padding:"14px 32px",background:T.coral,borderRadius:"8px",color:"#fff",fontSize:"15px",fontWeight:"700",textDecoration:"none",fontFamily:"'DM Sans', system-ui, sans-serif",marginBottom:"20px"}}>
+              Get Early Adopter Pricing →
+            </a>
+            <div style={{borderTop:`1px solid ${T.cardBorder}`,paddingTop:"20px",marginTop:"4px"}}>
+              <button onClick={handleSignOut} style={{background:"transparent",border:"none",color:T.textMuted,fontSize:"13px",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif"}}>
+                Sign out
+              </button>
+            </div>
+          </div>
+          <p style={{textAlign:"center",fontSize:"12px",color:T.textMuted,marginTop:"20px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>
+            Questions? Email <a href="mailto:tamar@podcastimpactstudio.com" style={{color:T.coral}}>tamar@podcastimpactstudio.com</a>
+          </p>
+        </div>
+      </div>
+    );
   }
 
   // Show onboarding for new users who haven't added a show yet
