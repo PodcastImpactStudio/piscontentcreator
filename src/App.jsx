@@ -1989,6 +1989,18 @@ ${tx.substring(0, 40000)}`;
         )}
 
 
+        {/* Home nav */}
+        <div style={{padding:"8px 0",borderBottom:"1px solid #2E2E2E"}}>
+          {(()=>{const isActive=step==="welcome";return(
+            <button onClick={()=>{setMode(null);setStep("welcome");setShow(null);}}
+              className="sidebar-nav-item"
+              style={{width:"100%",padding:"9px 16px",background:isActive?"#2E2E2E":"transparent",border:"none",borderLeft:`3px solid ${isActive?T.coral:"transparent"}`,color:isActive?"#FFFFFF":"#8A8A8A",fontSize:"14px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",display:"flex",alignItems:"center",gap:"10px",transition:"all .15s"}}>
+              <span style={{width:"6px",height:"6px",borderRadius:"50%",background:isActive?T.coral:"#444",flexShrink:0,display:"inline-block"}}/>
+              <span>Home</span>
+            </button>
+          );})()}
+        </div>
+
         {/* Spacer */}
         <div style={{flex:1}}/>
 
