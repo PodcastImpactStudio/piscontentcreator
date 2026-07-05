@@ -1037,8 +1037,8 @@ export function AdminGate({ onSuccess, onClose }) {
   );
 }
 
-export function AdminPanel({ shows, orgId, onClose, onSaved, accountType = "agency", userEmail = "", userName = "", onSignOut }) {
-  const [adminView, setAdminView] = useState("shows");
+export function AdminPanel({ shows, orgId, onClose, onSaved, accountType = "agency", userEmail = "", userName = "", onSignOut, initialView = "shows" }) {
+  const [adminView, setAdminView] = useState(initialView);
   const [selKey, setSelKey] = useState(null);
   const [form, setForm] = useState(null);
   const [tab, setTab] = useState("basic");

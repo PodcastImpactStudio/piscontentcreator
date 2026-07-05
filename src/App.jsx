@@ -1210,6 +1210,7 @@ export default function App(){
   const[clipResults,setClipResults]=useState([]);
   const[clipPlatforms,setClipPlatforms]=useState(["YouTube"]);
   const[showAdmin,setShowAdmin]=useState(false);
+  const[adminInitialView,setAdminInitialView]=useState("shows");
   const[showAdminGate,setShowAdminGate]=useState(false);
   const[isAdmin,setIsAdmin]=useState(false);
   const[isClient,setIsClient]=useState(false);
@@ -1806,7 +1807,7 @@ The email should:
     return(
       <div style={{minHeight:"100vh",width:"100%",background:T.bg,color:T.text}}>
         <style>{`*{box-sizing:border-box}@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}button:hover{opacity:.85}`}</style>
-        {showAdmin&&<AdminPanel shows={shows} orgId={orgId} accountType={accountType} userEmail={currentUser?.email} userName={userProfile?.name||(currentUser?.email?.split("@")[0]||"")} onSignOut={handleSignOut} onClose={()=>setShowAdmin(false)} onSaved={async()=>{await refreshShows();await markOnboardingComplete();setShowAdmin(false);}}/>}
+        {showAdmin&&<AdminPanel shows={shows} orgId={orgId} accountType={accountType} userEmail={currentUser?.email} userName={userProfile?.name||(currentUser?.email?.split("@")[0]||"")} onSignOut={handleSignOut} initialView={adminInitialView} onClose={()=>{setShowAdmin(false);setAdminInitialView("shows");}} onSaved={async()=>{await refreshShows();await markOnboardingComplete();setShowAdmin(false);setAdminInitialView("shows");}}/>}
         <OnboardingScreen
           step={onboardingStep}
           user={currentUser}
@@ -1866,7 +1867,7 @@ The email should:
       <style>{`*{box-sizing:border-box}@keyframes spin{to{transform:rotate(360deg)}}@keyframes pulse{0%,100%{opacity:.3}50%{opacity:1}}@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}textarea::placeholder,input::placeholder{color:${T.textMuted}}button:hover{opacity:.85}::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#3A3A3A;border-radius:2px}a{transition:opacity .2s}a:hover{opacity:.7}.sidebar-nav-item:hover{background:#252525}.sidebar-show-select:focus{outline:2px solid #C41230;border-color:#C41230}@media(max-width:900px){.welcome-cards{grid-template-columns:repeat(2,1fr)!important}}@media(max-width:560px){.welcome-cards{grid-template-columns:1fr!important}}`}</style>
 
       {showProfile&&currentUser&&<Profile user={currentUser} onClose={()=>setShowProfile(false)} onSignOut={handleSignOut}/>}
-      {showAdmin&&<AdminPanel shows={shows} orgId={orgId} accountType={accountType} userEmail={currentUser?.email} userName={userProfile?.name||(currentUser?.email?.split("@")[0]||"")} onSignOut={handleSignOut} onClose={()=>setShowAdmin(false)} onSaved={async()=>{await refreshShows();if(!onboardingComplete)await markOnboardingComplete();}}/>}
+      {showAdmin&&<AdminPanel shows={shows} orgId={orgId} accountType={accountType} userEmail={currentUser?.email} userName={userProfile?.name||(currentUser?.email?.split("@")[0]||"")} onSignOut={handleSignOut} initialView={adminInitialView} onClose={()=>{setShowAdmin(false);setAdminInitialView("shows");}} onSaved={async()=>{await refreshShows();if(!onboardingComplete)await markOnboardingComplete();}}/>}
 
       {/* BETA DISCLAIMER — shown once per user account */}
       {!betaAcknowledged&&<BetaDisclaimerModal onAcknowledge={()=>{const key="pis_beta_ack_"+(currentUser?.id||"anon");localStorage.setItem(key,"1");setBetaAcknowledged(true);setShowTour(true);}}/>}
@@ -1985,7 +1986,7 @@ The email should:
                       {label:"My Profile",action:()=>{setShowProfile(true);setShowUserMenu(false);}},
                       ...(isAdmin?[
                         {label:"Podcast Settings",action:()=>{setShowAdmin(true);setShowUserMenu(false);}},
-                        {label:"Workspace Settings",action:()=>{setShowAdmin(true);setShowUserMenu(false);}},
+                        {label:"Workspace Settings",action:()=>{setAdminInitialView("settings");setShowAdmin(true);setShowUserMenu(false);}},
                       ]:[]),
                     ].map(item=>(
                       <button key={item.label} onClick={item.action}
