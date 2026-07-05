@@ -1211,7 +1211,7 @@ export default function App(){
   const[editorChatLoading,setEditorChatLoading]=useState(false);
   const[editorLeftTab,setEditorLeftTab]=useState("transcript");
   const[transcriptHighlights,setTranscriptHighlights]=useState([]);
-  const[editorSelections,setEditorSelections]=useState({brief:true,clips:true,hook:false,pullquotes:false,shownotes:false,chapters:false,newsletter:false,social:false});
+  const[editorSelections,setEditorSelections]=useState({brief:true,clips:true,hook:false,pullquotes:false});
   const[clipTexts,setClipTexts]=useState(Array(10).fill(""));
   const[clipResults,setClipResults]=useState([]);
   const[clipPlatforms,setClipPlatforms]=useState(["YouTube"]);
@@ -1810,17 +1810,12 @@ The email should:
     if(!selected.length)return;
     const lvlData={"1":{name:"Level 1 — Clean & Clear",desc:"Light technical cleanup only. Remove dead-air, mic bumps, false starts, audio dropouts. Do NOT restructure or remove content for pacing reasons."},"2":{name:"Level 2 — Crafted",desc:"Everything in Level 1, plus: surface strongest hook, remove repetitive points, tighten pacing. The episode should sound intentional without sounding produced."},"3":{name:"Level 3 — Story-Driven",desc:"Everything in Levels 1 and 2, plus: reconstruct the arc, edit aggressively, add b-roll. The episode should feel like a documentary."}};
     const lvl=lvlData[d.editingLevel||"1"];
-    const platforms=[...(d.platforms?.p||[]),...(d.platforms?.s||[])].join(", ")||"Instagram, LinkedIn";
     const voiceTraits=Array.isArray(d.voice?.traits)?d.voice.traits.join(", "):(d.voice?.traits||"");
     const sections=[];
     if(editorSelections.brief)sections.push(`EDITOR COMPANION BRIEF\n\nEDITING LEVEL: ${lvl.name}\n\nEPISODE OVERVIEW\n[2-3 sentences on tone, energy, and narrative arc. What's the core message? What makes it worth listening to?]\n\nEDITING APPROACH FOR THIS EPISODE\n[Specific marching orders for the editor based on this episode and editing level. Not generic advice — tied to what you heard in this transcript.]\n\nSECTIONS TO CUT OR TIGHTEN\n[List specific moments with timestamps. For each:\nTIMESTAMP: [start — end]\nREASON: [why cut or tighten]\nSUGGESTION: [cut entirely / trim / restructure]]`);
     if(editorSelections.clips)sections.push(`SOCIAL CLIP RECOMMENDATIONS\n\nFind exactly ${editorClipCount} moments for high-performing social clips. Each must be under 60 seconds when spoken. For each:\n\nCLIP #[N]\nCLIP TITLE: [4-7 word punchy title]\nTIMESTAMP: [exact start — exact end]\nDURATION: [estimated — must be under 60 seconds]\nBEST PLATFORM: [Instagram Reels / TikTok / YouTube Shorts / LinkedIn — pick ONE]\nQUOTE: [exact words where clip starts and ends — [Speaker]]\nWHY IT PERFORMS: [why this stops the scroll for this show's audience]\nSUGGESTED CAPTION HOOK: [one punchy first line]`);
     if(editorSelections.hook)sections.push(`INTRO HOOK RECOMMENDATIONS\n\nFind the 3 best moments for a podcast intro hook (spliced before theme music). Each under 60 seconds. For each:\n\nHOOK #[N] — [RECOMMENDED / ALTERNATE 1 / ALTERNATE 2]\nTIMESTAMP: [approx time]\nDURATION: [estimated]\nQUOTE: [exact words — [Speaker]]\nWHY THIS WORKS: [why it hooks this show's audience specifically]\nAUDIENCE TRIGGER: [emotional hook — e.g. Curiosity, Validation, Relief]`);
     if(editorSelections.pullquotes)sections.push(`PULL QUOTES\n\nFind 6-8 of the most shareable, standalone quotes. Each must be meaningful without episode context. For each:\n\nQUOTE: "[exact words]" — [Speaker]\nWHY IT RESONATES: [1 sentence — tied to audience pain points]\nBEST USE: [social graphic / newsletter / caption / article pull quote]`);
-    if(editorSelections.shownotes)sections.push(`SHOW NOTES\n\n[Write a compelling 150-200 word show notes paragraph. Hook question first — no podcast name or episode number as the opener. Then what listeners will learn. Use the show's voice. End with a clear call-to-action. No boilerplate — it is appended separately.]`);
-    if(editorSelections.chapters)sections.push(`CHAPTER MARKERS\n\n[Generate YouTube-style chapter timestamps based on the transcript. Format: MM:SS — Chapter Title. Start at 00:00. Each chapter title should be descriptive and searchable. Use exact timestamps from the transcript markers. Include 6-12 chapters.]`);
-    if(editorSelections.newsletter)sections.push(`NEWSLETTER TEASER\n\nSUBJECT LINE: [compelling email subject, 6-10 words, no clickbait]\nPREVIEW TEXT: [preview snippet under 50 characters]\n\n[Write a 100-150 word newsletter-style episode teaser. Conversational, value-forward, sounds like the host's voice. End with "Listen here →"]`);
-    if(editorSelections.social)sections.push(`SOCIAL CAPTIONS\n\n[Write platform-specific social captions for each platform: ${platforms}. Each caption should feel native to the platform. Include relevant hashtags from the show's tag list: ${d.tags||""}. Separate each platform with its name in ALL CAPS.]`);
     const dnaBase=`You are an expert editor coach and content strategist for ${d.name}.\n\nOUTPUT FORMAT: PLAIN TEXT only. Zero markdown. No asterisks. No bold. ALL section headers in ALL CAPS. Separate major sections with ---.\n\nCRITICAL: Every quote pulled from the transcript must attribute the speaker by name — format as "quote text" — [Name]. Never leave a quote unattributed.\n\nSHOW DNA (all outputs must reflect this):\nShow: ${d.name} — "${d.tag}"\nHost(s): ${d.hosts}\n${guest?"GUEST episode.":"SOLO episode."}\nVoice/Tone: ${voiceTraits}\nEnergy: ${d.voice?.energy||""}\nAudience: ${d.aud?.who||""}\nAudience pain points: ${(d.aud?.pains||[]).join(", ")}\nWhat resonates with this audience: ${d.voice?.use||""}\nPhrases this show uses: ${(d.voice?.phrases||[]).join(" | ")}\nAvoid: ${d.voice?.avoid||""}\nEditing level: ${lvl.name} — ${lvl.desc}\nShow rules: ${d.rules||"none"}\n\nGenerate ONLY the sections below. Analyze the full transcript carefully before writing. Every output must be grounded in what actually appears in this specific transcript — not generic podcast advice.`;
     setBusy(true);setErr("");setSecs([]);setStep("generating");
     try{
@@ -2723,14 +2718,10 @@ ${tx.substring(0, 40000)}`;
                   <div style={{fontSize:"13px",fontWeight:"700",letterSpacing:"2px",color:T.textMuted,fontFamily:PF,marginBottom:"12px"}}>WHAT WOULD YOU LIKE TO GENERATE?</div>
                   <div style={{display:"flex",flexDirection:"column",gap:"8px",marginBottom:"20px"}}>
                     {[
-                      ["brief","Editor Companion Brief","Cut notes, pacing analysis, episode overview"],
-                      ["clips","Best Clip Moments",`${editorClipCount} clips with timestamps, quotes, and caption hooks`],
+                      ["brief","Editor Companion Brief","What to cut, pacing notes, and episode overview"],
+                      ["clips","Best Clip Moments",`${editorClipCount} clips with timestamps, quotes, and why they perform`],
                       ["hook","Cold Open / Hook","Top 3 intro hook moments ranked by impact"],
-                      ["pullquotes","Pull Quotes","6-8 shareable standalone quotes for social"],
-                      ["shownotes","Show Notes","150-200 word episode summary"],
-                      ["chapters","Chapter Markers","YouTube-style timestamped chapters"],
-                      ["newsletter","Newsletter Teaser","Subject line + 100-word email teaser"],
-                      ["social","Social Captions","Platform-native captions for each channel"],
+                      ["pullquotes","Pull Quotes","6-8 shareable standalone quotes to flag for your social team"],
                     ].map(([key,label,desc])=>(
                       <label key={key} style={{display:"flex",alignItems:"flex-start",gap:"12px",padding:"12px 16px",background:editorSelections[key]?T.coralSoft:T.card,border:"1px solid "+(editorSelections[key]?T.coralMid:T.cardBorder),borderRadius:"8px",cursor:"pointer",transition:"all .15s"}}>
                         <input type="checkbox" checked={editorSelections[key]} onChange={e=>setEditorSelections(s=>({...s,[key]:e.target.checked}))} style={{marginTop:"2px",accentColor:T.coral,flexShrink:0,width:"16px",height:"16px"}}/>
