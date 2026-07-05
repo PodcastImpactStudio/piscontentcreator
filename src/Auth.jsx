@@ -107,6 +107,7 @@ const TIMEZONES = [
 // ── LOGIN SCREEN ──────────────────────────────────────────────────────────────
 function LandingScreen({ onSignup, onLogin }) {
   const FF = "'DM Sans', system-ui, sans-serif";
+  const SF = "Georgia, 'Times New Roman', serif";
   // Deep red palette — matches the logo's dark crimson
   const DR  = "#7A0019";   // deep red primary
   const DRS = "#7A001912"; // soft tint
@@ -156,7 +157,7 @@ function LandingScreen({ onSignup, onLogin }) {
           Beta — Limited Spots Available
         </div>
 
-        <h1 style={{ fontSize: "clamp(38px, 6vw, 68px)", fontWeight: "800", color: "#1A1A1A", margin: "0 0 18px", lineHeight: "1.08", letterSpacing: "-1.5px", maxWidth: "820px", marginLeft: "auto", marginRight: "auto" }}>
+        <h1 style={{ fontSize: "clamp(38px, 6vw, 68px)", fontWeight: "normal", color: "#1A1A1A", margin: "0 0 18px", lineHeight: "1.08", letterSpacing: "-1.5px", maxWidth: "820px", marginLeft: "auto", marginRight: "auto", fontFamily: SF }}>
           Your show's DNA.<br />
           <span style={{ color: DR }}>Your content. Automatically.</span>
         </h1>
@@ -182,7 +183,7 @@ function LandingScreen({ onSignup, onLogin }) {
       <div style={{ background: "#F7F3EE", padding: "72px 24px" }}>
         <div style={{ textAlign: "center", marginBottom: "48px" }}>
           <div style={{ fontSize: "11px", fontWeight: "700", letterSpacing: "3px", textTransform: "uppercase", color: DR, marginBottom: "12px" }}>How It Works</div>
-          <h2 style={{ fontSize: "clamp(26px, 4vw, 38px)", fontWeight: "700", color: "#1A1A1A", margin: 0, letterSpacing: "-0.5px" }}>Three steps. One content package.</h2>
+          <h2 style={{ fontSize: "clamp(26px, 4vw, 38px)", fontWeight: "normal", color: "#1A1A1A", margin: 0, letterSpacing: "-0.5px", fontFamily: SF }}>Three steps. One content package.</h2>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "20px", maxWidth: "900px", margin: "0 auto" }}>
           {[
@@ -192,7 +193,7 @@ function LandingScreen({ onSignup, onLogin }) {
           ].map(s => (
             <div key={s.n} style={{ background: "#FFFFFF", border: "1px solid #E5DDD4", borderRadius: "12px", padding: "32px 28px" }}>
               <div style={{ fontSize: "12px", color: DR, fontWeight: "800", letterSpacing: "2px", marginBottom: "16px", fontFamily: FF }}>{s.n}</div>
-              <div style={{ fontSize: "17px", fontWeight: "700", color: "#1A1A1A", marginBottom: "10px", lineHeight: "1.35", fontFamily: "'DM Serif Display', Georgia, serif" }}>{s.title}</div>
+              <div style={{ fontSize: "17px", fontWeight: "normal", color: "#1A1A1A", marginBottom: "10px", lineHeight: "1.35", fontFamily: SF }}>{s.title}</div>
               <div style={{ fontSize: "14px", color: "#5A4F46", lineHeight: "1.75" }}>{s.desc}</div>
             </div>
           ))}
@@ -213,7 +214,7 @@ function LandingScreen({ onSignup, onLogin }) {
       <div style={{ background: "#F7F3EE", padding: "80px 24px" }}>
         <div style={{ textAlign: "center", marginBottom: "52px" }}>
           <div style={{ fontSize: "11px", fontWeight: "700", letterSpacing: "3px", textTransform: "uppercase", color: DR, marginBottom: "12px" }}>Pricing</div>
-          <h2 style={{ fontSize: "clamp(26px, 4vw, 38px)", fontWeight: "700", color: "#1A1A1A", margin: "0 0 12px", letterSpacing: "-0.5px" }}>Simple, transparent pricing</h2>
+          <h2 style={{ fontSize: "clamp(26px, 4vw, 38px)", fontWeight: "normal", color: "#1A1A1A", margin: "0 0 12px", letterSpacing: "-0.5px", fontFamily: SF }}>Simple, transparent pricing</h2>
           <p style={{ fontSize: "15px", color: "#6B5E52", margin: 0 }}>Free during beta — pricing takes effect at public launch.</p>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "24px", maxWidth: "740px", margin: "0 auto" }}>
@@ -264,6 +265,7 @@ function LandingScreen({ onSignup, onLogin }) {
 
 function LoginScreen({ onLogin, onSignup }) {
   const { T } = useTheme();
+  const SF = "Georgia, 'Times New Roman', serif";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -328,11 +330,11 @@ function LoginScreen({ onLogin, onSignup }) {
       <div style={{ width: "100%", maxWidth: "400px" }}>
         <div style={{ textAlign: "center", marginBottom: "40px" }}>
           <img src="/logo-auth.png" alt="Podcast Impact Studio" style={{ height: "112px", width: "auto", marginBottom: "16px" }} />
-          <div style={{ fontSize: "36px", fontWeight: "800", color: T.text, letterSpacing: "-0.5px", fontFamily: "'DM Sans', system-ui, sans-serif" }}>Podcast Impact Studio</div>
+          <div style={{ fontSize: "36px", fontWeight: "normal", color: T.text, letterSpacing: "-0.5px", fontFamily: SF }}>Podcast Impact Studio</div>
           <div style={{ fontSize: "18px", color: T.textMuted, marginTop: "8px", fontFamily: "'DM Sans', system-ui, sans-serif" }}>Content Creator</div>
         </div>
         <div style={{ background: T.card, border: "1px solid " + T.cardBorder, borderRadius: "12px", padding: "32px" }}>
-          <div style={{ fontSize: "26px", fontWeight: "700", color: T.text, marginBottom: "24px", fontFamily: "'DM Sans', system-ui, sans-serif" }}>Sign in</div>
+          <div style={{ fontSize: "26px", fontWeight: "normal", color: T.text, marginBottom: "24px", fontFamily: SF }}>Sign in</div>
           <input
             type="email" placeholder="Email address" value={email}
             onChange={e => setEmail(e.target.value)}
@@ -383,6 +385,7 @@ const ROLES = [
 
 function SignupScreen({ onSwitch, onAuthenticated }) {
   const { T } = useTheme();
+  const SF = "Georgia, 'Times New Roman', serif";
   const [accountType, setAccountType] = useState("solo");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -520,7 +523,7 @@ function SignupScreen({ onSwitch, onAuthenticated }) {
           <img src="/logo-auth.png" alt="Podcast Impact Studio" style={{ height: "80px", width: "auto", marginBottom: "32px" }} />
           <div style={{ background: T.card, border: "1px solid " + T.cardBorder, borderRadius: "16px", padding: "48px 40px" }}>
             <div style={{ fontSize: "48px", marginBottom: "20px" }}>📬</div>
-            <div style={{ fontSize: "26px", fontWeight: "700", color: T.text, fontFamily: "'DM Sans', system-ui, sans-serif", marginBottom: "14px", letterSpacing: "-0.3px" }}>
+            <div style={{ fontSize: "26px", fontWeight: "normal", color: T.text, fontFamily: SF, marginBottom: "14px", letterSpacing: "-0.3px" }}>
               Check your inbox
             </div>
             <div style={{ fontSize: "15px", color: T.textSecondary, fontFamily: "'DM Sans', system-ui, sans-serif", lineHeight: "1.7", marginBottom: "28px" }}>
@@ -547,7 +550,7 @@ function SignupScreen({ onSwitch, onAuthenticated }) {
       <div style={{ width: "100%", maxWidth: "480px" }}>
         <div style={{ textAlign: "center", marginBottom: "36px" }}>
           <img src="/logo-auth.png" alt="Podcast Impact Studio" style={{ height: "112px", width: "auto", marginBottom: "16px" }} />
-          <div style={{ fontSize: "34px", fontWeight: "700", color: T.text, letterSpacing: "-0.5px", fontFamily: "'DM Sans', system-ui, sans-serif", lineHeight: "1.2" }}>Create your workspace</div>
+          <div style={{ fontSize: "34px", fontWeight: "normal", color: T.text, letterSpacing: "-0.5px", fontFamily: SF, lineHeight: "1.2" }}>Create your workspace</div>
           <div style={{ fontSize: "15px", color: T.textMuted, marginTop: "8px", fontFamily: "'DM Sans', system-ui, sans-serif" }}>All your podcasts, team, and content in one place.</div>
         </div>
         <div style={{ background: T.card, border: "1px solid " + T.cardBorder, borderRadius: "12px", padding: "32px" }}>
