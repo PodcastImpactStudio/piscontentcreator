@@ -104,158 +104,111 @@ const TIMEZONES = [
 ];
 
 
-// ── LOGIN SCREEN ──────────────────────────────────────────────────────────────
+// ── LANDING SCREEN ────────────────────────────────────────────────────────────
 function LandingScreen({ onSignup, onLogin }) {
   const FF = "'DM Sans', system-ui, sans-serif";
   const SF = "Georgia, 'Times New Roman', serif";
-  // Deep red palette — matches the logo's dark crimson
-  const DR  = "#7A0019";   // deep red primary
-  const DRS = "#7A001912"; // soft tint
-  const DRM = "#7A001930"; // mid tint
-  const DRH = "#9B0020";   // hover (slightly lighter)
-
-  const plans = [
-    {
-      name: "Solo",
-      price: "$19.99",
-      period: "/month",
-      desc: "Perfect for independent podcasters who want professional-grade content without the complexity.",
-      features: ["Up to 3 shows", "1 seat", "All content types", "Google Drive export"],
-      cta: "Join the Beta",
-      highlight: false,
-    },
-    {
-      name: "Studio",
-      price: "$69",
-      period: "/month",
-      desc: "Built for podcast production companies managing multiple shows and teams.",
-      features: ["Up to 10 shows", "5 team seats", "All content types", "Google Drive export"],
-      cta: "Join the Beta",
-      highlight: true,
-    },
-  ];
+  const BG = "#F5F0E8";
+  const DR = "#7A0019";
+  const DRH = "#9B0020";
 
   return (
-    <div style={{ minHeight: "100vh", background: "#F7F3EE", fontFamily: FF }}>
+    <div style={{ minHeight: "100vh", background: BG, fontFamily: FF }}>
 
       {/* ── Header ── */}
-      <div style={{ background: "#111111", padding: "0 48px", height: "96px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <img src="/logo-nav.png" alt="Podcast Impact Content Studio" style={{ height: "90px", objectFit: "contain" }} />
+      <div style={{ background: "#FFFFFF", borderBottom: "1px solid #E2D9CC", padding: "0 40px", height: "72px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <img src="/logo-nav.png" alt="Podcast Impact Content Studio" style={{ height: "64px", objectFit: "contain" }} />
         <button
           onClick={onLogin}
-          onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.08)"; }}
-          onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
-          style={{ padding: "8px 22px", background: "transparent", border: "1px solid rgba(255,255,255,0.25)", borderRadius: "6px", color: "rgba(255,255,255,0.85)", fontSize: "14px", cursor: "pointer", fontFamily: FF, fontWeight: "500", transition: "background .15s" }}>
+          onMouseEnter={e => { e.currentTarget.style.borderColor = DR; e.currentTarget.style.color = DR; }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = "#C8BAB0"; e.currentTarget.style.color = "#6B5E52"; }}
+          style={{ padding: "9px 22px", background: "transparent", border: "1px solid #C8BAB0", borderRadius: "6px", color: "#6B5E52", fontSize: "14px", cursor: "pointer", fontFamily: FF, fontWeight: "500", transition: "all .15s" }}>
           Sign In
         </button>
       </div>
 
       {/* ── Hero ── */}
-      <div style={{ background: "#F7F3EE", padding: "96px 24px 100px", textAlign: "center" }}>
-        {/* Beta badge */}
-        <div style={{ display: "inline-block", border: "1px solid rgba(122,0,25,0.35)", background: "rgba(122,0,25,0.08)", borderRadius: "20px", padding: "5px 18px", fontSize: "11px", color: DR, fontWeight: "700", letterSpacing: "2.5px", textTransform: "uppercase", marginBottom: "36px" }}>
-          Beta — Limited Spots Available
+      <div style={{ maxWidth: "680px", margin: "0 auto", padding: "80px 24px 72px", textAlign: "center" }}>
+
+        <div style={{ display: "inline-block", border: "1px solid rgba(122,0,25,0.3)", background: "rgba(122,0,25,0.07)", borderRadius: "20px", padding: "5px 18px", fontSize: "11px", color: DR, fontWeight: "700", letterSpacing: "2.5px", textTransform: "uppercase", marginBottom: "32px" }}>
+          Private Beta
         </div>
 
-        <h1 style={{ fontSize: "clamp(38px, 6vw, 68px)", fontWeight: "normal", color: "#1A1A1A", margin: "0 0 18px", lineHeight: "1.08", letterSpacing: "-1.5px", maxWidth: "820px", marginLeft: "auto", marginRight: "auto", fontFamily: SF }}>
-          Your show's DNA.<br />
-          <span style={{ color: DR }}>Your content. Automatically.</span>
+        <h1 style={{ fontSize: "clamp(34px, 5.5vw, 58px)", fontWeight: "normal", color: "#1A1A1A", margin: "0 0 20px", lineHeight: "1.1", letterSpacing: "-1px", fontFamily: SF }}>
+          Your show's voice.<br />
+          <span style={{ color: DR }}>Your content. Done.</span>
         </h1>
 
-        <p style={{ fontSize: "18px", color: "#4A3F35", maxWidth: "560px", margin: "0 auto 48px", lineHeight: "1.75", fontWeight: "400" }}>
-          Enter your show's voice, audience, and platforms once. Then paste any transcript and get a complete content package — show notes, social, email, blog — all in your show's voice.
+        <p style={{ fontSize: "17px", color: "#4A3F35", margin: "0 0 16px", lineHeight: "1.8", fontWeight: "400" }}>
+          Podcast Impact Content Studio turns episode transcripts into a complete content package — show notes, social captions, newsletters, blog posts — all written in your show's exact voice.
+        </p>
+        <p style={{ fontSize: "15px", color: "#6B5E52", margin: "0 0 44px", lineHeight: "1.7" }}>
+          You set up your Show DNA once. Then paste a transcript and get everything in seconds. No templates, no rewrites — just content that actually sounds like you.
         </p>
 
         <button
           onClick={onSignup}
-          onMouseEnter={e => { e.currentTarget.style.background = DRH; e.currentTarget.style.boxShadow = "0 8px 32px rgba(122,0,25,0.5)"; }}
-          onMouseLeave={e => { e.currentTarget.style.background = DR; e.currentTarget.style.boxShadow = "0 4px 20px rgba(122,0,25,0.4)"; }}
-          style={{ padding: "16px 44px", background: DR, border: "none", borderRadius: "8px", color: "#fff", fontSize: "17px", fontWeight: "700", cursor: "pointer", fontFamily: FF, letterSpacing: "0.3px", boxShadow: "0 4px 20px rgba(122,0,25,0.4)", transition: "all .2s" }}>
+          onMouseEnter={e => { e.currentTarget.style.background = DRH; e.currentTarget.style.boxShadow = "0 6px 24px rgba(122,0,25,0.45)"; }}
+          onMouseLeave={e => { e.currentTarget.style.background = DR; e.currentTarget.style.boxShadow = "0 3px 16px rgba(122,0,25,0.35)"; }}
+          style={{ padding: "15px 44px", background: DR, border: "none", borderRadius: "8px", color: "#fff", fontSize: "16px", fontWeight: "700", cursor: "pointer", fontFamily: FF, letterSpacing: "0.3px", boxShadow: "0 3px 16px rgba(122,0,25,0.35)", transition: "all .2s" }}>
           Create Your Account →
         </button>
 
-        <div style={{ marginTop: "16px", fontSize: "13px", color: "#8B7D72", letterSpacing: "0.3px" }}>
-          Access code required · No credit card during beta
+        <div style={{ marginTop: "14px", fontSize: "13px", color: "#8B7D72" }}>
+          Access code required · Free during beta · No credit card
         </div>
       </div>
 
-      {/* ── How it works ── */}
-      <div style={{ background: "#F7F3EE", padding: "72px 24px" }}>
-        <div style={{ textAlign: "center", marginBottom: "48px" }}>
-          <div style={{ fontSize: "11px", fontWeight: "700", letterSpacing: "3px", textTransform: "uppercase", color: DR, marginBottom: "12px" }}>How It Works</div>
-          <h2 style={{ fontSize: "clamp(26px, 4vw, 38px)", fontWeight: "normal", color: "#1A1A1A", margin: 0, letterSpacing: "-0.5px", fontFamily: SF }}>Three steps. One content package.</h2>
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "20px", maxWidth: "900px", margin: "0 auto" }}>
-          {[
-            { n: "01", title: "Set Up Your Show DNA", desc: "Tell us about your show once — voice, audience, platforms, boilerplate. We remember everything." },
-            { n: "02", title: "Paste Your Transcript", desc: "Drop in any episode transcript. We handle the rest — no formatting needed." },
-            { n: "03", title: "Get Your Content Package", desc: "Show notes, YouTube, social, newsletter, blog — all generated in your show's exact voice." },
-          ].map(s => (
-            <div key={s.n} style={{ background: "#FFFFFF", border: "1px solid #E5DDD4", borderRadius: "12px", padding: "32px 28px" }}>
-              <div style={{ fontSize: "12px", color: DR, fontWeight: "800", letterSpacing: "2px", marginBottom: "16px", fontFamily: FF }}>{s.n}</div>
-              <div style={{ fontSize: "17px", fontWeight: "normal", color: "#1A1A1A", marginBottom: "10px", lineHeight: "1.35", fontFamily: SF }}>{s.title}</div>
-              <div style={{ fontSize: "14px", color: "#5A4F46", lineHeight: "1.75" }}>{s.desc}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ── What you get strip ── */}
-      <div style={{ background: "#111111", padding: "48px 24px" }}>
-        <div style={{ maxWidth: "860px", margin: "0 auto", display: "flex", flexWrap: "wrap", gap: "10px", justifyContent: "center" }}>
-          {["Show Notes","YouTube Description","Social Captions","Email Newsletter","Blog Post","Quote Cards","Episode Prep","Guest Research","Short-Form Content"].map(item => (
-            <div key={item} style={{ padding: "8px 18px", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "20px", fontSize: "13px", color: "rgba(255,255,255,0.75)", fontWeight: "500" }}>{item}</div>
-          ))}
-        </div>
-        <div style={{ textAlign: "center", marginTop: "20px", fontSize: "13px", color: "rgba(255,255,255,0.3)", letterSpacing: "1px" }}>Everything generated from one transcript. Nothing left to write.</div>
-      </div>
-
-      {/* ── Pricing ── */}
-      <div style={{ background: "#F7F3EE", padding: "80px 24px" }}>
-        <div style={{ textAlign: "center", marginBottom: "52px" }}>
-          <div style={{ fontSize: "11px", fontWeight: "700", letterSpacing: "3px", textTransform: "uppercase", color: DR, marginBottom: "12px" }}>Pricing</div>
-          <h2 style={{ fontSize: "clamp(26px, 4vw, 38px)", fontWeight: "normal", color: "#1A1A1A", margin: "0 0 12px", letterSpacing: "-0.5px", fontFamily: SF }}>Simple, transparent pricing</h2>
-          <p style={{ fontSize: "15px", color: "#6B5E52", margin: 0 }}>Free during beta — pricing takes effect at public launch.</p>
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "24px", maxWidth: "740px", margin: "0 auto" }}>
-          {plans.map(p => (
-            <div key={p.name} style={{ background: p.highlight ? "#111111" : "#FFFFFF", border: "1px solid " + (p.highlight ? DR : "#E5DDD4"), borderRadius: "16px", padding: "40px 36px", position: "relative" }}>
-              {p.highlight && (
-                <div style={{ position: "absolute", top: "-14px", left: "50%", transform: "translateX(-50%)", background: DR, color: "#fff", fontSize: "10px", fontWeight: "800", letterSpacing: "2.5px", padding: "5px 18px", borderRadius: "20px", textTransform: "uppercase", whiteSpace: "nowrap" }}>Most Popular</div>
-              )}
-              <div style={{ fontSize: "11px", color: p.highlight ? "#E8A0A8" : DR, fontWeight: "800", letterSpacing: "3px", textTransform: "uppercase", marginBottom: "12px" }}>{p.name}</div>
-              <div style={{ display: "flex", alignItems: "baseline", gap: "4px", marginBottom: "12px" }}>
-                <span style={{ fontSize: "44px", fontWeight: "800", color: p.highlight ? "#FFFFFF" : "#1A1A1A", letterSpacing: "-2px" }}>{p.price}</span>
-                <span style={{ fontSize: "15px", color: p.highlight ? "rgba(255,255,255,0.45)" : "#8A7A6E" }}>{p.period}</span>
+      {/* ── What you get ── */}
+      <div style={{ background: "#FFFFFF", borderTop: "1px solid #E2D9CC", borderBottom: "1px solid #E2D9CC", padding: "56px 24px" }}>
+        <div style={{ maxWidth: "860px", margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: "40px" }}>
+            <div style={{ fontSize: "11px", fontWeight: "700", letterSpacing: "3px", textTransform: "uppercase", color: DR, marginBottom: "10px" }}>What gets created</div>
+            <p style={{ fontSize: "15px", color: "#6B5E52", margin: 0 }}>Paste one transcript. Walk away with all of this.</p>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "12px" }}>
+            {[
+              { label: "Show Notes", desc: "SEO-ready, in your voice" },
+              { label: "YouTube Description", desc: "With timestamps & links" },
+              { label: "Social Captions", desc: "Platform-specific posts" },
+              { label: "Email Newsletter", desc: "Subscriber-ready recap" },
+              { label: "Blog Post", desc: "Long-form, fully written" },
+              { label: "Episode Prep", desc: "Guest research & questions" },
+            ].map(item => (
+              <div key={item.label} style={{ background: BG, border: "1px solid #E2D9CC", borderRadius: "10px", padding: "18px 20px" }}>
+                <div style={{ fontSize: "14px", fontWeight: "600", color: "#1A1A1A", marginBottom: "4px" }}>{item.label}</div>
+                <div style={{ fontSize: "12px", color: "#8B7D72" }}>{item.desc}</div>
               </div>
-              <div style={{ fontSize: "14px", color: p.highlight ? "rgba(255,255,255,0.55)" : "#5A4F46", marginBottom: "28px", lineHeight: "1.65" }}>{p.desc}</div>
-              <div style={{ borderTop: "1px solid " + (p.highlight ? "rgba(255,255,255,0.1)" : "#E5DDD4"), paddingTop: "24px", marginBottom: "32px" }}>
-                {p.features.map(f => (
-                  <div key={f} style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "12px", fontSize: "14px", color: p.highlight ? "rgba(255,255,255,0.8)" : "#1A1A1A" }}>
-                    <span style={{ color: p.highlight ? "#E8A0A8" : DR, fontWeight: "700", fontSize: "15px", flexShrink: 0 }}>✓</span>
-                    {f}
-                  </div>
-                ))}
-              </div>
-              <button
-                onClick={onSignup}
-                onMouseEnter={e => { e.currentTarget.style.background = p.highlight ? DRH : DR; e.currentTarget.style.color = "#fff"; }}
-                onMouseLeave={e => { e.currentTarget.style.background = p.highlight ? DR : "transparent"; e.currentTarget.style.color = p.highlight ? "#fff" : DR; }}
-                style={{ width: "100%", padding: "15px", background: p.highlight ? DR : "transparent", border: "1.5px solid " + DR, borderRadius: "8px", color: p.highlight ? "#fff" : DR, fontSize: "15px", fontWeight: "700", cursor: "pointer", fontFamily: FF, transition: "all .15s" }}>
-                {p.cta}
-              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Note from Tamar ── */}
+      <div style={{ maxWidth: "600px", margin: "0 auto", padding: "64px 24px" }}>
+        <div style={{ background: "#FFFFFF", border: "1px solid #E2D9CC", borderRadius: "12px", padding: "36px 40px" }}>
+          <div style={{ fontSize: "11px", fontWeight: "700", letterSpacing: "3px", textTransform: "uppercase", color: DR, marginBottom: "20px" }}>A note from Tamar</div>
+          <p style={{ fontSize: "15px", color: "#4A3F35", lineHeight: "1.85", margin: "0 0 20px", fontFamily: SF, fontStyle: "italic" }}>
+            "I built this for podcast producers who are tired of spending hours on content that should take minutes. If you're in the beta, it's because I think you'll get real value from it — and I want your honest feedback."
+          </p>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <div>
+              <div style={{ fontSize: "14px", fontWeight: "600", color: "#1A1A1A" }}>Tamar Medford</div>
+              <div style={{ fontSize: "12px", color: "#8B7D72" }}>Podcast Impact Studio</div>
             </div>
-          ))}
+          </div>
         </div>
       </div>
 
       {/* ── Footer ── */}
-      <div style={{ background: "#111111", padding: "28px 24px", textAlign: "center" }}>
-        <div style={{ fontSize: "13px", color: "rgba(255,255,255,0.3)" }}>
+      <div style={{ borderTop: "1px solid #E2D9CC", padding: "24px", textAlign: "center" }}>
+        <div style={{ fontSize: "13px", color: "#8B7D72" }}>
           © {new Date().getFullYear()} Podcast Impact Studio ·{" "}
-          <span style={{ cursor: "pointer", color: "rgba(255,255,255,0.45)", textDecoration: "underline" }} onClick={onLogin}>Sign in</span>
+          <span style={{ cursor: "pointer", color: DR }} onClick={onLogin}>Sign in</span>
           {" · "}
-          <a href="/privacy.html" target="_blank" rel="noopener" style={{ color: "rgba(255,255,255,0.45)", textDecoration: "underline" }}>Privacy Policy</a>
+          <a href="/privacy.html" target="_blank" rel="noopener" style={{ color: "#8B7D72", textDecoration: "underline" }}>Privacy Policy</a>
+          {" · "}
+          <a href={"mailto:tamar@podcastimpactstudio.com"} style={{ color: "#8B7D72", textDecoration: "underline" }}>tamar@podcastimpactstudio.com</a>
         </div>
       </div>
 
