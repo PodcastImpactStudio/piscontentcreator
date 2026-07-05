@@ -1243,11 +1243,16 @@ export default function App(){
   const[selectedFormat,setSelectedFormat]=useState(null);
   const[epGuest,setEpGuest]=useState("");
   const[epGuestUrl,setEpGuestUrl]=useState("");
+  const[epGuestPaste,setEpGuestPaste]=useState("");
   const[epTopic,setEpTopic]=useState("");
   const[epTakeaway,setEpTakeaway]=useState("");
   const[epMoments,setEpMoments]=useState("");
   const[epPanelists,setEpPanelists]=useState("");
   const[epPlanRequest,setEpPlanRequest]=useState("");
+  const[prepExtras,setPrepExtras]=useState({hook:false,bridge:false,permissionSlip:false,openingQuestions:false});
+  const[plannerChat,setPlannerChat]=useState([]);
+  const[plannerInput,setPlannerInput]=useState("");
+  const[plannerLoading,setPlannerLoading]=useState(false);
   const[showSaveFormat,setShowSaveFormat]=useState(false);
   const[saveFormatName,setSaveFormatName]=useState("");
   const[saveFormatOk,setSaveFormatOk]=useState(false);
@@ -1259,7 +1264,7 @@ export default function App(){
 
   const d=show?shows[show]:null;
   const clr=d?.clr||T.coral;
-  const ci={welcome:0,configure:1,"clips-setup":2,input:2,generating:2,result:2,"prep-format":1,"prep-details":2,"guest-setup":1,"guest-results":2}[step]||0;
+  const ci={welcome:0,configure:1,"clips-setup":2,input:2,generating:2,result:2,"prep-format":1,"prep-details":2,"planner-chat":2,"guest-setup":1,"guest-results":2}[step]||0;
 
   useEffect(()=>{
     if(!authReady)return;
@@ -1380,6 +1385,8 @@ EPISODE DETAILS:
 Guest/Topic: ${epTopic || "[not specified]"}
 ${epGuest ? `Guest Name: ${epGuest}` : ""}
 ${epGuestUrl ? `Guest URL/Handle: ${epGuestUrl}` : ""}
+${epGuestPaste ? `RAW GUEST INFO (pasted from email/form/bio — extract details from this):
+${epGuestPaste}` : ""}
 One Takeaway: ${epTakeaway || "[not specified — suggest the single most listener-relevant takeaway from this guest/topic in the Episode Overview, labeled SUGGESTED TAKEAWAY]"}
 ${epMoments ? `Key Moments/Angles: ${epMoments}` : ""}
 ${epPanelists ? `Additional Panelists: ${epPanelists}` : ""}
@@ -1393,6 +1400,13 @@ HOW TO HANDLE THIS REQUEST:
 - If they are asking you to SUGGEST or brainstorm topics: add a "SUGGESTED TOPICS" section near the top with 3–5 specific, on-brand topic ideas (each with a one-line why-it-fits), then prep the strongest one in full below.
 - If it's a single solo or guest episode: just plan it in full as instructed below.
 - TOPIC FRESHNESS: You do NOT have live web access. When you reference what's "trending," base it on general knowledge and clearly label it [BASED ON GENERAL KNOWLEDGE — please verify it's still current]. Never fabricate specific recent events, statistics, or headlines.` : ""}
+
+${(prepExtras.hook||prepExtras.bridge||prepExtras.permissionSlip||prepExtras.openingQuestions)?`EXTRAS REQUESTED (generate these in addition to the main outline):
+${prepExtras.hook?"- HOOK OPTIONS: Write 3 alternate hook scripts (30 seconds / ~75 words each) the host can choose from.":""}
+${prepExtras.bridge?"- BRIDGE: Write a personal bridge script the host can read and personalize.":""}
+${prepExtras.permissionSlip?"- PERMISSION SLIP CLOSE: Write the full permission slip close with exact sign-off line.":""}
+${prepExtras.openingQuestions?"- OPENING QUESTIONS: Write 3–5 strong opening questions to kick off the conversation.":""}
+`:""}
 
 ACCURACY RULES — NON-NEGOTIABLE:
 - Never invent guest biographical details. If you cannot verify something, write: "[Could not verify — please fill in manually]"
@@ -1485,8 +1499,52 @@ PRE-RECORDING CHECKLIST
       const parsed = parse(stripped);
       setSecs(parsed.length > 1 ? parsed : [{ id: "full", title: "Episode Prep Package", content: stripped }]);
       setStep("result");
-    } catch(e) { setErr(e.message); setStep("prep-details"); }
+    } catch(e) { setErr(e.message||"Something went wrong."); setStep("prep-details"); }
     finally { setBusy(false); }
+  }
+
+  async function sendPlannerChat(userMsg) {
+    const d = shows[show]; if (!d) return;
+    const isInit = userMsg === "__INIT__";
+    const msg = isInit ? null : (userMsg ?? plannerInput.trim()); if (!isInit && !msg) return;
+    const newMessages = isInit ? [] : [...plannerChat, {role:"user",content:msg}];
+    if (!isInit) setPlannerChat(newMessages); setPlannerInput(""); setPlannerLoading(true);
+    const voiceTraits = Array.isArray(d?.voice?.traits)?d.voice.traits.join(", "):(d?.voice?.traits||"");
+    const onePerson = d?.epPrep?.onePerson||{};
+    const system = `You are Sage — an expert podcast planning companion for ${d.name}.
+
+You are warm, curious, and deeply skilled in podcast storytelling, episode formats, series architecture, audience strategy, and content planning. You know how to ask the right questions, do structured thinking out loud, and help hosts move from vague ideas to clear, actionable plans.
+
+SHOW DNA:
+- Show: ${d.name}
+- Tag: ${d.tag||""}
+- Hosts: ${d.hosts||""}
+- Voice/Tone: ${voiceTraits}
+- Energy: ${d.voice?.energy||""}
+- THE ONE PERSON: ${onePerson.name||""} | 2AM question: "${onePerson.question2AM||""}" | Core wound: "${onePerson.wound||""}"
+- Story-Mission: ${d.epPrep?.storyMission||""}
+
+YOUR ROLE:
+- Help the host plan episodes, series, seasons, or special content
+- Always connect ideas back to THE ONE PERSON and the show's DNA
+- Be a thinking partner — ask one great question at a time when you need clarity
+- When the host describes an idea, reflect it back with energy and move it forward
+- Suggest specific episode angles, titles, structures, hooks, and questions
+- You CAN do research within your knowledge base — flag anything uncertain with [please verify]
+- Keep responses focused and conversational — this is a dialogue, not a document dump
+- When the host seems ready to plan a specific episode, offer to generate a full Episode Prep Package for them
+
+OPENING: If this is the first message in the conversation, greet the host warmly by name (use ${d.hosts||"there"}) and ask what they'd like to plan. Suggest 3 options: a single episode, a series or season, or something special.`;
+
+    const apiMessages = isInit ? [{role:"user",content:"Please greet me and ask what I'd like to plan."}] : newMessages.map(m=>({role:m.role,content:m.content}));
+    try {
+      const j = await claudeAPI({model:"claude-sonnet-4-6",max_tokens:1500,system,messages:apiMessages});
+      const reply = j.content?.filter(i=>i.type==="text").map(i=>i.text).join("\n")||"";
+      if (!reply) throw new Error("No response");
+      setPlannerChat(isInit ? [{role:"assistant",content:reply}] : [...newMessages,{role:"assistant",content:reply}]);
+    } catch(e) {
+      if (!isInit) setPlannerChat([...newMessages,{role:"assistant",content:"Sorry, something went wrong. Let's try again."}]);
+    } finally { setPlannerLoading(false); }
   }
 
   async function generatePitchEmail(podcast, type){
@@ -1741,7 +1799,7 @@ The email should:
     }
   }
 
-  function reset(){setStep("welcome");setMode(null);if(Object.keys(shows).length>1)setShow(null);setGuest(null);setEp("");setTx("");setRaw("");setSecs([]);setErr("");setEditing(false);setESec(null);setETxt("");setExtraPlatforms([]);setClipCount(3);setClipTexts(Array(10).fill(""));setClipResults([]);setClipPlatforms(["YouTube"]);setSelectedFormat(null);setEpGuest("");setEpGuestUrl("");setEpTopic("");setEpTakeaway("");setEpMoments("");setEpPanelists("");setEpPlanRequest("");setShowSaveFormat(false);setSaveFormatName("");setSaveFormatOk(false);setGuestResults([]);setGuestHostName("");setGuestQuery("");setGuestEmails({});setEditorChat([]);setEditorChatInput("");setEditorLeftTab("brief");setTranscriptHighlights([]);}
+  function reset(){setStep("welcome");setMode(null);if(Object.keys(shows).length>1)setShow(null);setGuest(null);setEp("");setTx("");setRaw("");setSecs([]);setErr("");setEditing(false);setESec(null);setETxt("");setExtraPlatforms([]);setClipCount(3);setClipTexts(Array(10).fill(""));setClipResults([]);setClipPlatforms(["YouTube"]);setSelectedFormat(null);setEpGuest("");setEpGuestUrl("");setEpGuestPaste("");setEpTopic("");setEpTakeaway("");setEpMoments("");setEpPanelists("");setEpPlanRequest("");setPrepExtras({hook:false,bridge:false,permissionSlip:false,openingQuestions:false});setPlannerChat([]);setPlannerInput("");setShowSaveFormat(false);setSaveFormatName("");setSaveFormatOk(false);setGuestResults([]);setGuestHostName("");setGuestQuery("");setGuestEmails({});setEditorChat([]);setEditorChatInput("");setEditorLeftTab("brief");setTranscriptHighlights([]);}
 
   function goBack(){
     setErr("");
@@ -1756,6 +1814,7 @@ The email should:
     else if(step==="result"){if(mode==="prep")setStep("prep-details");else if(mode==="editor")setStep("welcome");else setStep("input");}
     else if(step==="prep-format"){setStep("welcome");}
     else if(step==="prep-details"){const hasFmts=d?.episodeFormats?.length>0;setStep(hasFmts?"prep-format":"welcome");}
+    else if(step==="planner-chat"){const hasFmts=d?.episodeFormats?.length>0;setStep(hasFmts?"prep-format":"welcome");}
     else if(step==="guest-setup"){setStep("welcome");}
     else if(step==="guest-results"){setStep("guest-setup");}
   }
@@ -2099,6 +2158,7 @@ ${tx.substring(0, 40000)}`;
             {step==="result"&&<span>Results</span>}
             {step==="prep-format"&&<span>Select Format</span>}
             {step==="prep-details"&&<span>Episode Details</span>}
+            {step==="planner-chat"&&<span>Planning Buddy</span>}
             {step==="guest-setup"&&<span>Search</span>}
             {step==="guest-results"&&<span>Results</span>}
           </div>
@@ -2459,12 +2519,12 @@ ${tx.substring(0, 40000)}`;
                   <div style={{fontSize:"32px",marginBottom:"12px"}}>📋</div>
                   <div style={{fontSize:"16px",fontWeight:"600",color:T.text,marginBottom:"8px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>No formats set up yet</div>
                   <div style={{fontSize:"14px",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.6",marginBottom:"20px"}}>Go to Settings → Episode Formats to add your first format, or continue without one and the AI will do its best with your Show DNA.</div>
-                  <button onClick={()=>{setSelectedFormat(null);setStep("prep-details");}} style={{padding:"12px 24px",background:T.coral,border:"none",borderRadius:"8px",color:"#fff",fontSize:"14px",fontWeight:"700",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif"}}>✨ Custom planning — continue →</button>
+                  <button onClick={()=>{setSelectedFormat(null);setPlannerChat([]);setPlannerInput("");setStep("planner-chat");setTimeout(()=>sendPlannerChat("__INIT__"),100);}} style={{padding:"12px 24px",background:T.coral,border:"none",borderRadius:"8px",color:"#fff",fontSize:"14px",fontWeight:"700",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif"}}>✨ Custom planning — continue →</button>
                 </div>
               ) : (
                 <div style={{display:"flex",flexDirection:"column",gap:"12px"}}>
                   {d.episodeFormats.map((fmt,i)=>(
-                    <div key={fmt.id||i} onClick={()=>{setSelectedFormat(fmt);setStep("prep-details");}} style={{background:T.card,border:"1px solid "+T.cardBorder,borderRadius:"12px",padding:"20px 24px",cursor:"pointer",transition:"all .15s"}}>
+                    <div key={fmt.id||i} onClick={()=>{setSelectedFormat(fmt);setEpTopic("");setEpGuest("");setEpGuestUrl("");setEpGuestPaste("");setEpTakeaway("");setEpMoments("");setEpPanelists("");setPrepExtras({hook:false,bridge:false,permissionSlip:false,openingQuestions:false});setErr("");setStep("prep-details");}} style={{background:T.card,border:"1px solid "+T.cardBorder,borderRadius:"12px",padding:"20px 24px",cursor:"pointer",transition:"all .15s"}}>
                       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                         <div>
                           <div style={{fontSize:"16px",fontWeight:"700",color:T.text,marginBottom:"4px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{fmt.name}</div>
@@ -2474,46 +2534,116 @@ ${tx.substring(0, 40000)}`;
                       </div>
                     </div>
                   ))}
-                  <button onClick={()=>{setSelectedFormat(null);setStep("prep-details");}} style={{padding:"16px",background:T.coralSoft,border:"1px solid "+T.coralMid,borderRadius:"10px",color:T.coral,fontSize:"14px",fontWeight:"700",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",textAlign:"left"}}>✨ Custom — I'll describe what I want to plan →</button>
+                  <button onClick={()=>{setSelectedFormat(null);setPlannerChat([]);setPlannerInput("");setStep("planner-chat");setTimeout(()=>sendPlannerChat("__INIT__"),100);}} style={{padding:"16px",background:T.coralSoft,border:"1px solid "+T.coralMid,borderRadius:"10px",color:T.coral,fontSize:"14px",fontWeight:"700",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",textAlign:"left"}}>✨ Custom — I'll describe what I want to plan →</button>
                 </div>
               )}
             </div>}
-            {step==="prep-details"&&d&&<div style={{animation:"fadeUp .4s ease"}}>
-              <p style={{fontSize:"14px",color:T.coral,margin:"0 0 8px",letterSpacing:"2px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600"}}>{d.name}{selectedFormat?" · "+selectedFormat.name:""}</p>
-              <h2 style={{fontSize:"36px",fontWeight:"700",color:T.text,margin:"0 0 8px",letterSpacing:"-0.5px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>What would you like to plan?</h2>
-              <p style={{fontSize:"15px",color:T.textMuted,margin:"0 0 32px",fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.6"}}>{selectedFormat?`Planning in your ${selectedFormat.name} format. `:"Custom planning — describe it in your own words below. "}The more detail you provide, the more tailored your plan will be.</p>
-              <div style={{display:"flex",flexDirection:"column",gap:"20px",marginBottom:"32px"}}>
-                <div>
-                  <label style={{fontSize:"12px",fontWeight:"700",color:T.textMuted,letterSpacing:"1px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",display:"block",marginBottom:"8px"}}>Topic / Title / Content Being Covered *</label>
-                  <input value={epTopic} onChange={e=>setEpTopic(e.target.value)} placeholder="e.g. 'The Body Keeps the Score' or 'Managing anxiety at work'" style={{width:"100%",padding:"12px 16px",border:"1px solid "+T.cardBorder,borderRadius:"8px",background:T.card,color:T.text,fontSize:"15px",fontFamily:"'DM Sans', system-ui, sans-serif",boxSizing:"border-box"}} />
+            {step==="prep-details"&&d&&(()=>{
+              const isGuest=selectedFormat?.type==="Guest Interview"||selectedFormat?.type==="Listener Spotlight";
+              const isPanel=selectedFormat?.type==="Panel Discussion"||selectedFormat?.type==="Review & Reaction Panel";
+              const fld={width:"100%",padding:"12px 16px",border:"1px solid "+T.cardBorder,borderRadius:"8px",background:T.card,color:T.text,fontSize:"15px",fontFamily:"'DM Sans', system-ui, sans-serif",boxSizing:"border-box"};
+              const lbl={fontSize:"12px",fontWeight:"700",color:T.textMuted,letterSpacing:"1px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",display:"block",marginBottom:"8px"};
+              return(<div style={{animation:"fadeUp .4s ease"}}>
+                <p style={{fontSize:"14px",color:T.coral,margin:"0 0 8px",letterSpacing:"2px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600"}}>{d.name}{selectedFormat?" · "+selectedFormat.name:""}</p>
+                <h2 style={{fontSize:"36px",fontWeight:"700",color:T.text,margin:"0 0 8px",letterSpacing:"-0.5px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{isGuest?"Tell us about your guest":"What's this episode about?"}</h2>
+                <p style={{fontSize:"15px",color:T.textMuted,margin:"0 0 32px",fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.6"}}>{isGuest?"Paste in anything you have — a bio, intake form, email — and the AI will research your guest and build a tailored interview outline.":"The more you share, the better the outline. The AI will check your Show DNA and build around it."}</p>
+                <div style={{display:"flex",flexDirection:"column",gap:"20px",marginBottom:"32px"}}>
+                  {isGuest?(<>
+                    <div>
+                      <label style={lbl}>Guest Name <span style={{fontWeight:"400",textTransform:"none"}}>(optional — AI will extract from pasted info)</span></label>
+                      <input value={epGuest} onChange={e=>setEpGuest(e.target.value)} placeholder="Full name" style={fld}/>
+                    </div>
+                    <div>
+                      <label style={lbl}>Guest Info — paste anything you have *</label>
+                      <p style={{fontSize:"13px",color:T.textMuted,margin:"0 0 8px",fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.5"}}>Paste a bio, intake form, email, LinkedIn summary, or anything about this guest. The AI will extract what's relevant.</p>
+                      <textarea value={epGuestPaste} onChange={e=>setEpGuestPaste(e.target.value)} placeholder={"Paste their bio, intake form responses, email, or anything else here…\n\nExample:\nDr. Jane Smith is a nutritionist and author of 'Eat to Thrive.' She's been featured in Forbes and Oprah Magazine. Her website is drjanesmith.com…"} rows={8} style={{...fld,resize:"vertical",lineHeight:"1.6"}}/>
+                    </div>
+                    <div>
+                      <label style={lbl}>Website or Social Links <span style={{fontWeight:"400",textTransform:"none"}}>(optional — helps with accuracy)</span></label>
+                      <input value={epGuestUrl} onChange={e=>setEpGuestUrl(e.target.value)} placeholder="https://guestwebsite.com or @handle" style={fld}/>
+                    </div>
+                    <div style={{background:T.coralSoft,border:"1px solid "+T.coralMid,borderRadius:"10px",padding:"16px 18px"}}>
+                      <label style={{...lbl,color:T.coral,marginBottom:"4px"}}>Include in outline (optional)</label>
+                      <p style={{fontSize:"13px",color:T.textMuted,margin:"0 0 10px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Select any extras to generate alongside the interview outline.</p>
+                      {[["openingQuestions","Opening Questions — 3 strong openers to start the conversation"],["hook","Hook Options — 3 alternate 30-second hooks to choose from"],["bridge","Bridge — personal host connection script"],["permissionSlip","Permission Slip Close — full close with sign-off line"]].map(([k,label])=>(
+                        <label key={k} style={{display:"flex",alignItems:"center",gap:"10px",marginBottom:"8px",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",fontSize:"14px",color:T.text}}>
+                          <input type="checkbox" checked={prepExtras[k]} onChange={e=>setPrepExtras(p=>({...p,[k]:e.target.checked}))} style={{width:"16px",height:"16px",accentColor:T.coral,cursor:"pointer"}}/>
+                          {label}
+                        </label>
+                      ))}
+                    </div>
+                  </>):(<>
+                    <div>
+                      <label style={lbl}>Episode Topic or Working Title *</label>
+                      <input value={epTopic} onChange={e=>setEpTopic(e.target.value)} placeholder="e.g. 'Managing anxiety at work' or 'Why I quit my 6-figure job'" style={fld}/>
+                    </div>
+                    {isPanel&&<div>
+                      <label style={lbl}>Panelists or Contributors <span style={{fontWeight:"400",textTransform:"none"}}>(optional)</span></label>
+                      <input value={epPanelists} onChange={e=>setEpPanelists(e.target.value)} placeholder="Names of panelists" style={fld}/>
+                    </div>}
+                    <div>
+                      <label style={lbl}>What are you thinking about covering? <span style={{fontWeight:"400",textTransform:"none"}}>(optional)</span></label>
+                      <textarea value={epMoments} onChange={e=>setEpMoments(e.target.value)} placeholder="Any angles, moments, questions, or ideas already in your head — dump them here…" rows={4} style={{...fld,resize:"vertical",lineHeight:"1.6"}}/>
+                    </div>
+                    <div>
+                      <label style={lbl}>The ONE Takeaway <span style={{fontWeight:"400",textTransform:"none"}}>(optional)</span></label>
+                      <input value={epTakeaway} onChange={e=>setEpTakeaway(e.target.value)} placeholder="What should the listener walk away knowing, feeling, or doing? (one sentence)" style={fld}/>
+                    </div>
+                    <div style={{background:T.coralSoft,border:"1px solid "+T.coralMid,borderRadius:"10px",padding:"16px 18px"}}>
+                      <label style={{...lbl,color:T.coral,marginBottom:"4px"}}>Also generate alongside the outline (optional)</label>
+                      <p style={{fontSize:"13px",color:T.textMuted,margin:"0 0 10px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Select any extras to include in your planning doc.</p>
+                      {[["hook","Hook Options — 3 alternate 30-second hooks to choose from"],["bridge","Bridge — personal host connection script"],["permissionSlip","Permission Slip Close — full close with sign-off line"]].map(([k,label])=>(
+                        <label key={k} style={{display:"flex",alignItems:"center",gap:"10px",marginBottom:"8px",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",fontSize:"14px",color:T.text}}>
+                          <input type="checkbox" checked={prepExtras[k]} onChange={e=>setPrepExtras(p=>({...p,[k]:e.target.checked}))} style={{width:"16px",height:"16px",accentColor:T.coral,cursor:"pointer"}}/>
+                          {label}
+                        </label>
+                      ))}
+                    </div>
+                  </>)}
                 </div>
-                {(!selectedFormat || selectedFormat.type==="Guest Interview" || selectedFormat.type==="Review & Reaction Panel") && <div>
-                  <label style={{fontSize:"12px",fontWeight:"700",color:T.textMuted,letterSpacing:"1px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",display:"block",marginBottom:"8px"}}>Guest Name <span style={{fontWeight:"400",textTransform:"none"}}>(optional)</span></label>
-                  <input value={epGuest} onChange={e=>setEpGuest(e.target.value)} placeholder="Full name" style={{width:"100%",padding:"12px 16px",border:"1px solid "+T.cardBorder,borderRadius:"8px",background:T.card,color:T.text,fontSize:"15px",fontFamily:"'DM Sans', system-ui, sans-serif",boxSizing:"border-box"}} />
-                </div>}
-                {(!selectedFormat || selectedFormat.type==="Guest Interview" || selectedFormat.type==="Review & Reaction Panel") && <div>
-                  <label style={{fontSize:"12px",fontWeight:"700",color:T.textMuted,letterSpacing:"1px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",display:"block",marginBottom:"8px"}}>Guest URL or Social Handle <span style={{fontWeight:"400",textTransform:"none"}}>(optional — helps with accuracy)</span></label>
-                  <input value={epGuestUrl} onChange={e=>setEpGuestUrl(e.target.value)} placeholder="https://guestwebsite.com or @handle" style={{width:"100%",padding:"12px 16px",border:"1px solid "+T.cardBorder,borderRadius:"8px",background:T.card,color:T.text,fontSize:"15px",fontFamily:"'DM Sans', system-ui, sans-serif",boxSizing:"border-box"}} />
-                </div>}
-                <div style={{background:T.coralSoft,border:"1px solid "+T.coralMid,borderRadius:"10px",padding:"16px 18px"}}>
-                  <label style={{fontSize:"12px",fontWeight:"700",color:T.coral,letterSpacing:"1px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",display:"block",marginBottom:"4px"}}>✨ What would you like to plan together?</label>
-                  <p style={{fontSize:"13px",color:T.textMuted,margin:"0 0 10px",fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.5"}}>Plan this single episode, ask for topic ideas, or describe something bigger — e.g. "Plan a 5-part series on ADHD" or "I want to react to this article and tie it to our show."</p>
-                  <textarea value={epPlanRequest} onChange={e=>setEpPlanRequest(e.target.value)} placeholder='Leave blank to plan a standard episode, or tell the AI exactly what you want to build…' rows={3} style={{width:"100%",padding:"12px 16px",border:"1px solid "+T.cardBorder,borderRadius:"8px",background:T.card,color:T.text,fontSize:"15px",fontFamily:"'DM Sans', system-ui, sans-serif",resize:"vertical",boxSizing:"border-box"}} />
-                </div>
-                <div>
-                  <label style={{fontSize:"12px",fontWeight:"700",color:T.textMuted,letterSpacing:"1px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",display:"block",marginBottom:"8px"}}>The ONE Takeaway <span style={{fontWeight:"400",textTransform:"none"}}>(optional)</span></label>
-                  <input value={epTakeaway} onChange={e=>setEpTakeaway(e.target.value)} placeholder="What should the ONE person walk away with? (one sentence)" style={{width:"100%",padding:"12px 16px",border:"1px solid "+T.cardBorder,borderRadius:"8px",background:T.card,color:T.text,fontSize:"15px",fontFamily:"'DM Sans', system-ui, sans-serif",boxSizing:"border-box"}} />
-                </div>
-                <div>
-                  <label style={{fontSize:"12px",fontWeight:"700",color:T.textMuted,letterSpacing:"1px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",display:"block",marginBottom:"8px"}}>Specific Moments, Quotes, or Angles You Want to Include <span style={{fontWeight:"400",textTransform:"none"}}>(optional)</span></label>
-                  <textarea value={epMoments} onChange={e=>setEpMoments(e.target.value)} placeholder="Any moments, quotes, or angles you already know you want to hit..." rows={4} style={{width:"100%",padding:"12px 16px",border:"1px solid "+T.cardBorder,borderRadius:"8px",background:T.card,color:T.text,fontSize:"15px",fontFamily:"'DM Sans', system-ui, sans-serif",resize:"vertical",boxSizing:"border-box"}} />
-                </div>
-                {selectedFormat?.type==="Review & Reaction Panel" && <div>
-                  <label style={{fontSize:"12px",fontWeight:"700",color:T.textMuted,letterSpacing:"1px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",display:"block",marginBottom:"8px"}}>Additional Panelists or Contributors <span style={{fontWeight:"400",textTransform:"none"}}>(optional)</span></label>
-                  <input value={epPanelists} onChange={e=>setEpPanelists(e.target.value)} placeholder="Names of other panelists" style={{width:"100%",padding:"12px 16px",border:"1px solid "+T.cardBorder,borderRadius:"8px",background:T.card,color:T.text,fontSize:"15px",fontFamily:"'DM Sans', system-ui, sans-serif",boxSizing:"border-box"}} />
-                </div>}
+                {err&&<p style={{color:"#C41230",fontSize:"14px",margin:"0 0 16px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{err}</p>}
+                <button onClick={genPrep} disabled={isGuest?!epGuestPaste.trim():!epTopic.trim()} style={{padding:"16px 32px",background:(isGuest?epGuestPaste.trim():epTopic.trim())?T.coral:T.cardBorder,border:"none",borderRadius:"10px",color:"#fff",fontSize:"16px",fontWeight:"700",cursor:(isGuest?epGuestPaste.trim():epTopic.trim())?"pointer":"not-allowed",fontFamily:"'DM Sans', system-ui, sans-serif",transition:"background 0.2s"}}>Generate Episode Outline →</button>
+              </div>);
+            })()}
+
+            {/* PLANNING BUDDY — SAGE */}
+            {step==="planner-chat"&&d&&<div style={{animation:"fadeUp .4s ease",display:"flex",flexDirection:"column",height:"calc(100vh - 200px)",maxHeight:"700px"}}>
+              <div style={{marginBottom:"20px"}}>
+                <p style={{fontSize:"14px",color:T.coral,margin:"0 0 4px",letterSpacing:"2px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600"}}>{d.name} · Planning Buddy</p>
+                <h2 style={{fontSize:"30px",fontWeight:"700",color:T.text,margin:"0",letterSpacing:"-0.5px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Sage <span style={{fontSize:"16px",fontWeight:"400",color:T.textMuted,letterSpacing:"0"}}>— your expert podcast planner</span></h2>
               </div>
-              <button onClick={genPrep} disabled={!epTopic.trim()} style={{padding:"16px 32px",background:epTopic.trim()?T.coral:T.cardBorder,border:"none",borderRadius:"10px",color:"#fff",fontSize:"16px",fontWeight:"700",cursor:epTopic.trim()?"pointer":"not-allowed",fontFamily:"'DM Sans', system-ui, sans-serif",transition:"background 0.2s"}}>Start Planning →</button>
+              <div style={{flex:1,overflowY:"auto",display:"flex",flexDirection:"column",gap:"16px",paddingBottom:"12px"}}>
+                {plannerChat.length===0&&plannerLoading&&(
+                  <div style={{display:"flex",alignItems:"center",gap:"10px",padding:"16px"}}>
+                    <div style={{width:"28px",height:"28px",borderRadius:"50%",background:T.coral,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:"14px",color:"#fff",fontWeight:"700"}}>S</div>
+                    <div style={{display:"flex",gap:"4px",alignItems:"center",padding:"12px 16px",background:T.card,border:"1px solid "+T.cardBorder,borderRadius:"12px"}}>
+                      <span style={{width:"6px",height:"6px",borderRadius:"50%",background:T.textMuted,display:"inline-block",animation:"pulse 1.2s ease-in-out infinite"}}/>
+                      <span style={{width:"6px",height:"6px",borderRadius:"50%",background:T.textMuted,display:"inline-block",animation:"pulse 1.2s ease-in-out infinite .2s"}}/>
+                      <span style={{width:"6px",height:"6px",borderRadius:"50%",background:T.textMuted,display:"inline-block",animation:"pulse 1.2s ease-in-out infinite .4s"}}/>
+                    </div>
+                  </div>
+                )}
+                {plannerChat.map((m,i)=>(
+                  <div key={i} style={{display:"flex",gap:"10px",alignItems:"flex-start",flexDirection:m.role==="user"?"row-reverse":"row",padding:"0 4px"}}>
+                    <div style={{width:"28px",height:"28px",borderRadius:"50%",background:m.role==="user"?T.cardBorder:T.coral,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:"13px",color:m.role==="user"?T.textMuted:"#fff",fontWeight:"700"}}>{m.role==="user"?"U":"S"}</div>
+                    <div style={{maxWidth:"80%",padding:"12px 16px",background:m.role==="user"?T.coralSoft:T.card,border:"1px solid "+(m.role==="user"?T.coralMid:T.cardBorder),borderRadius:"12px",fontSize:"15px",color:T.text,fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.6",whiteSpace:"pre-wrap"}}>{m.content}</div>
+                  </div>
+                ))}
+                {plannerChat.length>0&&plannerLoading&&(
+                  <div style={{display:"flex",alignItems:"center",gap:"10px",padding:"0 4px"}}>
+                    <div style={{width:"28px",height:"28px",borderRadius:"50%",background:T.coral,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:"14px",color:"#fff",fontWeight:"700"}}>S</div>
+                    <div style={{display:"flex",gap:"4px",alignItems:"center",padding:"12px 16px",background:T.card,border:"1px solid "+T.cardBorder,borderRadius:"12px"}}>
+                      <span style={{width:"6px",height:"6px",borderRadius:"50%",background:T.textMuted,display:"inline-block",animation:"pulse 1.2s ease-in-out infinite"}}/>
+                      <span style={{width:"6px",height:"6px",borderRadius:"50%",background:T.textMuted,display:"inline-block",animation:"pulse 1.2s ease-in-out infinite .2s"}}/>
+                      <span style={{width:"6px",height:"6px",borderRadius:"50%",background:T.textMuted,display:"inline-block",animation:"pulse 1.2s ease-in-out infinite .4s"}}/>
+                    </div>
+                  </div>
+                )}
+              </div>
+              <div style={{display:"flex",gap:"10px",paddingTop:"12px",borderTop:"1px solid "+T.cardBorder}}>
+                <textarea value={plannerInput} onChange={e=>setPlannerInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();if(!plannerLoading)sendPlannerChat();}}} placeholder="Type your idea, question, or brain dump here… (Enter to send, Shift+Enter for new line)" rows={2} style={{flex:1,padding:"12px 16px",border:"1px solid "+T.cardBorder,borderRadius:"10px",background:T.card,color:T.text,fontSize:"15px",fontFamily:"'DM Sans', system-ui, sans-serif",resize:"none",lineHeight:"1.5",outline:"none"}}/>
+                <button onClick={()=>sendPlannerChat()} disabled={!plannerInput.trim()||plannerLoading} style={{padding:"12px 20px",background:plannerInput.trim()&&!plannerLoading?T.coral:T.cardBorder,border:"none",borderRadius:"10px",color:"#fff",fontSize:"15px",fontWeight:"700",cursor:plannerInput.trim()&&!plannerLoading?"pointer":"not-allowed",fontFamily:"'DM Sans', system-ui, sans-serif",transition:"background 0.2s",alignSelf:"flex-end"}}>Send →</button>
+              </div>
             </div>}
 
             {/* GUEST FINDER — SETUP */}
