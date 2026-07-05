@@ -2116,18 +2116,6 @@ ${tx.substring(0, 40000)}`;
         {/* Spacer */}
         <div style={{flex:1}}/>
 
-        {/* PIS Super Admin — owner only */}
-        {orgPlan==="owner"&&(
-          <div style={{padding:"8px 0",borderBottom:"1px solid #2E2E2E"}}>
-            <button onClick={()=>setShowSuperAdmin(true)}
-              className="sidebar-nav-item"
-              style={{width:"100%",padding:"9px 16px",background:"transparent",border:"none",borderLeft:"3px solid transparent",color:"#A078FF",fontSize:"13px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",display:"flex",alignItems:"center",gap:"8px",fontWeight:"700",letterSpacing:"0.5px"}}>
-              <span style={{fontSize:"10px"}}>⬡</span>
-              PIS Admin
-            </button>
-          </div>
-        )}
-
         {/* Bottom: help links + settings + user */}
         <div style={{borderTop:"1px solid #2E2E2E",padding:"8px 0"}}>
           {/* View Schedule — clients only, when scheduleUrl is configured */}
@@ -2180,6 +2168,9 @@ ${tx.substring(0, 40000)}`;
                       ...(isAdmin?[
                         {label:"Podcast Settings",action:()=>{setShowAdmin(true);setShowUserMenu(false);}},
                         {label:"Workspace Settings",action:()=>{setAdminInitialView("settings");setShowAdmin(true);setShowUserMenu(false);}},
+                      ]:[]),
+                      ...(orgPlan==="owner"?[
+                        {label:"Owner Admin",action:()=>{setShowSuperAdmin(true);setShowUserMenu(false);}},
                       ]:[]),
                     ].map(item=>(
                       <button key={item.label} onClick={item.action}

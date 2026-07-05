@@ -199,7 +199,7 @@ export default function SuperAdmin({ onClose }) {
         <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <img src="/logo-nav.png" alt="" style={{ height: "28px", objectFit: "contain" }} />
-            <span style={{ fontSize: "10px", fontWeight: "700", letterSpacing: "2.5px", color: T.coral, textTransform: "uppercase", borderLeft: `1px solid ${T.cardBorder}`, paddingLeft: "10px" }}>Super Admin</span>
+            <span style={{ fontSize: "10px", fontWeight: "700", letterSpacing: "2.5px", color: T.coral, textTransform: "uppercase", borderLeft: `1px solid ${T.cardBorder}`, paddingLeft: "10px" }}>Owner Admin</span>
           </div>
           <div style={{ display: "flex", gap: "4px" }}>
             {[["accounts", "Accounts"], ["codes", "Access Codes"]].map(([id, label]) => (
