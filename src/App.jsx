@@ -1206,6 +1206,9 @@ export default function App(){
   },[]);
   const[descriptStatus,setDescriptStatus]=useState("");
   const[descriptSending,setDescriptSending]=useState(false);
+  const[editorChat,setEditorChat]=useState([]);
+  const[editorChatInput,setEditorChatInput]=useState("");
+  const[editorChatLoading,setEditorChatLoading]=useState(false);
   const[clipTexts,setClipTexts]=useState(Array(10).fill(""));
   const[clipResults,setClipResults]=useState([]);
   const[clipPlatforms,setClipPlatforms]=useState(["YouTube"]);
@@ -1734,7 +1737,7 @@ The email should:
     }
   }
 
-  function reset(){setStep("welcome");setMode(null);if(Object.keys(shows).length>1)setShow(null);setGuest(null);setEp("");setTx("");setRaw("");setSecs([]);setErr("");setEditing(false);setESec(null);setETxt("");setExtraPlatforms([]);setClipCount(3);setClipTexts(Array(10).fill(""));setClipResults([]);setClipPlatforms(["YouTube"]);setSelectedFormat(null);setEpGuest("");setEpGuestUrl("");setEpTopic("");setEpTakeaway("");setEpMoments("");setEpPanelists("");setEpPlanRequest("");setShowSaveFormat(false);setSaveFormatName("");setSaveFormatOk(false);setGuestResults([]);setGuestHostName("");setGuestQuery("");setGuestEmails({});}
+  function reset(){setStep("welcome");setMode(null);if(Object.keys(shows).length>1)setShow(null);setGuest(null);setEp("");setTx("");setRaw("");setSecs([]);setErr("");setEditing(false);setESec(null);setETxt("");setExtraPlatforms([]);setClipCount(3);setClipTexts(Array(10).fill(""));setClipResults([]);setClipPlatforms(["YouTube"]);setSelectedFormat(null);setEpGuest("");setEpGuestUrl("");setEpTopic("");setEpTakeaway("");setEpMoments("");setEpPanelists("");setEpPlanRequest("");setShowSaveFormat(false);setSaveFormatName("");setSaveFormatOk(false);setGuestResults([]);setGuestHostName("");setGuestQuery("");setGuestEmails({});setEditorChat([]);setEditorChatInput("");}
 
   function goBack(){
     setErr("");
@@ -1794,6 +1797,50 @@ The email should:
       setDescriptStatus("Error: " + e.message);
     } finally {
       setDescriptSending(false);
+    }
+  }
+
+  async function sendEditorChat(messageText) {
+    const userMsg = (messageText || editorChatInput).trim();
+    if (!userMsg || editorChatLoading) return;
+    const d = shows[show];
+    const newMessages = [...editorChat, { role: "user", content: userMsg }];
+    setEditorChat(newMessages);
+    setEditorChatInput("");
+    setEditorChatLoading(true);
+    try {
+      const systemPrompt = `You are an expert podcast editor coach helping the editor of "${d?.name || "this podcast"}".
+Show DNA context:
+- Voice/Tone: ${d?.voice?.traits?.join(", ") || "not specified"}
+- Audience: ${d?.aud?.who || "not specified"}
+- Editing Level: ${{"1":"Level 1 — Clean & Clear (light touch, remove stumbles only)","2":"Level 2 — Crafted (tighten pacing, restructure if needed)","3":"Level 3 — Story-Driven (aggressive edits, documentary style)"}[d?.editingLevel||"1"]}
+- Episode Rules: ${d?.episodeRules?.join("; ") || "none"}
+
+The editor has already received the AI-generated editing brief for this episode. You are their interactive coach.
+Help them:
+- Find the best clips and pull quotes from transcript excerpts they paste
+- Give specific, actionable editing suggestions
+- Identify what to cut and why
+- Coach them on pacing, structure, and hooks
+- Teach editing principles that make shows stronger
+- Answer questions about editorial decisions
+
+When analyzing pasted transcript text, be specific — reference exact words, timestamps if present, and concrete suggestions. Be direct and practical. Keep responses focused and under 300 words unless detail is truly needed.
+
+Full transcript available for context (first 40,000 chars):
+${tx.substring(0, 40000)}`;
+
+      const reply = await claudeAPI({
+        model: "claude-sonnet-4-6",
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: newMessages.map(m => ({ role: m.role, content: m.content })),
+      });
+      setEditorChat([...newMessages, { role: "assistant", content: reply }]);
+    } catch (e) {
+      setEditorChat([...newMessages, { role: "assistant", content: "Sorry, something went wrong. Please try again." }]);
+    } finally {
+      setEditorChatLoading(false);
     }
   }
 
@@ -2575,7 +2622,8 @@ The email should:
             </div>}
 
             {/* RESULT */}
-            {step==="result"&&<div style={{animation:"fadeUp .4s ease"}}>
+            {step==="result"&&<div style={{animation:"fadeUp .4s ease",display:mode==="editor"?"flex":"block",gap:"24px",alignItems:"flex-start"}}>
+            <div style={{flex:1,minWidth:0}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"28px",flexWrap:"wrap",gap:"12px"}}>
                 <div>
                   <h2 style={{fontSize:"36px",fontWeight:"700",color:T.text,margin:"0 0 4px",letterSpacing:"-0.5px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{mode==="clips"?"Clips Ready":mode==="prep"?"Episode Prep Ready":"Content Package Ready"}</h2>
@@ -2586,7 +2634,7 @@ The email should:
                   {mode!=="clips"&&<button onClick={()=>{dlDoc(raw,`${d?.name}${mode==="prep"?` — Episode Prep${epTopic?` — ${epTopic}`:""}`:ep?` — Ep ${ep}`:""} Content Package`,d?.bp);setDlOk(true);setTimeout(()=>setDlOk(false),2500);}} style={{...ghost,background:dlOk?T.coralSoft:"transparent",borderColor:dlOk?T.coralMid:T.cardBorder,color:dlOk?T.coral:T.textMuted}}>{dlOk?"✓ DOWNLOADED":"📄 WORD DOC"}</button>}
                   {mode==="clips"&&<button onClick={()=>{const clipDoc=clipResults.filter(r=>!r.skipped).map(r=>`CLIP ${r.index}\n\n${r.content}`).join("\n\n");dlDoc(clipDoc,`${d?.name}${ep?` — Ep ${ep}`:""} — Clips`);setDlOk(true);setTimeout(()=>setDlOk(false),2500);}} style={{...ghost,background:dlOk?T.coralSoft:"transparent",borderColor:dlOk?T.coralMid:T.cardBorder,color:dlOk?T.coral:T.textMuted}}>{dlOk?"✓ DOWNLOADED":"📄 WORD DOC"}</button>}
                   {mode!=="clips"&&<button onClick={uploadToGDrive} disabled={gDriveStatus==="uploading"} title="Export to Google Drive as a Google Doc" style={{...ghost,background:gDriveStatus==="ok"?T.coralSoft:gDriveStatus==="error"||gDriveStatus==="disconnected"?"#D94F4F18":"transparent",borderColor:gDriveStatus==="ok"?T.coralMid:gDriveStatus==="error"||gDriveStatus==="disconnected"?"#D94F4F44":T.cardBorder,color:gDriveStatus==="ok"?T.coral:gDriveStatus==="error"||gDriveStatus==="disconnected"?"#D94F4F":T.textMuted,opacity:gDriveStatus==="uploading"?.6:1}}>{gDriveStatus==="uploading"?"UPLOADING…":gDriveStatus==="ok"?"✓ EXPORTED TO DRIVE":gDriveStatus==="error"?"✕ EXPORT FAILED":gDriveStatus==="disconnected"?"⚙ CONNECT IN SETTINGS":"📁 EXPORT TO GOOGLE DRIVE"}</button>}
-                  <button onClick={()=>{setStep(mode==="clips"?"clips-setup":"input");setRaw("");setSecs([]);setClipResults([]);}} style={ghost}>{mode==="clips"?"NEW CLIPS":"NEW EPISODE"}</button>
+                  <button onClick={()=>{setStep(mode==="clips"?"clips-setup":"input");setRaw("");setSecs([]);setClipResults([]);setEditorChat([]);setEditorChatInput("");}} style={ghost}>{mode==="clips"?"NEW CLIPS":"NEW EPISODE"}</button>
                 </div>
               </div>
               {d?.publishDay&&d?.publishTime&&d?.publishTz&&(()=>{try{const sched=formatPublishSchedule(d,userProfile?.timezone);if(!sched)return null;return(<div style={{background:T.coralSoft,border:"1px solid "+T.coralMid,borderRadius:"8px",padding:"12px 18px",marginBottom:"20px",display:"flex",alignItems:"center",gap:"10px"}}><span style={{fontSize:"18px"}}>📅</span><div><div style={{fontSize:"11px",color:T.coral,fontWeight:"700",letterSpacing:"1.5px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>PUBLISH SCHEDULE</div><div style={{fontSize:"14px",color:T.textSecondary,marginTop:"2px",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"500"}}>{sched.showTime}{sched.isDifferent?" · "+sched.localTime+" your time":""}</div></div></div>);}catch{return null;}})()}
@@ -2666,7 +2714,91 @@ The email should:
                   </div>}
                 </>
               )}
+            </div>
+            {/* ── EDITOR AI COACH PANEL ── */}
+            {mode==="editor"&&(()=>{
+              const QUICK=[
+                {label:"Best clip moments",q:"What are the top 3 clip moments in this episode and why?"},
+                {label:"What to cut",q:"What sections should be cut or tightened, and why?"},
+                {label:"Hook strength",q:"How strong is the opening hook? How would you improve it?"},
+                {label:"Pull quotes",q:"Give me 5 pull quotes worth sharing on social from this episode."},
+                {label:"Pacing notes",q:"How is the pacing? Where does it drag and how should it be tightened?"},
+                {label:"Editing tips",q:"What are the top 3 editing principles I should apply to this episode?"},
+              ];
+              const chatEndRef = {current:null};
+              return (
+                <div style={{width:"360px",minWidth:"320px",flexShrink:0,position:"sticky",top:"20px",maxHeight:"calc(100vh - 160px)",display:"flex",flexDirection:"column",background:T.card,border:"1px solid "+T.cardBorder,borderRadius:"12px",overflow:"hidden",boxShadow:"0 2px 16px rgba(30,20,10,.06)"}}>
+                  {/* Header */}
+                  <div style={{padding:"16px 20px",borderBottom:"1px solid "+T.cardBorder,background:T.surface,flexShrink:0}}>
+                    <div style={{fontSize:"11px",fontWeight:"700",letterSpacing:"2px",textTransform:"uppercase",color:T.coral,marginBottom:"4px",fontFamily:PF}}>AI Editor Coach</div>
+                    <div style={{fontSize:"14px",color:T.textSecondary,fontFamily:PF,lineHeight:"1.4"}}>Ask questions, paste transcript sections, get editing guidance.</div>
+                  </div>
+                  {/* Quick actions */}
+                  {editorChat.length===0&&(
+                    <div style={{padding:"14px 16px",borderBottom:"1px solid "+T.cardBorder,flexShrink:0}}>
+                      <div style={{fontSize:"11px",color:T.textMuted,fontWeight:"700",letterSpacing:"1.5px",textTransform:"uppercase",fontFamily:PF,marginBottom:"8px"}}>Quick Questions</div>
+                      <div style={{display:"flex",flexWrap:"wrap",gap:"6px"}}>
+                        {QUICK.map(q=>(
+                          <button key={q.label} onClick={()=>sendEditorChat(q.q)}
+                            style={{padding:"5px 10px",background:T.bg,border:"1px solid "+T.cardBorder,borderRadius:"20px",color:T.textSecondary,fontSize:"12px",cursor:"pointer",fontFamily:PF,transition:"all .15s"}}
+                            onMouseEnter={e=>{e.currentTarget.style.borderColor=T.coral;e.currentTarget.style.color=T.coral;}}
+                            onMouseLeave={e=>{e.currentTarget.style.borderColor=T.cardBorder;e.currentTarget.style.color=T.textSecondary;}}>
+                            {q.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {/* Chat messages */}
+                  <div style={{flex:1,overflowY:"auto",padding:"16px",display:"flex",flexDirection:"column",gap:"12px"}}>
+                    {editorChat.length===0&&(
+                      <div style={{textAlign:"center",padding:"24px 0",color:T.textMuted,fontSize:"13px",fontFamily:PF,lineHeight:"1.6"}}>
+                        <div style={{fontSize:"28px",marginBottom:"10px"}}>🎬</div>
+                        <div>Ask anything about this episode,<br/>or paste a transcript section<br/>for specific feedback.</div>
+                      </div>
+                    )}
+                    {editorChat.map((m,i)=>(
+                      <div key={i} style={{display:"flex",flexDirection:"column",gap:"2px",alignItems:m.role==="user"?"flex-end":"flex-start"}}>
+                        <div style={{maxWidth:"90%",padding:"10px 14px",borderRadius:m.role==="user"?"12px 12px 2px 12px":"12px 12px 12px 2px",background:m.role==="user"?T.coral:"rgba(30,20,10,.06)",color:m.role==="user"?"#fff":T.text,fontSize:"13px",lineHeight:"1.65",fontFamily:PF,whiteSpace:"pre-wrap"}}>
+                          {m.content}
+                        </div>
+                        <div style={{fontSize:"11px",color:T.textMuted,fontFamily:PF,padding:"0 2px"}}>{m.role==="user"?"You":"Coach"}</div>
+                      </div>
+                    ))}
+                    {editorChatLoading&&(
+                      <div style={{display:"flex",flexDirection:"column",gap:"2px",alignItems:"flex-start"}}>
+                        <div style={{padding:"10px 14px",borderRadius:"12px 12px 12px 2px",background:"rgba(30,20,10,.06)",fontSize:"13px",fontFamily:PF,color:T.textMuted}}>
+                          <span style={{display:"inline-flex",gap:"4px"}}><span style={{animation:"pulse 1.2s infinite"}}>●</span><span style={{animation:"pulse 1.2s .2s infinite"}}>●</span><span style={{animation:"pulse 1.2s .4s infinite"}}>●</span></span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  {/* Input */}
+                  <div style={{padding:"12px 16px",borderTop:"1px solid "+T.cardBorder,flexShrink:0,background:T.surface}}>
+                    {editorChat.length>0&&(
+                      <button onClick={()=>setEditorChat([])} style={{fontSize:"11px",color:T.textMuted,background:"none",border:"none",cursor:"pointer",fontFamily:PF,padding:"0 0 8px",letterSpacing:"1px",textTransform:"uppercase"}}>Clear chat</button>
+                    )}
+                    <div style={{display:"flex",gap:"8px",alignItems:"flex-end"}}>
+                      <textarea
+                        value={editorChatInput}
+                        onChange={e=>setEditorChatInput(e.target.value)}
+                        onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendEditorChat();}}}
+                        placeholder={"Ask a question or paste a transcript section…"}
+                        rows={3}
+                        style={{flex:1,background:T.bg,border:"1px solid "+T.cardBorder,borderRadius:"8px",padding:"10px 12px",fontSize:"13px",color:T.text,fontFamily:PF,resize:"none",outline:"none",lineHeight:"1.5"}}
+                      />
+                      <button onClick={()=>sendEditorChat()} disabled={!editorChatInput.trim()||editorChatLoading}
+                        style={{padding:"10px 14px",background:editorChatInput.trim()&&!editorChatLoading?T.coral:"#ccc",border:"none",borderRadius:"8px",color:"#fff",fontSize:"13px",fontWeight:"700",cursor:editorChatInput.trim()&&!editorChatLoading?"pointer":"not-allowed",fontFamily:PF,flexShrink:0,transition:"background .15s"}}>
+                        →
+                      </button>
+                    </div>
+                    <div style={{fontSize:"11px",color:T.textMuted,marginTop:"6px",fontFamily:PF}}>Shift+Enter for new line · Enter to send</div>
+                  </div>
+                </div>
+              );
+            })()}
             </div>}
+
 
           </div>
         </div>
