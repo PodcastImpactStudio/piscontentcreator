@@ -1209,8 +1209,9 @@ export default function App(){
   const[editorChat,setEditorChat]=useState([]);
   const[editorChatInput,setEditorChatInput]=useState("");
   const[editorChatLoading,setEditorChatLoading]=useState(false);
-  const[editorLeftTab,setEditorLeftTab]=useState("brief");
+  const[editorLeftTab,setEditorLeftTab]=useState("transcript");
   const[transcriptHighlights,setTranscriptHighlights]=useState([]);
+  const[editorSelections,setEditorSelections]=useState({brief:true,clips:true,hook:false,pullquotes:false,shownotes:false,chapters:false,newsletter:false,social:false});
   const[clipTexts,setClipTexts]=useState(Array(10).fill(""));
   const[clipResults,setClipResults]=useState([]);
   const[clipPlatforms,setClipPlatforms]=useState(["YouTube"]);
@@ -1751,7 +1752,7 @@ The email should:
       else if(mode==="clips")setStep("clips-setup");
       else setStep("configure");
     }
-    else if(step==="result"){if(mode==="prep")setStep("prep-details");else setStep("input");}
+    else if(step==="result"){if(mode==="prep")setStep("prep-details");else if(mode==="editor")setStep("welcome");else setStep("input");}
     else if(step==="prep-format"){setStep("welcome");}
     else if(step==="prep-details"){const hasFmts=d?.episodeFormats?.length>0;setStep(hasFmts?"prep-format":"welcome");}
     else if(step==="guest-setup"){setStep("welcome");}
@@ -1800,6 +1801,38 @@ The email should:
     } finally {
       setDescriptSending(false);
     }
+  }
+
+  async function genEditorSelective(){
+    if(!tx.trim()||busy)return;
+    const d=shows[show];if(!d)return;
+    const selected=Object.entries(editorSelections).filter(([,v])=>v).map(([k])=>k);
+    if(!selected.length)return;
+    const lvlData={"1":{name:"Level 1 — Clean & Clear",desc:"Light technical cleanup only. Remove dead-air, mic bumps, false starts, audio dropouts. Do NOT restructure or remove content for pacing reasons."},"2":{name:"Level 2 — Crafted",desc:"Everything in Level 1, plus: surface strongest hook, remove repetitive points, tighten pacing. The episode should sound intentional without sounding produced."},"3":{name:"Level 3 — Story-Driven",desc:"Everything in Levels 1 and 2, plus: reconstruct the arc, edit aggressively, add b-roll. The episode should feel like a documentary."}};
+    const lvl=lvlData[d.editingLevel||"1"];
+    const platforms=[...(d.platforms?.p||[]),...(d.platforms?.s||[])].join(", ")||"Instagram, LinkedIn";
+    const voiceTraits=Array.isArray(d.voice?.traits)?d.voice.traits.join(", "):(d.voice?.traits||"");
+    const sections=[];
+    if(editorSelections.brief)sections.push(`EDITOR COMPANION BRIEF\n\nEDITING LEVEL: ${lvl.name}\n\nEPISODE OVERVIEW\n[2-3 sentences on tone, energy, and narrative arc. What's the core message? What makes it worth listening to?]\n\nEDITING APPROACH FOR THIS EPISODE\n[Specific marching orders for the editor based on this episode and editing level. Not generic advice — tied to what you heard in this transcript.]\n\nSECTIONS TO CUT OR TIGHTEN\n[List specific moments with timestamps. For each:\nTIMESTAMP: [start — end]\nREASON: [why cut or tighten]\nSUGGESTION: [cut entirely / trim / restructure]]`);
+    if(editorSelections.clips)sections.push(`SOCIAL CLIP RECOMMENDATIONS\n\nFind exactly ${editorClipCount} moments for high-performing social clips. Each must be under 60 seconds when spoken. For each:\n\nCLIP #[N]\nCLIP TITLE: [4-7 word punchy title]\nTIMESTAMP: [exact start — exact end]\nDURATION: [estimated — must be under 60 seconds]\nBEST PLATFORM: [Instagram Reels / TikTok / YouTube Shorts / LinkedIn — pick ONE]\nQUOTE: [exact words where clip starts and ends — [Speaker]]\nWHY IT PERFORMS: [why this stops the scroll for this show's audience]\nSUGGESTED CAPTION HOOK: [one punchy first line]`);
+    if(editorSelections.hook)sections.push(`INTRO HOOK RECOMMENDATIONS\n\nFind the 3 best moments for a podcast intro hook (spliced before theme music). Each under 60 seconds. For each:\n\nHOOK #[N] — [RECOMMENDED / ALTERNATE 1 / ALTERNATE 2]\nTIMESTAMP: [approx time]\nDURATION: [estimated]\nQUOTE: [exact words — [Speaker]]\nWHY THIS WORKS: [why it hooks this show's audience specifically]\nAUDIENCE TRIGGER: [emotional hook — e.g. Curiosity, Validation, Relief]`);
+    if(editorSelections.pullquotes)sections.push(`PULL QUOTES\n\nFind 6-8 of the most shareable, standalone quotes. Each must be meaningful without episode context. For each:\n\nQUOTE: "[exact words]" — [Speaker]\nWHY IT RESONATES: [1 sentence — tied to audience pain points]\nBEST USE: [social graphic / newsletter / caption / article pull quote]`);
+    if(editorSelections.shownotes)sections.push(`SHOW NOTES\n\n[Write a compelling 150-200 word show notes paragraph. Hook question first — no podcast name or episode number as the opener. Then what listeners will learn. Use the show's voice. End with a clear call-to-action. No boilerplate — it is appended separately.]`);
+    if(editorSelections.chapters)sections.push(`CHAPTER MARKERS\n\n[Generate YouTube-style chapter timestamps based on the transcript. Format: MM:SS — Chapter Title. Start at 00:00. Each chapter title should be descriptive and searchable. Use exact timestamps from the transcript markers. Include 6-12 chapters.]`);
+    if(editorSelections.newsletter)sections.push(`NEWSLETTER TEASER\n\nSUBJECT LINE: [compelling email subject, 6-10 words, no clickbait]\nPREVIEW TEXT: [preview snippet under 50 characters]\n\n[Write a 100-150 word newsletter-style episode teaser. Conversational, value-forward, sounds like the host's voice. End with "Listen here →"]`);
+    if(editorSelections.social)sections.push(`SOCIAL CAPTIONS\n\n[Write platform-specific social captions for each platform: ${platforms}. Each caption should feel native to the platform. Include relevant hashtags from the show's tag list: ${d.tags||""}. Separate each platform with its name in ALL CAPS.]`);
+    const dnaBase=`You are an expert editor coach and content strategist for ${d.name}.\n\nOUTPUT FORMAT: PLAIN TEXT only. Zero markdown. No asterisks. No bold. ALL section headers in ALL CAPS. Separate major sections with ---.\n\nCRITICAL: Every quote pulled from the transcript must attribute the speaker by name — format as "quote text" — [Name]. Never leave a quote unattributed.\n\nSHOW DNA (all outputs must reflect this):\nShow: ${d.name} — "${d.tag}"\nHost(s): ${d.hosts}\n${guest?"GUEST episode.":"SOLO episode."}\nVoice/Tone: ${voiceTraits}\nEnergy: ${d.voice?.energy||""}\nAudience: ${d.aud?.who||""}\nAudience pain points: ${(d.aud?.pains||[]).join(", ")}\nWhat resonates with this audience: ${d.voice?.use||""}\nPhrases this show uses: ${(d.voice?.phrases||[]).join(" | ")}\nAvoid: ${d.voice?.avoid||""}\nEditing level: ${lvl.name} — ${lvl.desc}\nShow rules: ${d.rules||"none"}\n\nGenerate ONLY the sections below. Analyze the full transcript carefully before writing. Every output must be grounded in what actually appears in this specific transcript — not generic podcast advice.`;
+    setBusy(true);setErr("");setSecs([]);setStep("generating");
+    try{
+      const j=await claudeAPI({model:"claude-sonnet-4-6",max_tokens:6000,system:dnaBase,messages:[{role:"user",content:`Analyze this transcript and generate the following sections:\n\n${sections.join("\n\n---\n\n")}\n\nTRANSCRIPT:\n${tx.substring(0,90000)}`}]});
+      if(j.error){setErr(j.error.message||"Error generating.");setStep("result");return;}
+      const t=j.content?.filter(i=>i.type==="text").map(i=>i.text).join("\n")||"";
+      if(!t.trim()){setErr("No content generated. Please try again.");setStep("result");return;}
+      setRaw(strip(t));const parsed=parse(t);
+      setSecs(parsed.length?parsed:[{id:"full",title:"Editor Brief",content:strip(t)}]);
+      setEditorLeftTab("brief");setStep("result");
+    }catch(e){setErr(e.message||"Network error.");setStep("result");}
+    finally{setBusy(false);}
   }
 
   async function sendEditorChat(messageText) {
@@ -1894,7 +1927,7 @@ ${tx.substring(0, 40000)}`;
     if(newMode==="prep"){
       const hasFmts=shows[showKey]?.episodeFormats?.length>0;
       setStep(hasFmts?"prep-format":"prep-details");
-    } else if(newMode==="editor") setStep("input");
+    } else if(newMode==="editor"){setTx("");setEditorChat([]);setEditorChatInput("");setEditorLeftTab("transcript");setTranscriptHighlights([]);setStep("result");}
     else if(newMode==="guest"){
       const dna=shows[showKey];
       setGuestResults([]);
@@ -2629,47 +2662,116 @@ ${tx.substring(0, 40000)}`;
               {/* Transcript view */}
               {mode==="editor"&&editorLeftTab==="transcript"?(
                 <div style={{background:T.card,border:"1px solid "+T.cardBorder,borderRadius:"10px",overflow:"hidden"}}>
-                  <div style={{padding:"14px 20px",borderBottom:"1px solid "+T.cardBorder,background:T.surface,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-                    <div style={{fontSize:"12px",fontWeight:"700",letterSpacing:"2px",textTransform:"uppercase",color:T.textMuted,fontFamily:PF}}>Episode Transcript</div>
-                    {transcriptHighlights.length>0&&(
-                      <div style={{display:"flex",alignItems:"center",gap:"10px"}}>
-                        <span style={{fontSize:"12px",color:"#F5A623",fontFamily:PF,fontWeight:"700"}}>{transcriptHighlights.length} passage{transcriptHighlights.length!==1?"s":""} highlighted by Coach</span>
+                  <div style={{padding:"14px 20px",borderBottom:"1px solid "+T.cardBorder,background:T.surface,display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:"8px"}}>
+                    <div style={{fontSize:"12px",fontWeight:"700",letterSpacing:"2px",textTransform:"uppercase",color:T.textMuted,fontFamily:PF}}>Episode Transcript{tx.trim()?` · ${tx.trim().split(/\s+/).length.toLocaleString()} words`:""}</div>
+                    <div style={{display:"flex",alignItems:"center",gap:"10px"}}>
+                      {transcriptHighlights.length>0&&<>
+                        <span style={{fontSize:"12px",color:"#F5A623",fontFamily:PF,fontWeight:"700"}}>{transcriptHighlights.length} passage{transcriptHighlights.length!==1?"s":""} highlighted</span>
                         <button onClick={()=>setTranscriptHighlights([])} style={{fontSize:"11px",color:T.textMuted,background:"none",border:"none",cursor:"pointer",fontFamily:PF,padding:0}}>Clear</button>
-                      </div>
-                    )}
+                      </>}
+                      <label style={{display:"flex",alignItems:"center",gap:"6px",cursor:"pointer",fontSize:"12px",color:T.textMuted,fontFamily:PF}}>
+                        <input ref={fileRef} type="file" accept=".txt,.md" style={{display:"none"}} onChange={handleFileInput}/>
+                        <button onClick={()=>fileRef.current?.click()} style={{fontSize:"11px",padding:"4px 10px",background:"transparent",border:"1px solid "+T.cardBorder,borderRadius:"5px",color:T.textMuted,cursor:"pointer",fontFamily:PF}}>Upload file</button>
+                      </label>
+                    </div>
                   </div>
-                  <div style={{padding:"20px 24px",maxHeight:"72vh",overflowY:"auto",fontFamily:PF,fontSize:"14px",lineHeight:"1.8",color:T.text,whiteSpace:"pre-wrap"}}>
-                    {(()=>{
-                      if(!transcriptHighlights.length) return tx;
-                      // Split transcript into highlighted/non-highlighted segments
-                      const escaped = transcriptHighlights.map(h=>h.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"));
-                      const re = new RegExp(`(${escaped.join("|")})`, "g");
-                      const parts = tx.split(re);
-                      return parts.map((part,i)=>{
-                        const isHighlight = transcriptHighlights.includes(part);
-                        return isHighlight
-                          ? <mark key={i} style={{background:"#F5A62340",borderBottom:"2px solid #F5A623",borderRadius:"2px",padding:"1px 2px",color:T.text}}>{part}</mark>
-                          : <span key={i}>{part}</span>;
-                      });
-                    })()}
-                  </div>
+                  {transcriptHighlights.length>0?(
+                    <div style={{padding:"20px 24px",maxHeight:"72vh",overflowY:"auto",fontFamily:PF,fontSize:"14px",lineHeight:"1.8",color:T.text,whiteSpace:"pre-wrap"}}>
+                      {(()=>{
+                        const escaped=transcriptHighlights.map(h=>h.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"));
+                        const re=new RegExp(`(${escaped.join("|")})`, "g");
+                        const parts=tx.split(re);
+                        return parts.map((part,i)=>{
+                          const isHighlight=transcriptHighlights.includes(part);
+                          return isHighlight
+                            ? <mark key={i} style={{background:"#F5A62340",borderBottom:"2px solid #F5A623",borderRadius:"2px",padding:"1px 2px",color:T.text}}>{part}</mark>
+                            : <span key={i}>{part}</span>;
+                        });
+                      })()}
+                    </div>
+                  ):(
+                    <div onDragOver={e=>{e.preventDefault();setDragging(true);}} onDragLeave={()=>setDragging(false)} onDrop={e=>{e.preventDefault();setDragging(false);const f=e.dataTransfer.files[0];if(f)readFile(f);}}>
+                      {!tx.trim()&&<div style={{padding:"20px 24px 0",textAlign:"center",color:T.textMuted,fontSize:"13px",fontFamily:PF}}>Paste your transcript below, or drag and drop a .txt file {dragging?"— drop it!":""}</div>}
+                      <textarea
+                        value={tx}
+                        onChange={e=>setTx(e.target.value)}
+                        placeholder={"Paste your full episode transcript here — include timestamps if available (e.g. [00:03:47]).\n\nThe AI Editor Coach on the right can then answer questions, find clip moments, and coach you through this episode at the editing level set in your Show DNA."}
+                        style={{width:"100%",minHeight:"65vh",border:"none",outline:"none",resize:"none",padding:"20px 24px",fontSize:"14px",lineHeight:"1.8",color:T.text,background:dragging?"#FFF8F0":T.card,fontFamily:PF,boxSizing:"border-box"}}
+                      />
+                    </div>
+                  )}
                 </div>
               ):(<>
+              {/* Editor mode — show generator when empty, results when populated */}
+              {mode==="editor"&&secs.length===0?(
+                <div>
+                  {/* DNA context banner */}
+                  {(()=>{const lvl=d?.editingLevel||"1";const lvlLabels={"1":"Level 1 — Clean & Clear","2":"Level 2 — Paced & Polished","3":"Level 3 — Story-Driven"};const voiceTraits=Array.isArray(d?.voice?.traits)?d.voice.traits.join(", "):(d?.voice?.traits||"");return(<div style={{background:T.coralSoft,border:"1px solid "+T.coralMid,borderRadius:"10px",padding:"16px 20px",marginBottom:"20px"}}>
+                    <div style={{fontSize:"11px",fontWeight:"700",letterSpacing:"2px",color:T.coral,fontFamily:PF,marginBottom:"10px"}}>SHOW DNA — {d?.name?.toUpperCase()}</div>
+                    <div style={{display:"flex",flexWrap:"wrap",gap:"16px"}}>
+                      <div><div style={{fontSize:"11px",color:T.textMuted,fontFamily:PF,letterSpacing:"1px",marginBottom:"2px"}}>EDITING LEVEL</div><div style={{fontSize:"13px",color:T.text,fontFamily:PF,fontWeight:"600"}}>{lvlLabels[lvl]}</div></div>
+                      {voiceTraits&&<div><div style={{fontSize:"11px",color:T.textMuted,fontFamily:PF,letterSpacing:"1px",marginBottom:"2px"}}>VOICE</div><div style={{fontSize:"13px",color:T.text,fontFamily:PF,fontWeight:"600"}}>{voiceTraits}</div></div>}
+                      {d?.aud?.who&&<div><div style={{fontSize:"11px",color:T.textMuted,fontFamily:PF,letterSpacing:"1px",marginBottom:"2px"}}>AUDIENCE</div><div style={{fontSize:"13px",color:T.text,fontFamily:PF,fontWeight:"600"}}>{d.aud.who}</div></div>}
+                    </div>
+                  </div>);})()}
+                  {err&&<div style={{background:"#D94F4F18",border:"1px solid #D94F4F44",borderRadius:"8px",padding:"12px 16px",color:"#F09090",fontSize:"14px",marginBottom:"16px",fontFamily:PF}}>{err}</div>}
+                  {!tx.trim()&&<div style={{background:T.card,border:"1px dashed "+T.cardBorder,borderRadius:"10px",padding:"32px",textAlign:"center",marginBottom:"20px"}}>
+                    <div style={{fontSize:"28px",marginBottom:"8px"}}>📄</div>
+                    <div style={{fontSize:"15px",color:T.textMuted,fontFamily:PF,marginBottom:"4px"}}>Paste your transcript first</div>
+                    <button onClick={()=>setEditorLeftTab("transcript")} style={{marginTop:"10px",padding:"8px 18px",background:T.coral,border:"none",borderRadius:"6px",color:"#fff",fontSize:"13px",fontWeight:"700",cursor:"pointer",fontFamily:PF}}>Go to Transcript →</button>
+                  </div>}
+                  <div style={{fontSize:"13px",fontWeight:"700",letterSpacing:"2px",color:T.textMuted,fontFamily:PF,marginBottom:"12px"}}>WHAT WOULD YOU LIKE TO GENERATE?</div>
+                  <div style={{display:"flex",flexDirection:"column",gap:"8px",marginBottom:"20px"}}>
+                    {[
+                      ["brief","Editor Companion Brief","Cut notes, pacing analysis, episode overview"],
+                      ["clips","Best Clip Moments",`${editorClipCount} clips with timestamps, quotes, and caption hooks`],
+                      ["hook","Cold Open / Hook","Top 3 intro hook moments ranked by impact"],
+                      ["pullquotes","Pull Quotes","6-8 shareable standalone quotes for social"],
+                      ["shownotes","Show Notes","150-200 word episode summary"],
+                      ["chapters","Chapter Markers","YouTube-style timestamped chapters"],
+                      ["newsletter","Newsletter Teaser","Subject line + 100-word email teaser"],
+                      ["social","Social Captions","Platform-native captions for each channel"],
+                    ].map(([key,label,desc])=>(
+                      <label key={key} style={{display:"flex",alignItems:"flex-start",gap:"12px",padding:"12px 16px",background:editorSelections[key]?T.coralSoft:T.card,border:"1px solid "+(editorSelections[key]?T.coralMid:T.cardBorder),borderRadius:"8px",cursor:"pointer",transition:"all .15s"}}>
+                        <input type="checkbox" checked={editorSelections[key]} onChange={e=>setEditorSelections(s=>({...s,[key]:e.target.checked}))} style={{marginTop:"2px",accentColor:T.coral,flexShrink:0,width:"16px",height:"16px"}}/>
+                        <div>
+                          <div style={{fontSize:"14px",fontWeight:"600",color:editorSelections[key]?T.coral:T.text,fontFamily:PF,lineHeight:"1.2"}}>{label}</div>
+                          <div style={{fontSize:"12px",color:T.textMuted,fontFamily:PF,marginTop:"2px"}}>{desc}</div>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                  {editorSelections.clips&&<div style={{marginBottom:"20px"}}>
+                    <div style={{fontSize:"12px",fontWeight:"700",letterSpacing:"1.5px",color:T.textMuted,fontFamily:PF,marginBottom:"8px"}}>NUMBER OF CLIPS</div>
+                    <div style={{display:"flex",flexWrap:"wrap",gap:"6px"}}>
+                      {[3,4,5,6,7,8,9,10].map(n=>(
+                        <button key={n} onClick={()=>setEditorClipCount(n)} style={{padding:"8px 16px",background:editorClipCount===n?T.coral:T.card,border:"1px solid "+(editorClipCount===n?T.coral:T.cardBorder),borderRadius:"6px",color:editorClipCount===n?"#fff":T.textSecondary,fontSize:"14px",fontWeight:editorClipCount===n?"700":"400",cursor:"pointer",fontFamily:PF,transition:"all .15s"}}>{n}</button>
+                      ))}
+                    </div>
+                  </div>}
+                  <button onClick={genEditorSelective} disabled={!tx.trim()||!Object.values(editorSelections).some(Boolean)} style={{width:"100%",padding:"14px",background:tx.trim()&&Object.values(editorSelections).some(Boolean)?T.coral:"#ccc",border:"none",borderRadius:"8px",color:"#fff",fontSize:"15px",fontWeight:"700",cursor:tx.trim()&&Object.values(editorSelections).some(Boolean)?"pointer":"not-allowed",fontFamily:PF,letterSpacing:"0.5px",transition:"all .2s"}}>
+                    Generate Selected Outputs →
+                  </button>
+                  {!tx.trim()&&<div style={{fontSize:"12px",color:T.textMuted,fontFamily:PF,textAlign:"center",marginTop:"8px"}}>Paste your transcript in the Transcript tab first</div>}
+                </div>
+              ):(
+              <>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"28px",flexWrap:"wrap",gap:"12px"}}>
                 <div>
                   <h2 style={{fontSize:"36px",fontWeight:"700",color:T.text,margin:"0 0 4px",letterSpacing:"-0.5px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{mode==="clips"?"Clips Ready":mode==="prep"?"Episode Prep Ready":mode==="editor"?"Editor Brief Ready":mode==="guest"?"Guest Research Ready":"Content Package Ready"}</h2>
                   <p style={{fontSize:"16px",color:T.textMuted,margin:0,fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1px"}}>{d?.name.toUpperCase()}{ep?` · EP ${ep}`:""}{mode==="clips"?` · ${clipResults.filter(r=>!r.skipped).length} CLIPS`:mode==="editor"?` · EDITING BRIEF`:` · ${secs.length} SECTIONS`}</p>
                 </div>
-                <div style={{display:"flex",gap:"8px"}}>
-                  {mode!=="clips"&&<button onClick={()=>{const bpH=secs.find(s=>s.bpHtml)?.bpHtml||"";copyText(raw,bpH);setCpAll(true);setTimeout(()=>setCpAll(false),2000);}} style={{...ghost,background:cpAll?T.coralSoft:"transparent",borderColor:cpAll?T.coralMid:T.cardBorder,color:cpAll?T.coral:T.textMuted}}>{cpAll?"✓ COPIED":"COPY ALL"}</button>}
-                  {mode!=="clips"&&<button onClick={()=>{dlDoc(raw,`${d?.name}${mode==="prep"?` — Episode Prep${epTopic?` — ${epTopic}`:""}`:ep?` — Ep ${ep}`:""} Content Package`,d?.bp);setDlOk(true);setTimeout(()=>setDlOk(false),2500);}} style={{...ghost,background:dlOk?T.coralSoft:"transparent",borderColor:dlOk?T.coralMid:T.cardBorder,color:dlOk?T.coral:T.textMuted}}>{dlOk?"✓ DOWNLOADED":"📄 WORD DOC"}</button>}
+                <div style={{display:"flex",gap:"8px",flexWrap:"wrap"}}>
+                  {mode!=="clips"&&mode!=="editor"&&<button onClick={()=>{const bpH=secs.find(s=>s.bpHtml)?.bpHtml||"";copyText(raw,bpH);setCpAll(true);setTimeout(()=>setCpAll(false),2000);}} style={{...ghost,background:cpAll?T.coralSoft:"transparent",borderColor:cpAll?T.coralMid:T.cardBorder,color:cpAll?T.coral:T.textMuted}}>{cpAll?"✓ COPIED":"COPY ALL"}</button>}
+                  {mode!=="clips"&&mode!=="editor"&&<button onClick={()=>{dlDoc(raw,`${d?.name}${mode==="prep"?` — Episode Prep${epTopic?` — ${epTopic}`:""}`:ep?` — Ep ${ep}`:""} Content Package`,d?.bp);setDlOk(true);setTimeout(()=>setDlOk(false),2500);}} style={{...ghost,background:dlOk?T.coralSoft:"transparent",borderColor:dlOk?T.coralMid:T.cardBorder,color:dlOk?T.coral:T.textMuted}}>{dlOk?"✓ DOWNLOADED":"📄 WORD DOC"}</button>}
                   {mode==="clips"&&<button onClick={()=>{const clipDoc=clipResults.filter(r=>!r.skipped).map(r=>`CLIP ${r.index}\n\n${r.content}`).join("\n\n");dlDoc(clipDoc,`${d?.name}${ep?` — Ep ${ep}`:""} — Clips`);setDlOk(true);setTimeout(()=>setDlOk(false),2500);}} style={{...ghost,background:dlOk?T.coralSoft:"transparent",borderColor:dlOk?T.coralMid:T.cardBorder,color:dlOk?T.coral:T.textMuted}}>{dlOk?"✓ DOWNLOADED":"📄 WORD DOC"}</button>}
-                  {mode!=="clips"&&<button onClick={uploadToGDrive} disabled={gDriveStatus==="uploading"} title="Export to Google Drive as a Google Doc" style={{...ghost,background:gDriveStatus==="ok"?T.coralSoft:gDriveStatus==="error"||gDriveStatus==="disconnected"?"#D94F4F18":"transparent",borderColor:gDriveStatus==="ok"?T.coralMid:gDriveStatus==="error"||gDriveStatus==="disconnected"?"#D94F4F44":T.cardBorder,color:gDriveStatus==="ok"?T.coral:gDriveStatus==="error"||gDriveStatus==="disconnected"?"#D94F4F":T.textMuted,opacity:gDriveStatus==="uploading"?.6:1}}>{gDriveStatus==="uploading"?"UPLOADING…":gDriveStatus==="ok"?"✓ EXPORTED TO DRIVE":gDriveStatus==="error"?"✕ EXPORT FAILED":gDriveStatus==="disconnected"?"⚙ CONNECT IN SETTINGS":"📁 EXPORT TO GOOGLE DRIVE"}</button>}
-                  <button onClick={()=>{setStep(mode==="clips"?"clips-setup":"input");setRaw("");setSecs([]);setClipResults([]);setEditorChat([]);setEditorChatInput("");setEditorLeftTab("brief");setTranscriptHighlights([]);}} style={ghost}>{mode==="clips"?"NEW CLIPS":"NEW EPISODE"}</button>
+                  {mode!=="clips"&&mode!=="editor"&&<button onClick={uploadToGDrive} disabled={gDriveStatus==="uploading"} title="Export to Google Drive as a Google Doc" style={{...ghost,background:gDriveStatus==="ok"?T.coralSoft:gDriveStatus==="error"||gDriveStatus==="disconnected"?"#D94F4F18":"transparent",borderColor:gDriveStatus==="ok"?T.coralMid:gDriveStatus==="error"||gDriveStatus==="disconnected"?"#D94F4F44":T.cardBorder,color:gDriveStatus==="ok"?T.coral:gDriveStatus==="error"||gDriveStatus==="disconnected"?"#D94F4F":T.textMuted,opacity:gDriveStatus==="uploading"?.6:1}}>{gDriveStatus==="uploading"?"UPLOADING…":gDriveStatus==="ok"?"✓ EXPORTED TO DRIVE":gDriveStatus==="error"?"✕ EXPORT FAILED":gDriveStatus==="disconnected"?"⚙ CONNECT IN SETTINGS":"📁 EXPORT TO GOOGLE DRIVE"}</button>}
+                  {mode==="editor"&&secs.length>0&&<button onClick={()=>{setSecs([]);setRaw("");setEditorLeftTab("brief");}} style={ghost}>GENERATE MORE</button>}
+                  <button onClick={()=>{if(mode==="editor"){setTx("");setSecs([]);setRaw("");setEditorChat([]);setEditorChatInput("");setEditorLeftTab("transcript");setTranscriptHighlights([]);}else{setStep(mode==="clips"?"clips-setup":"input");setRaw("");setSecs([]);setClipResults([]);setEditorChat([]);setEditorChatInput("");setEditorLeftTab("brief");setTranscriptHighlights([]);}}} style={ghost}>{mode==="clips"?"NEW CLIPS":"NEW EPISODE"}</button>
                 </div>
               </div>
-              {d?.publishDay&&d?.publishTime&&d?.publishTz&&(()=>{try{const sched=formatPublishSchedule(d,userProfile?.timezone);if(!sched)return null;return(<div style={{background:T.coralSoft,border:"1px solid "+T.coralMid,borderRadius:"8px",padding:"12px 18px",marginBottom:"20px",display:"flex",alignItems:"center",gap:"10px"}}><span style={{fontSize:"18px"}}>📅</span><div><div style={{fontSize:"11px",color:T.coral,fontWeight:"700",letterSpacing:"1.5px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>PUBLISH SCHEDULE</div><div style={{fontSize:"14px",color:T.textSecondary,marginTop:"2px",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"500"}}>{sched.showTime}{sched.isDifferent?" · "+sched.localTime+" your time":""}</div></div></div>);}catch{return null;}})()}
-              {mode==="editor"&&(()=>{const lvl=d?.editingLevel||"1";const lvlLabels={"1":"Level 1 — Basic Clean Edit","2":"Level 2 — Paced & Polished","3":"Level 3 — Creative & Strategic"};const lvlDesc={"1":"Removing filler, stumbles, and repetition. Flagging the best moments for this show's audience.","2":"Tightening pacing, restructuring for flow, and optimizing hooks for audience engagement.","3":"Deep structural decisions, storytelling arc, and audience-specific content strategy."};return(<div style={{background:"rgba(30,20,10,.04)",border:"1px solid "+T.cardBorder,borderRadius:"8px",padding:"12px 18px",marginBottom:"20px",display:"flex",alignItems:"center",gap:"10px"}}><span style={{fontSize:"16px"}}>🎬</span><div><div style={{fontSize:"11px",color:T.textMuted,fontWeight:"700",letterSpacing:"1.5px",fontFamily:"'DM Sans', system-ui, sans-serif",textTransform:"uppercase"}}>{lvlLabels[lvl]}</div><div style={{fontSize:"13px",color:T.textSecondary,marginTop:"2px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{lvlDesc[lvl]}</div></div></div>);})()}
+              {d?.publishDay&&d?.publishTime&&d?.publishTz&&mode!=="editor"&&(()=>{try{const sched=formatPublishSchedule(d,userProfile?.timezone);if(!sched)return null;return(<div style={{background:T.coralSoft,border:"1px solid "+T.coralMid,borderRadius:"8px",padding:"12px 18px",marginBottom:"20px",display:"flex",alignItems:"center",gap:"10px"}}><span style={{fontSize:"18px"}}>📅</span><div><div style={{fontSize:"11px",color:T.coral,fontWeight:"700",letterSpacing:"1.5px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>PUBLISH SCHEDULE</div><div style={{fontSize:"14px",color:T.textSecondary,marginTop:"2px",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"500"}}>{sched.showTime}{sched.isDifferent?" · "+sched.localTime+" your time":""}</div></div></div>);}catch{return null;}})()}
+              {mode==="editor"&&secs.length>0&&(()=>{const lvl=d?.editingLevel||"1";const lvlLabels={"1":"Level 1 — Clean & Clear","2":"Level 2 — Paced & Polished","3":"Level 3 — Story-Driven"};const lvlDesc={"1":"Removing filler, stumbles, and repetition. Flagging the best moments for this show's audience.","2":"Tightening pacing, restructuring for flow, and optimizing hooks for audience engagement.","3":"Deep structural decisions, storytelling arc, and audience-specific content strategy."};return(<div style={{background:"rgba(30,20,10,.04)",border:"1px solid "+T.cardBorder,borderRadius:"8px",padding:"12px 18px",marginBottom:"20px",display:"flex",alignItems:"center",gap:"10px"}}><span style={{fontSize:"16px"}}>🎬</span><div><div style={{fontSize:"11px",color:T.textMuted,fontWeight:"700",letterSpacing:"1.5px",fontFamily:"'DM Sans', system-ui, sans-serif",textTransform:"uppercase"}}>{lvlLabels[lvl]}</div><div style={{fontSize:"13px",color:T.textSecondary,marginTop:"2px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{lvlDesc[lvl]}</div></div></div>);})()}
               {err&&<div style={{background:"#D94F4F18",border:"1px solid #D94F4F44",borderRadius:"8px",padding:"12px 16px",color:"#F09090",fontSize:"14px",marginBottom:"12px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{err}</div>}
               {mode==="clips"?(
                 <div>
@@ -2744,6 +2846,8 @@ ${tx.substring(0, 40000)}`;
                     </>}
                   </div>}
                 </>
+              )}
+              </>
               )}
               </>)}
             </div>
