@@ -1551,7 +1551,7 @@ ${epfPasteText.substring(0, 8000)}`;
         </div>
 
         {/* NAVIGATE — DNA tabs (shows) or settings sections */}
-        <div style={{ padding: "8px 0", flex: 1, overflowY: "auto" }}>
+        <div style={{ padding: "8px 0" }}>
           <div style={{ fontSize: "12px", color: "#555555", letterSpacing: "2px", textTransform: "uppercase", padding: "4px 16px 6px", fontFamily: FF, fontWeight: "600" }}>NAVIGATE</div>
           {adminView === "settings" ? (
             settingsSections.map(s => {
