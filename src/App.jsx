@@ -1853,7 +1853,7 @@ ${tx.substring(0, 40000)}`;
         setEditorLeftTab("transcript");
       }
     } catch (e) {
-      setEditorChat([...newMessages, { role: "assistant", content: "Sorry, something went wrong. Please try again." }]);
+      setEditorChat([...newMessages, { role: "assistant", content: "Error: " + (e?.message || JSON.stringify(e)) }]);
     } finally {
       setEditorChatLoading(false);
     }
