@@ -1985,7 +1985,7 @@ The email should:
                       {label:"My Profile",action:()=>{setShowProfile(true);setShowUserMenu(false);}},
                       ...(isAdmin?[
                         {label:"Podcast Settings",action:()=>{setShowAdmin(true);setShowUserMenu(false);}},
-                        {label:"Workspace & Team",action:()=>{setShowAdmin(true);setShowUserMenu(false);}},
+                        {label:"Workspace Settings",action:()=>{setShowAdmin(true);setShowUserMenu(false);}},
                       ]:[]),
                     ].map(item=>(
                       <button key={item.label} onClick={item.action}

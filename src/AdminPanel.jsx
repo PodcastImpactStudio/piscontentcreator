@@ -1640,7 +1640,7 @@ ${epfPasteText.substring(0, 8000)}`;
                 </div>
                 <div style={{ padding: "4px 0" }}>
                   {[
-                    { label: "Workspace & Team", action: () => { setAdminView("settings"); setShowUserMenuAdmin(false); } },
+                    { label: "Workspace Settings", action: () => { setAdminView("settings"); setShowUserMenuAdmin(false); } },
                   ].map(item => (
                     <button key={item.label} onClick={item.action}
                       style={{ width: "100%", padding: "9px 14px", background: "transparent", border: "none", color: "#FFFFFF", fontSize: "13px", fontFamily: FF, cursor: "pointer", textAlign: "left", transition: "background .1s" }}
