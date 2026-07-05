@@ -1534,6 +1534,11 @@ YOUR ROLE:
 - Keep responses focused and conversational — this is a dialogue, not a document dump
 - When the host seems ready to plan a specific episode, offer to generate a full Episode Prep Package for them
 
+FORMATTING — CRITICAL:
+- NEVER use markdown. No asterisks, no bold (**text**), no headers (##), no bullet dashes with asterisks, no backticks.
+- Use plain text only. For lists, use a simple dash (-) or number. For emphasis, just use capitalization or word choice.
+- Write the way you'd talk, not the way you'd write a report.
+
 OPENING: If this is the first message in the conversation, greet the host warmly by name (use ${d.hosts||"there"}) and ask what they'd like to plan. Suggest 3 options: a single episode, a series or season, or something special.`;
 
     const apiMessages = isInit ? [{role:"user",content:"Please greet me and ask what I'd like to plan."}] : newMessages.map(m=>({role:m.role,content:m.content}));
@@ -2626,7 +2631,7 @@ ${tx.substring(0, 40000)}`;
                 {plannerChat.map((m,i)=>(
                   <div key={i} style={{display:"flex",gap:"10px",alignItems:"flex-start",flexDirection:m.role==="user"?"row-reverse":"row",padding:"0 4px"}}>
                     <div style={{width:"28px",height:"28px",borderRadius:"50%",background:m.role==="user"?T.cardBorder:T.coral,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:"13px",color:m.role==="user"?T.textMuted:"#fff",fontWeight:"700"}}>{m.role==="user"?"U":"S"}</div>
-                    <div style={{maxWidth:"80%",padding:"12px 16px",background:m.role==="user"?T.coralSoft:T.card,border:"1px solid "+(m.role==="user"?T.coralMid:T.cardBorder),borderRadius:"12px",fontSize:"15px",color:T.text,fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.6",whiteSpace:"pre-wrap"}}>{m.content}</div>
+                    <div style={{maxWidth:"80%",padding:"12px 16px",background:m.role==="user"?T.coralSoft:T.card,border:"1px solid "+(m.role==="user"?T.coralMid:T.cardBorder),borderRadius:"12px",fontSize:"15px",color:T.text,fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.6",whiteSpace:"pre-wrap"}}>{m.content.replace(/\*\*/g,"").replace(/^#+\s/gm,"")}</div>
                   </div>
                 ))}
                 {plannerChat.length>0&&plannerLoading&&(
