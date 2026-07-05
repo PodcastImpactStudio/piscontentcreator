@@ -4,6 +4,7 @@ import Auth from "./Auth";
 import Profile from "./Profile";
 import { supabase } from "./lib/supabase";
 import { AdminPanel, AdminGate } from "./AdminPanel";
+import SuperAdmin from "./SuperAdmin";
 
 // API calls go through /api/generate (server-side) — key is never in the browser
 async function claudeAPI(body, attempt = 0) {
@@ -1233,6 +1234,7 @@ export default function App(){
   const[accountType,setAccountType]=useState("agency");
   const[orgPlan,setOrgPlan]=useState("beta");
   const[betaExpired,setBetaExpired]=useState(false);
+  const[showSuperAdmin,setShowSuperAdmin]=useState(false);
   const fileRef=useRef(null);
   const[showUserMenu,setShowUserMenu]=useState(false);
   const userMenuRef=useRef(null);
@@ -2063,6 +2065,7 @@ ${tx.substring(0, 40000)}`;
 
       {showProfile&&currentUser&&<Profile user={currentUser} onClose={()=>setShowProfile(false)} onSignOut={handleSignOut}/>}
       {showAdmin&&<AdminPanel shows={shows} orgId={orgId} accountType={accountType} userEmail={currentUser?.email} userName={userProfile?.name||(currentUser?.email?.split("@")[0]||"")} onSignOut={handleSignOut} initialView={adminInitialView} onClose={()=>{setShowAdmin(false);setAdminInitialView("shows");}} onSaved={async()=>{await refreshShows();if(!onboardingComplete)await markOnboardingComplete();}}/>}
+      {showSuperAdmin&&<SuperAdmin onClose={()=>setShowSuperAdmin(false)}/>}
 
       {/* BETA DISCLAIMER — shown once per user account */}
       {!betaAcknowledged&&<BetaDisclaimerModal onAcknowledge={()=>{const key="pis_beta_ack_"+(currentUser?.id||"anon");localStorage.setItem(key,"1");setBetaAcknowledged(true);setShowTour(true);}}/>}
@@ -2112,6 +2115,18 @@ ${tx.substring(0, 40000)}`;
 
         {/* Spacer */}
         <div style={{flex:1}}/>
+
+        {/* PIS Super Admin — owner only */}
+        {orgPlan==="owner"&&(
+          <div style={{padding:"8px 0",borderBottom:"1px solid #2E2E2E"}}>
+            <button onClick={()=>setShowSuperAdmin(true)}
+              className="sidebar-nav-item"
+              style={{width:"100%",padding:"9px 16px",background:"transparent",border:"none",borderLeft:"3px solid transparent",color:"#A078FF",fontSize:"13px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",display:"flex",alignItems:"center",gap:"8px",fontWeight:"700",letterSpacing:"0.5px"}}>
+              <span style={{fontSize:"10px"}}>⬡</span>
+              PIS Admin
+            </button>
+          </div>
+        )}
 
         {/* Bottom: help links + settings + user */}
         <div style={{borderTop:"1px solid #2E2E2E",padding:"8px 0"}}>
