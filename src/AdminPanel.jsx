@@ -329,6 +329,14 @@ const PRESET_FORMATS = [
     example: "'She wrote the book on burnout recovery — here's her burnout story'",
     structure: "HOOK (0:00–1:30)\nThe topic and why it matters to your listener right now.\n\nTHE EXPERTISE (1:30–22:00)\nFramework, research, method — with real examples pressed out of them.\n\nTHE PIVOT (22:00–24:00)\nHost: 'Now tell me the story that made you care about this.'\n\nTHE PERSONAL STORY (24:00–38:00)\nThe guest's wound, turning point, or lived experience.\n\nBRIDGE + PERMISSION SLIP CLOSE (38:00–42:00)\nHost personal connection + permission slip for the listener.",
   },
+  {
+    category: "INTERVIEW",
+    name: "Listener Spotlight",
+    type: "Guest Interview",
+    desc: "A community member or loyal listener in the guest seat. Not an expert — a real person living the topic your show covers. Gets your audience invested and shows listeners they belong in the conversation.",
+    example: "'She's been listening since episode 3 — here's what changed for her'",
+    structure: "HOOK (0:00–1:30)\nStart with why this listener's story matters — what they represent for the broader community. Make the audience feel like this could be them.\n\nGUEST INTRO (1:30–3:00)\nWho they are in real life — not credentials, just human context. How they found the show and why they stayed.\n\nTHEIR STORY (3:00–22:00)\nThe lived experience. What brought them to this topic, what they were struggling with, what shifted. Press into the specifics — the more real, the better.\n\nWHAT THE SHOW MEANT TO THEM (22:00–30:00)\nHow the community or content showed up for them. Keep it genuine — not a testimonial, a conversation.\n\nQUESTIONS FROM THE COMMUNITY (30:00–38:00)\nIf possible, bring in questions submitted by other listeners. Makes the episode feel like a community conversation, not just an interview.\n\nCLOSE (38:00–42:00)\nHost reflects on what this listener's story reveals about the community as a whole. Invitation for other listeners to share their own.",
+  },
   // ── COACHING ──────────────────────────────────────────────────────────────────
   {
     category: "COACHING",
