@@ -1907,14 +1907,12 @@ ${tx.substring(0, 40000)}`;
     if(Object.keys(shows).length===0&&isAdmin){setShowAdmin(true);return;}
     const showKeys=Object.keys(shows);
     if(show){
-      // Already have a show — just switch mode
       advanceToMode(newMode, show);
     } else if(showKeys.length===1){
-      // Single show — auto-select and go
       advanceToMode(newMode, showKeys[0]);
     } else {
-      // No show selected — go home so user can pick from the dropdown
-      setMode(null);
+      // No show selected — go to welcome with mode pre-set so show selector auto-advances
+      setMode(newMode);
       setStep("welcome");
     }
   }
@@ -1966,8 +1964,8 @@ ${tx.substring(0, 40000)}`;
         {(()=>{
           const allowed = isClient && clientConfig?.allowedModes?.length > 0 ? clientConfig.allowedModes : null;
           const navItems = [
-            {label:"Home",               section:"home",   action:()=>{setMode(null);setStep("welcome");},  visible:true},
-            {label:"Content Generation", section:"create", action:()=>{setMode(null);setStep("welcome");},  visible:!allowed||allowed.includes("full")||allowed.includes("clips")},
+            {label:"Home",               section:"home",   action:()=>{setMode(null);setStep("welcome");setShow(null);},  visible:true},
+            {label:"Content Generation", section:"create", action:()=>{setMode(null);setStep("welcome");},              visible:!allowed||allowed.includes("full")||allowed.includes("clips")},
             {label:"Editorial",          section:"editor", action:()=>handleSidebarNav("editor"),           visible:!allowed||allowed.includes("editor")},
             {label:"Episode Planning",   section:"prep",   action:()=>handleSidebarNav("prep"),             visible:!allowed||allowed.includes("prep")},
             {label:"Guest Finder",       section:"guest",  action:()=>handleSidebarNav("guest"),            visible:!allowed||allowed.includes("guest")},
@@ -2164,7 +2162,7 @@ ${tx.substring(0, 40000)}`;
                     <div style={{flex:1,position:"relative"}}>
                       <select
                         value={show||""}
-                        onChange={e=>{const k=e.target.value;if(k)setShow(k);else setShow(null);}}
+                        onChange={e=>{const k=e.target.value;if(k){if(mode&&step==="welcome")advanceToMode(mode,k);else setShow(k);}else setShow(null);}}
                         className="sidebar-show-select"
                         style={{width:"100%",appearance:"none",background:"#fff",border:`1px solid ${T.cardBorder}`,borderRadius:"8px",padding:"11px 36px 11px 15px",fontSize:"16px",fontWeight:"600",color:show?T.text:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",cursor:"pointer",outline:"none"}}>
                         <option value="">Choose a show…</option>
@@ -2175,7 +2173,7 @@ ${tx.substring(0, 40000)}`;
                       <span style={{position:"absolute",right:"13px",top:"50%",transform:"translateY(-50%)",pointerEvents:"none",color:T.textMuted,fontSize:"12px"}}>▾</span>
                     </div>
                     <div style={{fontSize:"13px",color:show?"#3A6B3A":T.textMuted,whiteSpace:"nowrap",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:show?"600":"400"}}>
-                      {show?"DNA loaded ✓":"Show DNA loads automatically"}
+                      {show?"DNA loaded ✓":mode&&step==="welcome"?<span style={{color:T.coral,fontWeight:"700"}}>Select a show to continue →</span>:"Show DNA loads automatically"}
                     </div>
                   </div>
                 )}
