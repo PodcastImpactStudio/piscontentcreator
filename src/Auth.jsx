@@ -193,7 +193,7 @@ function LandingScreen({ onSignup, onLogin }) {
           </p>
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             <div>
-              <div style={{ fontSize: "14px", fontWeight: "600", color: "#1A1A1A" }}>Tamar Medford</div>
+              <div style={{ fontSize: "14px", fontWeight: "600", color: "#1A1A1A" }}>Tamar Routly</div>
               <div style={{ fontSize: "12px", color: "#8B7D72" }}>Podcast Impact Studio</div>
             </div>
           </div>
