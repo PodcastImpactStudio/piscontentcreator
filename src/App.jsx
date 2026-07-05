@@ -1739,10 +1739,11 @@ The email should:
         if (!complete) setOnboardingStep("profile");
         const plan = orgData?.plan || "beta";
         setOrgPlan(plan);
-        if (orgData?.beta_expires_at && plan === "beta") {
+        if (plan === "beta" && orgData?.beta_expires_at) {
           const expired = new Date(orgData.beta_expires_at) < new Date();
           setBetaExpired(expired);
         }
+        // owner and paid plans never expire
       }
     } catch {
       // If no profile yet, check by email
