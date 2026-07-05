@@ -312,22 +312,6 @@ const PRESET_FORMATS = [
     example: "'The four questions I ask before I take on any new client'",
     structure: "HOOK (0:00–1:30)\nOpen with the problem your listener is sitting in right now. Make them feel seen before you say a word about the solution.\n\nBRIDGE (1:30–3:00)\nYour personal connection to this topic — the moment it became real for you.\n\nTHE CONTENT (3:00–18:00)\nWalk through your teaching, framework, or point of view. Use stories and examples — not just theory.\n\nTHE TAKEAWAY (18:00–20:00)\nThe one thing you want your listener to do, think, or feel differently after this.\n\nPERMISSION SLIP CLOSE (20:00–22:00)\nGive them permission to try it imperfectly.",
   },
-  {
-    category: "SOLO",
-    name: "Belief Deep-Dive",
-    type: "Solo Monologue",
-    desc: "Examine a belief you used to hold — where it came from, what it cost you, and what replaced it.",
-    example: "'The belief that made me terrible at saying no — and what it cost me'",
-    structure: "HOOK (0:00–1:30)\nOpen with the belief as it used to sound in your head. Say it out loud.\n\nTHE EXCAVATION (1:30–12:00)\nWhere did you get it? What did it cost you? When did it start to crack?\n\nTHE SHIFT (12:00–18:00)\nWhat happened that changed things? What do you believe now?\n\nPERMISSION SLIP CLOSE (18:00–20:00)\nGive your listener explicit permission to release that belief too.",
-  },
-  {
-    category: "SOLO",
-    name: "Permission Slip Episode",
-    type: "Solo Monologue",
-    desc: "Give your listener explicit permission to do or feel the thing they've been secretly wanting.",
-    example: "'You're allowed to stop explaining yourself to people who've already decided'",
-    structure: "HOOK (0:00–1:30)\nState the permission slip right up front. Say it plain.\n\nWHY THEY NEED IT (1:30–8:00)\nName the pressure. Who told them they couldn't? What belief is in the way?\n\nYOUR STORY (8:00–15:00)\nThe moment you gave yourself this permission — what happened before and after.\n\nPERMISSION SLIP CLOSE (15:00–20:00)\nGive it again, slower, like you mean it.",
-  },
   // ── INTERVIEW ─────────────────────────────────────────────────────────────────
   {
     category: "INTERVIEW",
@@ -373,11 +357,11 @@ const PRESET_FORMATS = [
   // ── SPECIAL ───────────────────────────────────────────────────────────────────
   {
     category: "SPECIAL",
-    name: "Origin Episode",
-    type: "Solo Monologue",
-    desc: "Your WHY. The moment that made you care. Every show needs this one.",
-    example: "'Why I built this show — and who I'm actually building it for'",
-    structure: "HOOK (0:00–1:30)\nStart with your listener. Who is this show for and what do you want it to do for them.\n\nTHE ORIGIN STORY (1:30–15:00)\nThe moment that made you care about this topic. The wound. The turning point.\n\nWHY THIS SHOW (15:00–20:00)\nWhat you believe about how this work can change something. What you're here to do.\n\nTHE INVITATION (20:00–23:00)\nWho this is for. Who it's not for. What they can expect if they stay.\n\nPERMISSION SLIP CLOSE (23:00–25:00)\nGive them permission to be exactly where they are right now.",
+    name: "Panel Episode",
+    type: "Panel Discussion",
+    desc: "A curated group of experts discusses a topic together. Best when panelists disagree — the tension is the content.",
+    example: "'Three nutritionists walk into a podcast — and they don't agree on anything'",
+    structure: "HOOK (0:00–1:30)\nState the question or tension driving the conversation. Make clear this isn't a lecture — it's a debate.\n\nPANEL INTROS (1:30–4:00)\nShort human intros for each panelist — their lens, not their resume. Who are they and why do they care about this topic?\n\nROUND ONE — THE COMMON GROUND (4:00–14:00)\nStart with what everyone agrees on. Establish the baseline before the friction begins.\n\nROUND TWO — THE TENSION (14:00–30:00)\nSurface the real disagreements. Host steers — doesn't referee. Let panelists push back on each other.\n\nROUND THREE — PRACTICAL TAKEAWAYS (30:00–40:00)\nEach panelist gives their one most actionable recommendation for the listener.\n\nCLOSE (40:00–44:00)\nHost synthesizes the key tension and what the listener can take from it.",
   },
   {
     category: "SPECIAL",
