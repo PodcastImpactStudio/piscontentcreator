@@ -401,8 +401,7 @@ function getStoredGDrive() {
   } catch { return null; }
 }
 
-function SettingsView({ shows, globalSettings, setGlobalSettings, saveGlobalSettings, globalSettingsSaved, globalSettingsLoading, orgId, accountType, userEmail, orgData, setOrgData, saveOrgData, orgDataSaved }) {
-  const [activeSection, setActiveSection] = useState("integrations");
+function SettingsView({ shows, globalSettings, setGlobalSettings, saveGlobalSettings, globalSettingsSaved, globalSettingsLoading, orgId, accountType, userEmail, orgData, setOrgData, saveOrgData, orgDataSaved, activeSection, setActiveSection }) {
   const [team, setTeam] = useState([]);
   const [teamLoading, setTeamLoading] = useState(true);
   const showKeys = Object.keys(shows || {});
@@ -538,20 +537,7 @@ function SettingsView({ shows, globalSettings, setGlobalSettings, saveGlobalSett
   }
 
   return (
-    <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
-      <div style={{ width: "240px", background: "#222222", borderRight: "1px solid #2E2E2E", flexShrink: 0, padding: "8px 0" }}>
-        <div style={{ fontSize: "12px", color: "#555555", letterSpacing: "2px", textTransform: "uppercase", padding: "4px 16px 6px", fontFamily: FF, fontWeight: "600" }}>Navigate</div>
-        {sections.map(s => (
-          <button key={s.id} onClick={() => setActiveSection(s.id)}
-            style={{ width: "100%", display: "flex", alignItems: "center", gap: "10px", padding: "10px 16px", background: activeSection === s.id ? "#2E2E2E" : "transparent", border: "none", borderLeft: `3px solid ${activeSection === s.id ? T.coral : "transparent"}`, color: activeSection === s.id ? "#FFFFFF" : "#8A8A8A", fontSize: "15px", cursor: "pointer", textAlign: "left", fontFamily: FF, fontWeight: activeSection === s.id ? "600" : "400", transition: "all .15s" }}
-            onMouseEnter={e => { if (activeSection !== s.id) { e.currentTarget.style.background = "#252525"; e.currentTarget.style.color = "#CCCCCC"; } }}
-            onMouseLeave={e => { if (activeSection !== s.id) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#8A8A8A"; } }}>
-            <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: activeSection === s.id ? T.coral : "#444", flexShrink: 0, display: "inline-block" }} />
-            <span>{s.label}</span>
-          </button>
-        ))}
-      </div>
-      <div style={{ flex: 1, overflowY: "auto", padding: "32px" }}>
+    <div style={{ flex: 1, overflowY: "auto", padding: "32px" }}>
 
         {activeSection === "integrations" && (
           <div style={{ maxWidth: "680px" }}>
@@ -906,7 +892,6 @@ function SettingsView({ shows, globalSettings, setGlobalSettings, saveGlobalSett
           </div>
         )}
 
-      </div>
     </div>
   );
 }
@@ -1085,6 +1070,14 @@ export function AdminPanel({ shows, orgId, onClose, onSaved, accountType = "agen
   const [showPresetsPanel, setShowPresetsPanel] = useState(false);
   const [showAIPanel, setShowAIPanel] = useState(false);
   const [showUserMenuAdmin, setShowUserMenuAdmin] = useState(false);
+  const [activeSettingsSection, setActiveSettingsSection] = useState("integrations");
+  const settingsSections = [
+    { id: "integrations", label: "Integrations" },
+    { id: "workspace", label: "Workspace" },
+    ...(accountType === "agency" ? [{ id: "team", label: "Team" }] : []),
+    ...(accountType === "agency" ? [{ id: "codes", label: "Access Codes" }] : []),
+    { id: "billing", label: "Billing" },
+  ];
 
   useEffect(() => {
     async function loadGlobalSettings() {
@@ -1573,22 +1566,37 @@ ${epfPasteText.substring(0, 8000)}`;
           </button>
         </div>
 
-        {/* NAVIGATE — DNA section tabs */}
-        <div style={{ padding: "8px 0", borderBottom: "1px solid #2E2E2E", flex: 1 }}>
+        {/* NAVIGATE — DNA tabs (shows) or settings sections */}
+        <div style={{ padding: "8px 0", borderBottom: "1px solid #2E2E2E", flex: 1, overflowY: "auto" }}>
           <div style={{ fontSize: "12px", color: "#555555", letterSpacing: "2px", textTransform: "uppercase", padding: "4px 16px 6px", fontFamily: FF, fontWeight: "600" }}>NAVIGATE</div>
-          {TABS.map(t => {
-            const isActive = !!form && tab === t.id && adminView === "shows";
-            const isEnabled = !!form && adminView === "shows";
-            return (
-              <button key={t.id}
-                className="admin-sidebar-nav-btn"
-                onClick={() => { if (isEnabled) { setAdminView("shows"); setTab(t.id); } }}
-                style={{ width: "100%", padding: "10px 16px", background: isActive ? "#2E2E2E" : "transparent", border: "none", borderLeft: `3px solid ${isActive ? T.coral : "transparent"}`, color: isActive ? "#FFFFFF" : isEnabled ? "#8A8A8A" : "#444444", fontSize: "15px", fontWeight: isActive ? "600" : "400", cursor: isEnabled ? "pointer" : "default", textAlign: "left", fontFamily: FF, display: "flex", alignItems: "center", gap: "10px" }}>
-                <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: isActive ? T.coral : isEnabled ? "#444" : "#333", flexShrink: 0, display: "inline-block" }} />
-                {t.label}
-              </button>
-            );
-          })}
+          {adminView === "settings" ? (
+            settingsSections.map(s => {
+              const isActive = activeSettingsSection === s.id;
+              return (
+                <button key={s.id}
+                  className="admin-sidebar-nav-btn"
+                  onClick={() => setActiveSettingsSection(s.id)}
+                  style={{ width: "100%", padding: "10px 16px", background: isActive ? "#2E2E2E" : "transparent", border: "none", borderLeft: `3px solid ${isActive ? T.coral : "transparent"}`, color: isActive ? "#FFFFFF" : "#8A8A8A", fontSize: "15px", fontWeight: isActive ? "600" : "400", cursor: "pointer", textAlign: "left", fontFamily: FF, display: "flex", alignItems: "center", gap: "10px" }}>
+                  <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: isActive ? T.coral : "#444", flexShrink: 0, display: "inline-block" }} />
+                  {s.label}
+                </button>
+              );
+            })
+          ) : (
+            TABS.map(t => {
+              const isActive = !!form && tab === t.id;
+              const isEnabled = !!form;
+              return (
+                <button key={t.id}
+                  className="admin-sidebar-nav-btn"
+                  onClick={() => { if (isEnabled) setTab(t.id); }}
+                  style={{ width: "100%", padding: "10px 16px", background: isActive ? "#2E2E2E" : "transparent", border: "none", borderLeft: `3px solid ${isActive ? T.coral : "transparent"}`, color: isActive ? "#FFFFFF" : isEnabled ? "#8A8A8A" : "#444444", fontSize: "15px", fontWeight: isActive ? "600" : "400", cursor: isEnabled ? "pointer" : "default", textAlign: "left", fontFamily: FF, display: "flex", alignItems: "center", gap: "10px" }}>
+                  <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: isActive ? T.coral : isEnabled ? "#444" : "#333", flexShrink: 0, display: "inline-block" }} />
+                  {t.label}
+                </button>
+              );
+            })
+          )}
         </div>
 
         {/* Spacer */}
@@ -1659,7 +1667,7 @@ ${epfPasteText.substring(0, 8000)}`;
       <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", background: T.bg }}>
 
         {adminView === "settings" ? (
-          <SettingsView shows={shows} globalSettings={globalSettings} setGlobalSettings={setGlobalSettings} saveGlobalSettings={saveGlobalSettings} globalSettingsSaved={globalSettingsSaved} globalSettingsLoading={globalSettingsLoading} orgId={orgId} accountType={accountType} userEmail={userEmail} orgData={orgData} setOrgData={setOrgData} saveOrgData={saveOrgData} orgDataSaved={orgDataSaved} />
+          <SettingsView shows={shows} globalSettings={globalSettings} setGlobalSettings={setGlobalSettings} saveGlobalSettings={saveGlobalSettings} globalSettingsSaved={globalSettingsSaved} globalSettingsLoading={globalSettingsLoading} orgId={orgId} accountType={accountType} userEmail={userEmail} orgData={orgData} setOrgData={setOrgData} saveOrgData={saveOrgData} orgDataSaved={orgDataSaved} activeSection={activeSettingsSection} setActiveSection={setActiveSettingsSection} />
         ) : (<>
 
         {/* ── STUDIO-STYLE SHOW SELECTOR BAR ── */}
