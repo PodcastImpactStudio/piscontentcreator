@@ -2,12 +2,12 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "./lib/supabase";
 
 const T = {
-  bg: "#0F0F0F", surface: "#1A1A1A", card: "#222222", cardBorder: "#2E2E2E",
-  text: "#F0EDE8", textMuted: "#888888", textSecondary: "#AAAAAA",
-  coral: "#C41230", coralSoft: "rgba(196,18,48,0.12)", coralMid: "rgba(196,18,48,0.3)",
-  green: "#52B788", greenSoft: "rgba(82,183,136,0.12)",
-  amber: "#F5A623", amberSoft: "rgba(245,166,35,0.12)",
-  blue: "#4A90D9", blueSoft: "rgba(74,144,217,0.12)",
+  bg: "#F5F0E8", surface: "#FDFAF5", card: "#FFFFFF", cardBorder: "#E2D9CC",
+  text: "#1A1A1A", textSecondary: "#4A3F35", textMuted: "#6B5E52",
+  coral: "#7A0019", coralSoft: "#7A001910", coralMid: "#7A001928",
+  green: "#2D6A4F", greenSoft: "rgba(45,106,79,0.08)",
+  amber: "#92650A", amberSoft: "rgba(146,101,10,0.08)",
+  blue: "#1B4F8A", blueSoft: "rgba(27,79,138,0.08)",
 };
 
 const PF = "'DM Sans', system-ui, sans-serif";
@@ -19,7 +19,7 @@ const PLAN_COLOR = {
   starter:  { bg: T.blueSoft,   border: T.blue,   text: T.blue   },
   pro:      { bg: T.greenSoft,  border: T.green,  text: T.green  },
   agency:   { bg: T.coralSoft,  border: T.coral,  text: T.coral  },
-  owner:    { bg: "rgba(160,120,255,0.12)", border: "#A078FF", text: "#A078FF" },
+  owner:    { bg: "rgba(100,60,180,0.08)", border: "#6B3CB5", text: "#6B3CB5" },
   inactive: { bg: "rgba(80,80,80,0.2)", border: "#555", text: "#777" },
 };
 
@@ -182,42 +182,46 @@ export default function SuperAdmin({ onClose }) {
   );
 
   const inp = { width: "100%", background: T.surface, border: `1px solid ${T.cardBorder}`,
-    borderRadius: "6px", padding: "9px 12px", color: T.text, fontSize: "14px",
+    borderRadius: "8px", padding: "10px 14px", color: T.text, fontSize: "14px",
     fontFamily: PF, outline: "none", boxSizing: "border-box" };
 
   const btn = (bg, col = "#fff") => ({
-    padding: "9px 18px", background: bg, border: "none", borderRadius: "6px",
+    padding: "9px 20px", background: bg, border: "none", borderRadius: "8px",
     color: col, fontSize: "13px", fontWeight: "700", cursor: "pointer", fontFamily: PF,
   });
 
   return (
     <div style={{ position: "fixed", inset: 0, background: T.bg, zIndex: 2000, display: "flex", flexDirection: "column", fontFamily: PF }}>
-      <style>{`*{box-sizing:border-box} ::-webkit-scrollbar{width:6px} ::-webkit-scrollbar-track{background:transparent} ::-webkit-scrollbar-thumb{background:#333;border-radius:3px}`}</style>
+      <style>{`*{box-sizing:border-box} ::-webkit-scrollbar{width:6px} ::-webkit-scrollbar-track{background:transparent} ::-webkit-scrollbar-thumb{background:${T.cardBorder};border-radius:3px} button:hover{opacity:.85}`}</style>
 
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 24px", borderBottom: `1px solid ${T.cardBorder}`, flexShrink: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-          <span style={{ fontSize: "11px", fontWeight: "700", letterSpacing: "2px", color: "#A078FF" }}>PIS SUPER ADMIN</span>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 28px", borderBottom: `1px solid ${T.cardBorder}`, background: T.surface, flexShrink: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <img src="/logo-nav.png" alt="" style={{ height: "28px", objectFit: "contain" }} />
+            <span style={{ fontSize: "10px", fontWeight: "700", letterSpacing: "2.5px", color: T.coral, textTransform: "uppercase", borderLeft: `1px solid ${T.cardBorder}`, paddingLeft: "10px" }}>Super Admin</span>
+          </div>
           <div style={{ display: "flex", gap: "4px" }}>
             {[["accounts", "Accounts"], ["codes", "Access Codes"]].map(([id, label]) => (
               <button key={id} onClick={() => setTab(id)}
-                style={{ padding: "6px 14px", background: tab === id ? T.card : "transparent",
-                  border: `1px solid ${tab === id ? T.cardBorder : "transparent"}`,
-                  borderRadius: "6px", color: tab === id ? T.text : T.textMuted,
-                  fontSize: "13px", cursor: "pointer", fontFamily: PF, fontWeight: tab === id ? "600" : "400" }}>
+                style={{ padding: "7px 16px", background: tab === id ? T.coral : "transparent",
+                  border: `1px solid ${tab === id ? T.coral : T.cardBorder}`,
+                  borderRadius: "6px", color: tab === id ? "#fff" : T.textMuted,
+                  fontSize: "13px", cursor: "pointer", fontFamily: PF, fontWeight: "600" }}>
                 {label}
-                {id === "accounts" && <span style={{ marginLeft: "6px", fontSize: "11px", color: T.textMuted }}>({orgs.length})</span>}
-                {id === "codes" && <span style={{ marginLeft: "6px", fontSize: "11px", color: T.textMuted }}>({codes.length})</span>}
+                <span style={{ marginLeft: "6px", fontSize: "11px", opacity: 0.7 }}>
+                  ({id === "accounts" ? orgs.length : codes.length})
+                </span>
               </button>
             ))}
           </div>
         </div>
-        <button onClick={onClose} style={{ padding: "6px 14px", background: "transparent", border: `1px solid ${T.cardBorder}`, borderRadius: "6px", color: T.textMuted, fontSize: "13px", cursor: "pointer", fontFamily: PF }}>✕ Close</button>
+        <button onClick={onClose} style={{ padding: "7px 16px", background: "transparent", border: `1px solid ${T.cardBorder}`, borderRadius: "6px", color: T.textMuted, fontSize: "13px", cursor: "pointer", fontFamily: PF }}>✕ Close</button>
       </div>
 
       {loading ? (
         <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <div style={{ width: "32px", height: "32px", border: `2px solid ${T.cardBorder}`, borderTopColor: "#A078FF", borderRadius: "50%", animation: "spin 1s linear infinite" }} />
+          <div style={{ width: "32px", height: "32px", border: `2px solid ${T.cardBorder}`, borderTopColor: T.coral, borderRadius: "50%", animation: "spin 1s linear infinite" }} />
           <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
         </div>
       ) : tab === "accounts" ? (
@@ -226,7 +230,7 @@ export default function SuperAdmin({ onClose }) {
         <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
 
           {/* Left — org list */}
-          <div style={{ width: "360px", borderRight: `1px solid ${T.cardBorder}`, display: "flex", flexDirection: "column", flexShrink: 0 }}>
+          <div style={{ width: "340px", borderRight: `1px solid ${T.cardBorder}`, display: "flex", flexDirection: "column", flexShrink: 0, background: T.surface }}>
             <div style={{ padding: "12px 16px", borderBottom: `1px solid ${T.cardBorder}` }}>
               <input value={search} onChange={e => setSearch(e.target.value)}
                 placeholder="Search accounts…" style={{ ...inp, padding: "8px 12px" }} />
@@ -239,7 +243,7 @@ export default function SuperAdmin({ onClose }) {
                 return (
                   <div key={org.id} onClick={() => selectOrg(org)}
                     style={{ padding: "14px 16px", borderBottom: `1px solid ${T.cardBorder}`, cursor: "pointer",
-                      background: isSelected ? T.card : "transparent", transition: "background .1s" }}>
+                      background: isSelected ? T.card : "transparent", borderLeft: `3px solid ${isSelected ? T.coral : "transparent"}`, transition: "all .1s" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "6px" }}>
                       <div style={{ fontSize: "14px", fontWeight: "600", color: T.text, flex: 1, marginRight: "8px" }}>{org.name}</div>
                       {planBadge(org.plan)}
@@ -281,7 +285,7 @@ export default function SuperAdmin({ onClose }) {
 
                 {/* Plan + expiry editor */}
                 <div style={{ background: T.card, border: `1px solid ${T.cardBorder}`, borderRadius: "10px", padding: "24px", marginBottom: "20px" }}>
-                  <div style={{ fontSize: "11px", fontWeight: "700", letterSpacing: "2px", color: T.textMuted, marginBottom: "16px" }}>PLAN SETTINGS</div>
+                  <div style={{ fontSize: "11px", fontWeight: "700", letterSpacing: "2px", color: T.coral, marginBottom: "16px" }}>PLAN SETTINGS</div>
                   <div style={{ display: "flex", gap: "16px", marginBottom: "16px", flexWrap: "wrap" }}>
                     <div style={{ flex: 1, minWidth: "140px" }}>
                       <label style={{ fontSize: "11px", color: T.textMuted, display: "block", marginBottom: "6px", letterSpacing: "1px" }}>PLAN</label>
@@ -305,7 +309,7 @@ export default function SuperAdmin({ onClose }) {
                       <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
                         {[1, 2, 3, 6].map(m => (
                           <button key={m} onClick={() => extendBeta(m)}
-                            style={{ ...btn(T.surface, T.textSecondary), border: `1px solid ${T.cardBorder}`, fontSize: "12px", padding: "6px 12px" }}>
+                            style={{ ...btn(T.bg, T.textSecondary), border: `1px solid ${T.cardBorder}`, fontSize: "12px", padding: "6px 12px" }}>
                             +{m} month{m > 1 ? "s" : ""}
                           </button>
                         ))}
@@ -324,7 +328,7 @@ export default function SuperAdmin({ onClose }) {
 
                 {/* Users */}
                 <div style={{ background: T.card, border: `1px solid ${T.cardBorder}`, borderRadius: "10px", padding: "24px" }}>
-                  <div style={{ fontSize: "11px", fontWeight: "700", letterSpacing: "2px", color: T.textMuted, marginBottom: "16px" }}>TEAM MEMBERS</div>
+                  <div style={{ fontSize: "11px", fontWeight: "700", letterSpacing: "2px", color: T.coral, marginBottom: "16px" }}>TEAM MEMBERS</div>
                   {orgUsersLoading ? (
                     <div style={{ color: T.textMuted, fontSize: "13px" }}>Loading…</div>
                   ) : orgUsers.length === 0 ? (
@@ -332,7 +336,7 @@ export default function SuperAdmin({ onClose }) {
                   ) : (
                     <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                       {orgUsers.map(u => (
-                        <div key={u.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", background: T.surface, borderRadius: "8px" }}>
+                        <div key={u.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", background: T.bg, borderRadius: "8px", border: `1px solid ${T.cardBorder}` }}>
                           <div>
                             <div style={{ fontSize: "14px", fontWeight: "600", color: T.text }}>{u.name || "(no name)"}</div>
                             <div style={{ fontSize: "12px", color: T.textMuted, marginTop: "2px" }}>{u.email}</div>
@@ -358,7 +362,7 @@ export default function SuperAdmin({ onClose }) {
 
           {/* Create new code */}
           <div style={{ background: T.card, border: `1px solid ${T.cardBorder}`, borderRadius: "10px", padding: "24px", marginBottom: "24px" }}>
-            <div style={{ fontSize: "11px", fontWeight: "700", letterSpacing: "2px", color: T.textMuted, marginBottom: "16px" }}>CREATE NEW CODE</div>
+            <div style={{ fontSize: "11px", fontWeight: "700", letterSpacing: "2px", color: T.coral, marginBottom: "16px" }}>CREATE NEW CODE</div>
             <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginBottom: "12px" }}>
               <div style={{ flex: 2, minWidth: "140px" }}>
                 <label style={{ fontSize: "11px", color: T.textMuted, display: "block", marginBottom: "6px", letterSpacing: "1px" }}>CODE</label>
@@ -402,7 +406,7 @@ export default function SuperAdmin({ onClose }) {
                       {c.note && <div style={{ fontSize: "12px", color: T.textMuted }}>{c.note}</div>}
                     </div>
                     <button onClick={() => toggleCode(c)}
-                      style={{ ...btn(c.active ? T.surface : T.greenSoft, c.active ? T.textMuted : T.green),
+                      style={{ ...btn(c.active ? T.bg : T.greenSoft, c.active ? T.textMuted : T.green),
                         border: `1px solid ${c.active ? T.cardBorder : T.green}`, fontSize: "12px", padding: "6px 12px" }}>
                       {c.active ? "Deactivate" : "Activate"}
                     </button>
