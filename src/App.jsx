@@ -1209,6 +1209,8 @@ export default function App(){
   const[editorChat,setEditorChat]=useState([]);
   const[editorChatInput,setEditorChatInput]=useState("");
   const[editorChatLoading,setEditorChatLoading]=useState(false);
+  const[editorLeftTab,setEditorLeftTab]=useState("brief");
+  const[transcriptHighlights,setTranscriptHighlights]=useState([]);
   const[clipTexts,setClipTexts]=useState(Array(10).fill(""));
   const[clipResults,setClipResults]=useState([]);
   const[clipPlatforms,setClipPlatforms]=useState(["YouTube"]);
@@ -1737,7 +1739,7 @@ The email should:
     }
   }
 
-  function reset(){setStep("welcome");setMode(null);if(Object.keys(shows).length>1)setShow(null);setGuest(null);setEp("");setTx("");setRaw("");setSecs([]);setErr("");setEditing(false);setESec(null);setETxt("");setExtraPlatforms([]);setClipCount(3);setClipTexts(Array(10).fill(""));setClipResults([]);setClipPlatforms(["YouTube"]);setSelectedFormat(null);setEpGuest("");setEpGuestUrl("");setEpTopic("");setEpTakeaway("");setEpMoments("");setEpPanelists("");setEpPlanRequest("");setShowSaveFormat(false);setSaveFormatName("");setSaveFormatOk(false);setGuestResults([]);setGuestHostName("");setGuestQuery("");setGuestEmails({});setEditorChat([]);setEditorChatInput("");}
+  function reset(){setStep("welcome");setMode(null);if(Object.keys(shows).length>1)setShow(null);setGuest(null);setEp("");setTx("");setRaw("");setSecs([]);setErr("");setEditing(false);setESec(null);setETxt("");setExtraPlatforms([]);setClipCount(3);setClipTexts(Array(10).fill(""));setClipResults([]);setClipPlatforms(["YouTube"]);setSelectedFormat(null);setEpGuest("");setEpGuestUrl("");setEpTopic("");setEpTakeaway("");setEpMoments("");setEpPanelists("");setEpPlanRequest("");setShowSaveFormat(false);setSaveFormatName("");setSaveFormatOk(false);setGuestResults([]);setGuestHostName("");setGuestQuery("");setGuestEmails({});setEditorChat([]);setEditorChatInput("");setEditorLeftTab("brief");setTranscriptHighlights([]);}
 
   function goBack(){
     setErr("");
@@ -1825,7 +1827,7 @@ Help them:
 - Teach editing principles that make shows stronger
 - Answer questions about editorial decisions
 
-When analyzing pasted transcript text, be specific — reference exact words, timestamps if present, and concrete suggestions. Be direct and practical. Keep responses focused and under 300 words unless detail is truly needed.
+When referencing specific moments in the transcript, quote the exact words verbatim inside double quotes (e.g., "the exact phrase from the transcript") so the editor can locate them. Be specific with timestamps when available. Be direct and practical. Keep responses focused and under 300 words unless detail is truly needed. When you quote transcript text verbatim, those passages will be automatically highlighted in the editor's transcript view.
 
 Full transcript available for context (first 40,000 chars):
 ${tx.substring(0, 40000)}`;
@@ -1837,6 +1839,17 @@ ${tx.substring(0, 40000)}`;
         messages: newMessages.map(m => ({ role: m.role, content: m.content })),
       });
       setEditorChat([...newMessages, { role: "assistant", content: reply }]);
+      // Extract quoted phrases from the reply to highlight in transcript
+      const quoted = [];
+      const quoteRe = /"([^"]{10,120})"/g;
+      let m;
+      while ((m = quoteRe.exec(reply)) !== null) {
+        if (tx.includes(m[1])) quoted.push(m[1]);
+      }
+      if (quoted.length > 0) {
+        setTranscriptHighlights(quoted);
+        setEditorLeftTab("transcript");
+      }
     } catch (e) {
       setEditorChat([...newMessages, { role: "assistant", content: "Sorry, something went wrong. Please try again." }]);
     } finally {
@@ -2624,6 +2637,47 @@ ${tx.substring(0, 40000)}`;
             {/* RESULT */}
             {step==="result"&&<div style={{animation:"fadeUp .4s ease",display:mode==="editor"?"flex":"block",gap:"24px",alignItems:"flex-start"}}>
             <div style={{flex:1,minWidth:0}}>
+              {/* Editor tabs — Brief / Transcript */}
+              {mode==="editor"&&(
+                <div style={{display:"flex",gap:"0",marginBottom:"20px",background:T.card,border:"1px solid "+T.cardBorder,borderRadius:"10px",overflow:"hidden",flexShrink:0}}>
+                  {[["brief","📋 Brief"],["transcript","📄 Transcript"]].map(([id,label])=>(
+                    <button key={id} onClick={()=>setEditorLeftTab(id)}
+                      style={{flex:1,padding:"11px 16px",background:editorLeftTab===id?T.coral:"transparent",border:"none",color:editorLeftTab===id?"#fff":T.textMuted,fontSize:"13px",fontWeight:"700",cursor:"pointer",fontFamily:PF,letterSpacing:"1px",transition:"all .15s",borderRight:id==="brief"?"1px solid "+T.cardBorder:"none"}}>
+                      {label}
+                      {id==="transcript"&&transcriptHighlights.length>0&&editorLeftTab!=="transcript"&&<span style={{display:"inline-block",marginLeft:"6px",background:"#F5A623",borderRadius:"10px",padding:"1px 7px",fontSize:"10px",color:"#fff",fontWeight:"700"}}>{transcriptHighlights.length}</span>}
+                    </button>
+                  ))}
+                </div>
+              )}
+              {/* Transcript view */}
+              {mode==="editor"&&editorLeftTab==="transcript"?(
+                <div style={{background:T.card,border:"1px solid "+T.cardBorder,borderRadius:"10px",overflow:"hidden"}}>
+                  <div style={{padding:"14px 20px",borderBottom:"1px solid "+T.cardBorder,background:T.surface,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                    <div style={{fontSize:"12px",fontWeight:"700",letterSpacing:"2px",textTransform:"uppercase",color:T.textMuted,fontFamily:PF}}>Episode Transcript</div>
+                    {transcriptHighlights.length>0&&(
+                      <div style={{display:"flex",alignItems:"center",gap:"10px"}}>
+                        <span style={{fontSize:"12px",color:"#F5A623",fontFamily:PF,fontWeight:"700"}}>{transcriptHighlights.length} passage{transcriptHighlights.length!==1?"s":""} highlighted by Coach</span>
+                        <button onClick={()=>setTranscriptHighlights([])} style={{fontSize:"11px",color:T.textMuted,background:"none",border:"none",cursor:"pointer",fontFamily:PF,padding:0}}>Clear</button>
+                      </div>
+                    )}
+                  </div>
+                  <div style={{padding:"20px 24px",maxHeight:"72vh",overflowY:"auto",fontFamily:PF,fontSize:"14px",lineHeight:"1.8",color:T.text,whiteSpace:"pre-wrap"}}>
+                    {(()=>{
+                      if(!transcriptHighlights.length) return tx;
+                      // Split transcript into highlighted/non-highlighted segments
+                      const escaped = transcriptHighlights.map(h=>h.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"));
+                      const re = new RegExp(`(${escaped.join("|")})`, "g");
+                      const parts = tx.split(re);
+                      return parts.map((part,i)=>{
+                        const isHighlight = transcriptHighlights.includes(part);
+                        return isHighlight
+                          ? <mark key={i} style={{background:"#F5A62340",borderBottom:"2px solid #F5A623",borderRadius:"2px",padding:"1px 2px",color:T.text}}>{part}</mark>
+                          : <span key={i}>{part}</span>;
+                      });
+                    })()}
+                  </div>
+                </div>
+              ):(<>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"28px",flexWrap:"wrap",gap:"12px"}}>
                 <div>
                   <h2 style={{fontSize:"36px",fontWeight:"700",color:T.text,margin:"0 0 4px",letterSpacing:"-0.5px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{mode==="clips"?"Clips Ready":mode==="prep"?"Episode Prep Ready":"Content Package Ready"}</h2>
@@ -2634,7 +2688,7 @@ ${tx.substring(0, 40000)}`;
                   {mode!=="clips"&&<button onClick={()=>{dlDoc(raw,`${d?.name}${mode==="prep"?` — Episode Prep${epTopic?` — ${epTopic}`:""}`:ep?` — Ep ${ep}`:""} Content Package`,d?.bp);setDlOk(true);setTimeout(()=>setDlOk(false),2500);}} style={{...ghost,background:dlOk?T.coralSoft:"transparent",borderColor:dlOk?T.coralMid:T.cardBorder,color:dlOk?T.coral:T.textMuted}}>{dlOk?"✓ DOWNLOADED":"📄 WORD DOC"}</button>}
                   {mode==="clips"&&<button onClick={()=>{const clipDoc=clipResults.filter(r=>!r.skipped).map(r=>`CLIP ${r.index}\n\n${r.content}`).join("\n\n");dlDoc(clipDoc,`${d?.name}${ep?` — Ep ${ep}`:""} — Clips`);setDlOk(true);setTimeout(()=>setDlOk(false),2500);}} style={{...ghost,background:dlOk?T.coralSoft:"transparent",borderColor:dlOk?T.coralMid:T.cardBorder,color:dlOk?T.coral:T.textMuted}}>{dlOk?"✓ DOWNLOADED":"📄 WORD DOC"}</button>}
                   {mode!=="clips"&&<button onClick={uploadToGDrive} disabled={gDriveStatus==="uploading"} title="Export to Google Drive as a Google Doc" style={{...ghost,background:gDriveStatus==="ok"?T.coralSoft:gDriveStatus==="error"||gDriveStatus==="disconnected"?"#D94F4F18":"transparent",borderColor:gDriveStatus==="ok"?T.coralMid:gDriveStatus==="error"||gDriveStatus==="disconnected"?"#D94F4F44":T.cardBorder,color:gDriveStatus==="ok"?T.coral:gDriveStatus==="error"||gDriveStatus==="disconnected"?"#D94F4F":T.textMuted,opacity:gDriveStatus==="uploading"?.6:1}}>{gDriveStatus==="uploading"?"UPLOADING…":gDriveStatus==="ok"?"✓ EXPORTED TO DRIVE":gDriveStatus==="error"?"✕ EXPORT FAILED":gDriveStatus==="disconnected"?"⚙ CONNECT IN SETTINGS":"📁 EXPORT TO GOOGLE DRIVE"}</button>}
-                  <button onClick={()=>{setStep(mode==="clips"?"clips-setup":"input");setRaw("");setSecs([]);setClipResults([]);setEditorChat([]);setEditorChatInput("");}} style={ghost}>{mode==="clips"?"NEW CLIPS":"NEW EPISODE"}</button>
+                  <button onClick={()=>{setStep(mode==="clips"?"clips-setup":"input");setRaw("");setSecs([]);setClipResults([]);setEditorChat([]);setEditorChatInput("");setEditorLeftTab("brief");setTranscriptHighlights([]);}} style={ghost}>{mode==="clips"?"NEW CLIPS":"NEW EPISODE"}</button>
                 </div>
               </div>
               {d?.publishDay&&d?.publishTime&&d?.publishTz&&(()=>{try{const sched=formatPublishSchedule(d,userProfile?.timezone);if(!sched)return null;return(<div style={{background:T.coralSoft,border:"1px solid "+T.coralMid,borderRadius:"8px",padding:"12px 18px",marginBottom:"20px",display:"flex",alignItems:"center",gap:"10px"}}><span style={{fontSize:"18px"}}>📅</span><div><div style={{fontSize:"11px",color:T.coral,fontWeight:"700",letterSpacing:"1.5px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>PUBLISH SCHEDULE</div><div style={{fontSize:"14px",color:T.textSecondary,marginTop:"2px",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"500"}}>{sched.showTime}{sched.isDifferent?" · "+sched.localTime+" your time":""}</div></div></div>);}catch{return null;}})()}
@@ -2714,6 +2768,7 @@ ${tx.substring(0, 40000)}`;
                   </div>}
                 </>
               )}
+              </>)}
             </div>
             {/* ── EDITOR AI COACH PANEL ── */}
             {mode==="editor"&&(()=>{
