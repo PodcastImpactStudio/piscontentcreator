@@ -1966,7 +1966,7 @@ ${tx.substring(0, 40000)}`;
           const navItems = [
             {label:"Home",               section:"home",   action:()=>{setMode(null);setStep("welcome");setShow(null);},  visible:true},
             {label:"Content Generation", section:"create", action:()=>{setMode(null);setStep("welcome");},              visible:!allowed||allowed.includes("full")||allowed.includes("clips")},
-            {label:"Editorial",          section:"editor", action:()=>handleSidebarNav("editor"),           visible:!allowed||allowed.includes("editor")},
+            {label:"Editing Assistant",          section:"editor", action:()=>handleSidebarNav("editor"),           visible:!allowed||allowed.includes("editor")},
             {label:"Episode Planning",   section:"prep",   action:()=>handleSidebarNav("prep"),             visible:!allowed||allowed.includes("prep")},
             {label:"Guest Finder",       section:"guest",  action:()=>handleSidebarNav("guest"),            visible:!allowed||allowed.includes("guest")},
           ].filter(i=>i.visible);
@@ -2076,7 +2076,7 @@ ${tx.substring(0, 40000)}`;
         <div style={{height:"48px",background:T.surface,borderBottom:`1px solid ${T.cardBorder}`,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 32px",flexShrink:0}}>
           <div style={{fontSize:"12px",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1.5px",textTransform:"uppercase",display:"flex",alignItems:"center",gap:"8px"}}>
             {(mode==="full"||mode==="clips")&&step!=="welcome"&&<span style={{color:T.coral,fontWeight:"700"}}>Content</span>}
-            {mode==="editor"&&step!=="welcome"&&<span style={{color:T.coral,fontWeight:"700"}}>Editorial</span>}
+            {mode==="editor"&&step!=="welcome"&&<span style={{color:T.coral,fontWeight:"700"}}>Editing Assistant</span>}
             {mode==="prep"&&step!=="welcome"&&<span style={{color:T.coral,fontWeight:"700"}}>Planning</span>}
             {mode==="guest"&&step!=="welcome"&&<span style={{color:T.coral,fontWeight:"700"}}>Guest Finder</span>}
             {mode&&step!=="welcome"&&<span style={{color:T.cardBorder}}>›</span>}
@@ -2227,7 +2227,7 @@ ${tx.substring(0, 40000)}`;
                         <div style={{display:"flex",alignItems:"center",gap:"12px"}}>
                           <div style={{width:"38px",height:"38px",borderRadius:"9px",background:"rgba(100,85,70,.09)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><svg width="17" height="17" viewBox="0 0 14 14" fill="none"><rect x="1" y="2.5" width="8" height="9" rx="1" stroke="#7A5C4A" strokeWidth="1.4"/><path d="M9 5l4-2v8l-4-2V5z" stroke="#7A5C4A" strokeWidth="1.4" strokeLinejoin="round"/></svg></div>
                           <div>
-                            <div style={{fontSize:"10px",fontWeight:"700",letterSpacing:"2px",textTransform:"uppercase",color:"#5A4F45",marginBottom:"4px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Editorial</div>
+                            <div style={{fontSize:"10px",fontWeight:"700",letterSpacing:"2px",textTransform:"uppercase",color:"#5A4F45",marginBottom:"4px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Editing Assistant</div>
                             <div style={{fontFamily:SF,fontSize:"17px",fontWeight:"normal",color:T.text}}>Editor briefs &amp; clip guidance</div>
                           </div>
                         </div>
