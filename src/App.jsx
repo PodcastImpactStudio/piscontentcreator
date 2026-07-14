@@ -4,6 +4,7 @@ import Auth from "./Auth";
 import Profile from "./Profile";
 import { supabase } from "./lib/supabase";
 import { AdminPanel, AdminGate } from "./AdminPanel";
+import SuperAdmin from "./SuperAdmin";
 
 // API calls go through /api/generate (server-side) — key is never in the browser
 async function claudeAPI(body, attempt = 0) {
@@ -347,13 +348,22 @@ Source label: [e.g. "[Show Name] — Episode [#]"]
 }
 
 
-function sys(show, k, g, ep, mode, extras=[], clipCount=5) {
+function matchEpisodeRules(show, transcript) {
+  if (!show?.episodeRules?.length || !transcript) return [];
+  const tx = transcript.toLowerCase();
+  return show.episodeRules.filter(r => r.trigger && tx.includes(r.trigger.toLowerCase()));
+}
+
+function sys(show, k, g, ep, mode, extras=[], clipCount=5, matchedRules=[]) {
   const d = show; if (!d) return "";
   const ap = [...(d.platforms?.p||[]),...(d.platforms?.s||[])];
   const bp = stripHtml(d.bp||"");
   const urls = (bp.match(/https?:\/\/[^\s,)]+|www\.[^\s,)]+/g)||[]);
   const voice = d.voice||{}; const aud = d.aud||{}; const tpl = d.tpl||{};
-  const base = `You are the content strategist for ${d.name}.\n\nOUTPUT FORMAT:\n- PLAIN TEXT only. Zero markdown. No asterisks. No bold. No italic.\n- ALL section headers and sub-headers must be in ALL CAPS — every single one, no exceptions\n- This includes: KEY TAKEAWAYS, NOTABLE QUOTE, GUEST BIO, LINKS & RESOURCES, TIMESTAMPS, HASHTAGS, KEYWORDS, SUBJECT LINE, PREVIEW TEXT, and any other label\n- Separate major sections with ---\n- Bullets use - (hyphen space)\n\nCRITICAL RULES:\n1. SEO TITLES: Write the title ONLY. Do NOT add the podcast name, a dash, episode number, or any other text after the title.\n2. SHOW NOTES: The very first thing after the SHOW NOTES header must be the hook question. No podcast name, no episode info, no intro text.\n3. BULLETS: KEY TAKEAWAYS must be 3-7 bullet points, each on its own line starting with - (hyphen space). Never write takeaways as a paragraph.\n4. HEADERS: Never use Title Case for any header or label. ALL CAPS only. "Links & Resources" must be written as "LINKS & RESOURCES".\n5. QUOTE ATTRIBUTION: EVERY direct quote pulled from the transcript MUST be attributed to the person who actually said it, by name — format as "quote text" — [Name]. Use the real host or guest name from the show/episode context (Host(s) and any guest are listed below). Never leave a quote unattributed and never use a generic placeholder like [Speaker]. If you genuinely cannot tell who said it, write — [Speaker unknown — please confirm].\n\nShow: ${d.name} | "${d.tag}" | Host(s): ${d.hosts}\n${g?"GUEST episode — include Guest Share Kit.":"SOLO episode — skip Guest Share Kit."}${ep?` | Episode ${ep}`:""}\n\nVOICE: ${voice.traits||""} | Energy: ${voice.energy||""} | ${voice.arch||""}\nArc: ${voice.arc||""}\nPhrases: ${(voice.phrases||[]).join(" | ")}\nUSE: ${voice.use||""}\nAVOID: ${voice.avoid||""}\n\nAUDIENCE: ${aud.who||""}\nPain: ${(aud.pains||[]).join(" | ")}\nLanguage: ${aud.lang||""}\n\nPLATFORMS: ${[...ap,...extras].join(", ")} | HASHTAGS: ${d.tags||""}\n${extras.length>0?`ADDITIONAL PLATFORMS THIS EPISODE: ${extras.join(", ")} -- generate a dedicated social post for each additional platform listed.`:""}\n\n${bp ? `BOILERPLATE (YouTube description only — show notes boilerplate is handled separately):\n${bp}\nFor the YouTube description, copy the boilerplate exactly after the timestamps. Include every URL exactly as written.` : "No boilerplate for this show."}\n\nSHOW NOTES FORMAT RULE: The show notes template shown in the section instructions is the COMPLETE format. Follow it EXACTLY — do not add sections, key takeaways, guest bios, or any other content not already specified in the template. Do not add a boilerplate to show notes — it is appended automatically.\n\nTIMESTAMPS RULE: Always include timestamps in the YouTube description. Use the EXACT timestamp markers that appear in the transcript (e.g. if the transcript shows [00:03:47] or 3:47, use 03:47 — NOT a rounded 03:00 or 05:00). Do NOT round to the nearest minute and do NOT invent evenly-spaced times. Each timestamp must mark the precise moment that topic actually begins in the transcript, copied from the nearest transcript marker. If the transcript has no explicit time markers, estimate as closely as possible but still avoid suspiciously round numbers. ${getTimestampsScope(d.snElements) === "both" ? "Also include timestamps in show notes." : "Do NOT include timestamps in show notes unless the show notes template specifically includes them."}\n\nRULES:\n${d.rules||""}\n\n`;
+  const episodeRuleBlock = matchedRules.length > 0
+    ? `\nEPISODE-SPECIFIC RULES (auto-detected from transcript — apply these for this episode only):\n${matchedRules.map(r => `- ${r.name}: ${r.instructions}`).join("\n")}\n`
+    : "";
+  const base = `You are the content strategist for ${d.name}.\n\nOUTPUT FORMAT:\n- PLAIN TEXT only. Zero markdown. No asterisks. No bold. No italic.\n- ALL section headers and sub-headers must be in ALL CAPS — every single one, no exceptions\n- This includes: KEY TAKEAWAYS, NOTABLE QUOTE, GUEST BIO, LINKS & RESOURCES, TIMESTAMPS, HASHTAGS, KEYWORDS, SUBJECT LINE, PREVIEW TEXT, and any other label\n- Separate major sections with ---\n- Bullets use - (hyphen space)\n\nCRITICAL RULES:\n1. SEO TITLES: Write the title ONLY. Do NOT add the podcast name, a dash, episode number, or any other text after the title.\n2. SHOW NOTES: The very first thing after the SHOW NOTES header must be the hook question. No podcast name, no episode info, no intro text.\n3. BULLETS: KEY TAKEAWAYS must be 3-7 bullet points, each on its own line starting with - (hyphen space). Never write takeaways as a paragraph.\n4. HEADERS: Never use Title Case for any header or label. ALL CAPS only. "Links & Resources" must be written as "LINKS & RESOURCES".\n5. QUOTE ATTRIBUTION: EVERY direct quote pulled from the transcript MUST be attributed to the person who actually said it, by name — format as "quote text" — [Name]. Use the real host or guest name from the show/episode context (Host(s) and any guest are listed below). Never leave a quote unattributed and never use a generic placeholder like [Speaker]. If you genuinely cannot tell who said it, write — [Speaker unknown — please confirm].\n\nShow: ${d.name} | "${d.tag}" | Host(s): ${d.hosts}\n${g?"GUEST episode — include Guest Share Kit.":"SOLO episode — skip Guest Share Kit."}${ep?` | Episode ${ep}`:""}\n\nVOICE: ${voice.traits||""} | Energy: ${voice.energy||""} | ${voice.arch||""}\nArc: ${voice.arc||""}\nPhrases: ${(voice.phrases||[]).join(" | ")}\nUSE: ${voice.use||""}\nAVOID: ${voice.avoid||""}\n\nAUDIENCE: ${aud.who||""}\nPain: ${(aud.pains||[]).join(" | ")}\nLanguage: ${aud.lang||""}\n\nPLATFORMS: ${[...ap,...extras].join(", ")} | HASHTAGS: ${d.tags||""}\n${extras.length>0?`ADDITIONAL PLATFORMS THIS EPISODE: ${extras.join(", ")} -- generate a dedicated social post for each additional platform listed.`:""}\n\n${bp ? `BOILERPLATE (YouTube description only — show notes boilerplate is handled separately):\n${bp}\nFor the YouTube description, copy the boilerplate exactly after the timestamps. Include every URL exactly as written.` : "No boilerplate for this show."}\n\nSHOW NOTES FORMAT RULE: The show notes template shown in the section instructions is the COMPLETE format. Follow it EXACTLY — do not add sections, key takeaways, guest bios, or any other content not already specified in the template. Do not add a boilerplate to show notes — it is appended automatically.\n\nTIMESTAMPS RULE: Always include timestamps in the YouTube description. Use the EXACT timestamp markers that appear in the transcript (e.g. if the transcript shows [00:03:47] or 3:47, use 03:47 — NOT a rounded 03:00 or 05:00). Do NOT round to the nearest minute and do NOT invent evenly-spaced times. Each timestamp must mark the precise moment that topic actually begins in the transcript, copied from the nearest transcript marker. If the transcript has no explicit time markers, estimate as closely as possible but still avoid suspiciously round numbers. ${getTimestampsScope(d.snElements) === "both" ? "Also include timestamps in show notes." : "Do NOT include timestamps in show notes unless the show notes template specifically includes them."}\n\nRULES:\n${d.rules||""}${episodeRuleBlock}\n\n`;
   if(mode==="clips"){return base;}
   if(mode==="editor"){
     const editLevels = {
@@ -619,110 +629,82 @@ function renderContent(text){
     const isTop=isTopSection(line);
     const isSub=!isTop&&isSubHeader(line);
     const isBullet=/^[-\u2022]\s/.test(t);
-    const isEmpty=!t;
     const isQuote=/^QUOTE:\s*/i.test(t);
+    const isEmpty=!t;
     if(isEmpty)return <div key={li} style={{height:"6px"}}/>;
     if(isTop)return <div key={li} style={{fontWeight:"700",fontSize:"14px",letterSpacing:"2px",textTransform:"uppercase",color:T.coral,marginTop:"18px",marginBottom:"4px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{linkify(line)}</div>;
     if(isSub)return <div key={li} style={{fontWeight:"700",fontSize:"13px",color:T.text,marginTop:"14px",marginBottom:"4px",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1px"}}>{linkify(line)}</div>;
-    if(isQuote){const quoteText=t.replace(/^QUOTE:\s*/i,"");return <div key={li} style={{display:"flex",gap:"0",margin:"6px 0 8px",borderRadius:"6px",overflow:"hidden"}}><div style={{width:"3px",flexShrink:0,background:T.coral,borderRadius:"3px 0 0 3px"}}/><div style={{background:T.coralSoft,padding:"8px 12px",flex:1,borderRadius:"0 6px 6px 0"}}><span style={{fontSize:"10px",fontWeight:"700",letterSpacing:"1.5px",color:T.coral,fontFamily:"'DM Sans', system-ui, sans-serif",display:"block",marginBottom:"3px"}}>TRANSCRIPT</span><span style={{fontSize:"14px",color:T.text,fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.7",fontStyle:"italic"}}>{linkify(quoteText)}</span></div></div>;}
     if(isBullet){const content=t.replace(/^[-\u2022]\s/,"");return <div key={li} style={{display:"flex",gap:"10px",fontSize:"16px",color:T.textSecondary,fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"2.0",marginBottom:"5px"}}><span style={{color:T.textMuted,flexShrink:0,marginTop:"2px"}}>-</span><span>{linkify(content)}</span></div>;}
+    if(isQuote){const quoteText=t.replace(/^QUOTE:\s*/i,"");return <div key={li} style={{display:"flex",gap:"0",margin:"6px 0 8px",borderRadius:"6px",overflow:"hidden"}}><div style={{width:"3px",flexShrink:0,background:T.coral,borderRadius:"3px 0 0 3px"}}/><div style={{background:T.coralSoft,padding:"8px 12px",flex:1,borderRadius:"0 6px 6px 0"}}><span style={{fontSize:"10px",fontWeight:"700",letterSpacing:"1.5px",color:T.coral,fontFamily:"'DM Sans', system-ui, sans-serif",display:"block",marginBottom:"3px"}}>TRANSCRIPT</span><span style={{fontSize:"14px",color:T.text,fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.7",fontStyle:"italic"}}>{linkify(quoteText)}</span></div></div>;}
     return <div key={li} style={{fontSize:"16px",color:T.textSecondary,fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"2.0",marginBottom:"5px"}}>{linkify(line)}</div>;
   });
 }
 
 function HighlightedTranscript({ transcript, sections }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = React.useState(false);
   const FF = "'DM Sans', system-ui, sans-serif";
 
-  // Extract QUOTE: lines from editor-hooks and editor-clips sections
-  const quotes = [];
-  const hookColors = { bg: "#7A001914", border: T.coral, label: "Hook" };
-  const clipColors = { bg: "#185fa514", border: "#185fa5", label: "Clip" };
-
-  function extractFromSection(sec, colors) {
-    if (!sec) return;
-    let num = 0;
-    sec.content.split("\n").forEach(line => {
-      const hookNum = line.match(/^(?:HOOK|CLIP)\s+(\d+)/i);
-      if (hookNum) num = parseInt(hookNum[1]);
+  const moments = [];
+  sections.forEach(s => {
+    const isHooks = s.id && s.id.includes("hook");
+    const isClips = s.id && s.id.includes("clip");
+    if (!isHooks && !isClips) return;
+    (s.content || "").split("\n").forEach(line => {
       const m = line.match(/^QUOTE:\s*(.+)$/i);
-      if (m) {
-        const raw = m[1].replace(/^["""'']|["""'']$/g, "").trim();
-        quotes.push({ text: raw, num: num || quotes.length + 1, ...colors });
-      }
+      if (m) moments.push({ text: m[1].replace(/^[""]|[""]$/g, "").trim(), type: isHooks ? "hook" : "clip" });
     });
-  }
-
-  extractFromSection(sections.find(s => s.id === "editor-hooks"), hookColors);
-  extractFromSection(sections.find(s => s.id === "editor-clips"), clipColors);
-
-  // Locate each quote in the transcript (exact, then stripped, then first-80-chars)
-  const ranges = [];
-  quotes.forEach(q => {
-    let idx = transcript.indexOf(q.text);
-    let matchText = q.text;
-    if (idx === -1) {
-      const stripped = q.text.replace(/^["""''\s]+|["""''\s]+$/g, "");
-      idx = transcript.indexOf(stripped);
-      if (idx !== -1) matchText = stripped;
-    }
-    if (idx === -1) {
-      const short = q.text.substring(0, 80);
-      idx = transcript.indexOf(short);
-      if (idx !== -1) matchText = short;
-    }
-    if (idx !== -1 && !ranges.some(r => r.start === idx)) {
-      ranges.push({ start: idx, end: idx + matchText.length, q });
-    }
   });
-  ranges.sort((a, b) => a.start - b.start);
 
-  // Build segments: plain text interspersed with highlighted ranges
-  const segments = [];
-  let pos = 0;
-  ranges.forEach(r => {
-    if (r.start > pos) segments.push({ text: transcript.slice(pos, r.start), hl: null });
-    segments.push({ text: transcript.slice(r.start, r.end), hl: r.q });
-    pos = r.end;
-  });
-  if (pos < transcript.length) segments.push({ text: transcript.slice(pos), hl: null });
+  if (!moments.length) return null;
 
-  const found = ranges.length;
-  const total = quotes.length;
+  const buildSegments = () => {
+    let remaining = transcript;
+    let offset = 0;
+    const hits = [];
+    moments.forEach((moment, mi) => {
+      let needle = moment.text;
+      let idx = remaining.indexOf(needle);
+      if (idx === -1) { needle = needle.replace(/^[""]|[""]$/g, "").trim(); idx = remaining.indexOf(needle); }
+      if (idx === -1) { needle = needle.slice(0, 80); idx = remaining.indexOf(needle); }
+      if (idx !== -1) hits.push({ start: offset + idx, end: offset + idx + needle.length, type: moment.type, index: mi });
+    });
+    hits.sort((a, b) => a.start - b.start);
+    const segs = [];
+    let pos = 0;
+    hits.forEach(h => {
+      if (h.start > pos) segs.push({ text: transcript.slice(pos, h.start), type: "plain" });
+      if (h.start >= pos) { segs.push({ text: transcript.slice(h.start, h.end), type: h.type }); pos = h.end; }
+    });
+    if (pos < transcript.length) segs.push({ text: transcript.slice(pos), type: "plain" });
+    return { segs, found: hits.length };
+  };
+
+  const { segs, found } = buildSegments();
 
   return (
-    <div style={{ marginBottom: "10px" }}>
-      <button onClick={() => setOpen(o => !o)}
-        style={{ width: "100%", padding: "13px 20px", background: open ? T.coralSoft : T.card, border: `1px solid ${open ? T.coralMid : T.cardBorder}`, borderRadius: "10px", color: open ? T.coral : T.textSecondary, fontSize: "13px", fontWeight: "700", cursor: "pointer", textAlign: "left", fontFamily: FF, letterSpacing: "1.5px", textTransform: "uppercase", display: "flex", justifyContent: "space-between", alignItems: "center", transition: "all .15s" }}>
-        <span>📄 View Highlighted Transcript</span>
-        <span style={{ fontSize: "11px", fontWeight: "400", letterSpacing: "0" }}>
-          {open ? "▲ Close" : `${found} of ${total} moment${total !== 1 ? "s" : ""} highlighted ▼`}
-        </span>
-      </button>
+    <div style={{ marginBottom: "20px" }}>
+      <div onClick={() => setOpen(v => !v)}
+        style={{ width: "100%", padding: "13px 20px", background: open ? T.coralSoft : T.card, border: `1px solid ${open ? T.coralMid : T.cardBorder}`, borderRadius: open ? "10px 10px 0 0" : "10px", color: open ? T.coral : T.textSecondary, fontSize: "13px", fontWeight: "700", cursor: "pointer", textAlign: "left", fontFamily: FF, letterSpacing: "1.5px", textTransform: "uppercase", display: "flex", justifyContent: "space-between", alignItems: "center", transition: "all .15s", userSelect: "none" }}>
+        <span>\ud83d\udccd Highlighted Transcript \u2014 {found}/{moments.length} moments found</span>
+        <span style={{ fontSize: "11px" }}>{open ? "\u25b2 COLLAPSE" : "\u25bc EXPAND"}</span>
+      </div>
       {open && (
-        <div style={{ background: T.card, border: `1px solid ${T.cardBorder}`, borderRadius: "0 0 10px 10px", borderTop: "none", padding: "20px 24px" }}>
+        <div style={{ background: T.card, border: `1px solid ${T.coralMid}`, borderTop: "none", borderRadius: "0 0 10px 10px", padding: "20px 24px" }}>
           <div style={{ display: "flex", gap: "16px", marginBottom: "14px", flexWrap: "wrap" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-              <div style={{ width: "12px", height: "12px", borderRadius: "2px", background: hookColors.bg, border: `1.5px solid ${hookColors.border}` }} />
-              <span style={{ fontSize: "11px", color: T.textMuted, fontFamily: FF }}>Hook moments</span>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", color: T.textMuted, fontFamily: FF }}>
+              <div style={{ width: "12px", height: "12px", borderRadius: "2px", background: "rgba(217,119,87,0.35)" }}/> Hook moment
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-              <div style={{ width: "12px", height: "12px", borderRadius: "2px", background: clipColors.bg, border: `1.5px solid ${clipColors.border}` }} />
-              <span style={{ fontSize: "11px", color: T.textMuted, fontFamily: FF }}>Clip moments</span>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", color: T.textMuted, fontFamily: FF }}>
+              <div style={{ width: "12px", height: "12px", borderRadius: "2px", background: "rgba(99,153,217,0.35)" }}/> Clip moment
             </div>
-            {found < total && <span style={{ fontSize: "11px", color: T.textMuted, fontFamily: FF, fontStyle: "italic" }}>{total - found} quote{total - found !== 1 ? "s" : ""} not found in transcript (may be paraphrased by AI)</span>}
+            {found < moments.length && <div style={{ fontSize: "12px", color: T.textMuted, fontFamily: FF, fontStyle: "italic" }}>({moments.length - found} not found \u2014 AI may have paraphrased)</div>}
           </div>
-          <div style={{ fontFamily: "monospace", fontSize: "13px", lineHeight: "1.9", color: T.textSecondary, whiteSpace: "pre-wrap", wordBreak: "break-word", maxHeight: "520px", overflowY: "auto", borderRadius: "6px", background: T.surface, padding: "16px 18px", border: `1px solid ${T.cardBorder}` }}>
-            {segments.length > 0 ? segments.map((seg, i) =>
-              seg.hl ? (
-                <mark key={i} title={`${seg.hl.label} ${seg.hl.num}`}
-                  style={{ background: seg.hl.bg, borderBottom: `2px solid ${seg.hl.border}`, borderRadius: "2px", padding: "1px 0", color: "inherit", cursor: "default" }}>
-                  {seg.text}
-                </mark>
-              ) : (
-                <span key={i}>{seg.text}</span>
-              )
-            ) : <span style={{ color: T.textMuted, fontStyle: "italic" }}>Paste a transcript and generate to see highlights.</span>}
+          <div style={{ fontFamily: "'Georgia', serif", fontSize: "15px", lineHeight: "2.0", color: T.textSecondary, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+            {segs.map((seg, i) => (
+              seg.type === "plain"
+                ? <span key={i}>{seg.text}</span>
+                : <mark key={i} style={{ background: seg.type === "hook" ? "rgba(217,119,87,0.35)" : "rgba(99,153,217,0.35)", color: "inherit", borderRadius: "2px", padding: "0 1px" }}>{seg.text}</mark>
+            ))}
           </div>
         </div>
       )}
@@ -836,8 +818,8 @@ function OnboardingScreen({ step, user, orgId, orgName, userProfile, onProfileDo
     <div style={{ minHeight:"100vh", background:T.bg, display:"flex", alignItems:"center", justifyContent:"center", padding:"24px" }}>
       <div style={{ width:"100%", maxWidth:"520px" }}>
         {/* Logo */}
-        <div style={{ display:"flex", justifyContent:"center", marginBottom:"48px" }}>
-          <img src="/logo-nav.png" alt="Podcast Impact Content Studio" style={{ height:"240px", objectFit:"contain" }} />
+        <div style={{ display:"flex", justifyContent:"center", marginBottom:"40px" }}>
+          <img src="/logo-nav.png" alt="Podcast Impact Content Studio" style={{ height:"96px", objectFit:"contain" }} />
         </div>
 
         {step === "profile" && (
@@ -878,35 +860,37 @@ function OnboardingScreen({ step, user, orgId, orgName, userProfile, onProfileDo
 
         {step === "guide" && (
           <div style={{ animation:"fadeUp .4s ease", maxWidth:"600px" }}>
-            <div style={{ textAlign:"center", marginBottom:"40px" }}>
-              <div style={{ fontSize:"48px", marginBottom:"16px" }}>🎉</div>
-              <h1 style={{ fontSize:"36px", fontWeight:"700", color:T.text, margin:"0 0 12px", fontFamily:PF, lineHeight:"1.2" }}>You're all set up!</h1>
-              <p style={{ fontSize:"16px", color:T.textMuted, margin:0, lineHeight:"1.7", fontFamily:"'DM Sans', system-ui, sans-serif" }}>
-                Here's how Podcast Impact Content Studio works:
+            <div style={{ textAlign:"center", marginBottom:"36px" }}>
+              <div style={{ fontSize:"40px", marginBottom:"14px" }}>🎉</div>
+              <h1 style={{ fontSize:"32px", fontWeight:"700", color:T.text, margin:"0 0 10px", fontFamily:PF, lineHeight:"1.2" }}>Welcome to the studio!</h1>
+              <p style={{ fontSize:"15px", color:T.textMuted, margin:0, lineHeight:"1.7", fontFamily:PF }}>
+                Here's everything this tool can do for you:
               </p>
             </div>
-            <div style={{ display:"flex", flexDirection:"column", gap:"16px", marginBottom:"40px" }}>
+            <div style={{ display:"flex", flexDirection:"column", gap:"12px", marginBottom:"36px" }}>
               {[
-                { n:"01", icon:"🧬", title:"Set up your Show DNA", desc:"Add your show's voice, audience, platforms, and boilerplate once. The AI uses this to write in your exact style every time." },
-                { n:"02", icon:"📋", title:"Paste a transcript", desc:"Copy and paste any episode transcript — or upload a .txt or .docx file. No formatting needed." },
-                { n:"03", icon:"✨", title:"Get your full content package", desc:"Show notes, YouTube description, social posts, newsletter, blog post — all generated in your show's voice, ready to use." },
+                { icon:"🧬", title:"Show DNA", desc:"Your show's identity — voice, audience, platforms, boilerplate. Set it once and every piece of content is written in your exact style." },
+                { icon:"📦", title:"Full Content Package", desc:"Paste a transcript and get show notes, YouTube description, social captions, email newsletter, and blog post — all at once." },
+                { icon:"✂️", title:"Clips & Shorts", desc:"Add individual clip timestamps and get platform-specific content written around each clip." },
+                { icon:"🎬", title:"Editor Companion", desc:"Hook recommendations, pacing notes, clip timestamps, and a structured brief for your video editor — with Descript jump links." },
+                { icon:"📋", title:"Episode Prep + Sage", desc:"Plan upcoming episodes with Sage, your AI planning buddy. Generate guest research, discussion questions, and a full run-of-show." },
+                { icon:"🔍", title:"Guest Research", desc:"Deep-dive research on any guest — background, talking points, suggested questions — in your show's voice." },
               ].map(s=>(
-                <div key={s.n} style={{ background:T.card, border:`1px solid ${T.cardBorder}`, borderRadius:"12px", padding:"20px 24px", display:"flex", gap:"16px", alignItems:"flex-start" }}>
-                  <div style={{ fontSize:"28px", flexShrink:0 }}>{s.icon}</div>
+                <div key={s.title} style={{ background:T.bg, border:`1px solid ${T.cardBorder}`, borderRadius:"10px", padding:"16px 20px", display:"flex", gap:"14px", alignItems:"flex-start" }}>
+                  <div style={{ fontSize:"22px", flexShrink:0, marginTop:"1px" }}>{s.icon}</div>
                   <div>
-                    <div style={{ fontSize:"11px", color:T.coral, fontWeight:"700", letterSpacing:"2px", marginBottom:"4px" }}>{s.n}</div>
-                    <div style={{ fontSize:"16px", fontWeight:"700", color:T.text, marginBottom:"6px", fontFamily:PF }}>{s.title}</div>
-                    <div style={{ fontSize:"14px", color:T.textSecondary, lineHeight:"1.6", fontFamily:"'DM Sans', system-ui, sans-serif" }}>{s.desc}</div>
+                    <div style={{ fontSize:"14px", fontWeight:"700", color:T.text, marginBottom:"3px", fontFamily:PF }}>{s.title}</div>
+                    <div style={{ fontSize:"13px", color:T.textSecondary, lineHeight:"1.6", fontFamily:PF }}>{s.desc}</div>
                   </div>
                 </div>
               ))}
             </div>
             <div style={{ textAlign:"center" }}>
-              <button onClick={onAddShow} style={{ padding:"16px 40px", background:T.coral, border:"none", borderRadius:"8px", color:"#fff", fontSize:"16px", fontWeight:"700", cursor:"pointer", letterSpacing:"1px", fontFamily:"'DM Sans', system-ui, sans-serif" }}>
+              <button onClick={onAddShow} style={{ padding:"15px 40px", background:T.coral, border:"none", borderRadius:"8px", color:"#fff", fontSize:"16px", fontWeight:"700", cursor:"pointer", fontFamily:PF }}>
                 Set Up My First Show →
               </button>
-              <p style={{ fontSize:"13px", color:T.textMuted, marginTop:"12px", fontFamily:"'DM Sans', system-ui, sans-serif" }}>
-                You can always update your show DNA later from the Admin panel.
+              <p style={{ fontSize:"13px", color:T.textMuted, marginTop:"12px", fontFamily:PF }}>
+                Your Show DNA is the foundation — everything gets generated from it.
               </p>
             </div>
           </div>
@@ -948,7 +932,7 @@ function BetaDisclaimerModal({ onAcknowledge }) {
   const FF = "'DM Sans', system-ui, sans-serif";
   const points = [
     { icon: "🔄", title: "Regular Updates", text: "We're actively building and improving the app. You may notice new features and occasional changes." },
-    { icon: "🐛", title: "Found a Bug? Tell Us.", text: "Email info@podcastimpactstudio.com — your feedback directly shapes what we build next." },
+    { icon: "🐛", title: "Found a Bug? Tell Us.", text: "Email tamar@podcastimpactstudio.com — your feedback directly shapes what we build next." },
     { icon: "🎁", title: "Free During Beta", text: "As a beta tester you have full access at no cost. Pricing takes effect at public launch." },
   ];
   return (
@@ -984,40 +968,59 @@ function BetaDisclaimerModal({ onAcknowledge }) {
 
 // ── ONBOARDING TOUR ────────────────────────────────────────────────────────────
 const TOUR_STEPS = [
-  { icon: "🎙️", title: "Welcome to Your Content Studio", body: "Podcast Impact Content Studio turns your episode transcripts into complete, publish-ready content packages — show notes, social captions, YouTube descriptions, newsletters, and more. All written in your show's voice." },
-  { icon: "📋", title: "Start by Selecting a Show", body: "Your show library lives on the home screen. Each card represents a show with its own DNA — voice, audience, platforms, and style. Click a show to start creating content for it. Admins can manage shows in the Show DNA Manager (⚙️ icon)." },
-  { icon: "🎬", title: "Four Powerful Modes", body: "Full Content Package — everything from one transcript.\nClips & Shorts — content written around specific clip timestamps.\nEditor Companion — hook recs, pacing notes, and a brief for your editor.\nEpisode Prep — AI-generated research docs, guest prep, and run-of-show." },
-  { icon: "📝", title: "Add Your Transcript", body: "Paste your full episode transcript directly into the text area, or upload a .txt file. The AI reads the whole thing — the longer and more complete it is, the better the output. Show notes, social, email, blog — all generated at once." },
-  { icon: "✨", title: "Your Content Package is Ready", body: "Generated content appears in organized sections you can copy individually or download as a formatted Word doc. You can also revise any section with a custom instruction — just click 'Edit' next to any section and type what you want changed." },
+  {
+    icon: "🧬",
+    title: "Start with Your Show DNA",
+    body: "Your Show DNA is the foundation of everything. Set your show's voice, audience, platforms, boilerplate, and episode format once — and every piece of content will be written to match. You can update it anytime from the Admin panel.",
+  },
+  {
+    icon: "📦",
+    title: "Full Content Package",
+    body: "Select a show, choose Full Content Package, and paste your transcript. The AI generates show notes, a YouTube description, social captions for every platform, an email newsletter, and a blog post — all at once, all in your show's voice.",
+  },
+  {
+    icon: "✂️",
+    title: "Clips & Shorts + Editor Companion",
+    body: "Clips & Shorts lets you add individual clip timestamps and get short-form content written around each one.\n\nEditor Companion generates hook recommendations, pacing notes, clip timestamps, and a brief for your video editor — complete with Descript jump links so your editor can jump straight to any moment.",
+  },
+  {
+    icon: "📋",
+    title: "Episode Prep + Sage",
+    body: "Episode Prep helps you plan before you record. Choose your episode format and let Sage — your AI planning buddy — help you think through the episode structure, talking points, and flow.\n\nFor guest episodes, paste the guest's bio and website to generate tailored discussion questions and a full run-of-show.",
+  },
+  {
+    icon: "🔍",
+    title: "Guest Research",
+    body: "Enter a guest's name and links to get a deep-dive research document — background, key talking points, and suggested questions — all written in your show's style.\n\nYou can copy any section, download a Word doc, or use the Edit button on any section to rewrite it with a specific instruction.",
+  },
 ];
 
 function TourModal({ onDone }) {
   const [step, setStep] = useState(0);
-  const FF = "'DM Sans', system-ui, sans-serif";
   const s = TOUR_STEPS[step];
   const isLast = step === TOUR_STEPS.length - 1;
   return (
-    <div style={{ position:"fixed", inset:0, background:"rgba(26,26,26,0.6)", backdropFilter:"blur(4px)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:9998, padding:"20px" }}>
-      <div style={{ background:T.card, border:"1px solid "+T.cardBorder, borderRadius:"20px", padding:"44px 40px", maxWidth:"540px", width:"100%", boxShadow:"0 24px 64px rgba(0,0,0,0.22)" }}>
+    <div style={{ position:"fixed", inset:0, background:"rgba(26,26,26,0.55)", backdropFilter:"blur(4px)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:9998, padding:"20px" }}>
+      <div style={{ background:T.card, border:"1px solid "+T.cardBorder, borderRadius:"20px", padding:"40px", maxWidth:"560px", width:"100%", boxShadow:"0 24px 64px rgba(0,0,0,0.18)" }}>
         {/* Step dots */}
-        <div style={{ display:"flex", justifyContent:"center", gap:"6px", marginBottom:"32px" }}>
+        <div style={{ display:"flex", justifyContent:"center", gap:"6px", marginBottom:"28px" }}>
           {TOUR_STEPS.map((_, i) => (
             <div key={i} onClick={() => setStep(i)} style={{ width: i === step ? "20px" : "6px", height:"6px", borderRadius:"3px", background: i === step ? T.coral : T.cardBorder, transition:"all .25s", cursor:"pointer" }} />
           ))}
         </div>
         <div style={{ textAlign:"center", marginBottom:"28px" }}>
-          <div style={{ fontSize:"48px", marginBottom:"16px" }}>{s.icon}</div>
-          <div style={{ fontSize:"22px", fontWeight:"700", color:T.text, fontFamily:FF, marginBottom:"14px", lineHeight:"1.3" }}>{s.title}</div>
-          <div style={{ fontSize:"14px", color:T.textSecondary, fontFamily:FF, lineHeight:"1.8", whiteSpace:"pre-line" }}>{s.body}</div>
+          <div style={{ fontSize:"44px", marginBottom:"14px" }}>{s.icon}</div>
+          <div style={{ fontSize:"20px", fontWeight:"700", color:T.text, fontFamily:PF, marginBottom:"14px", lineHeight:"1.3" }}>{s.title}</div>
+          <div style={{ fontSize:"14px", color:T.textSecondary, fontFamily:PF, lineHeight:"1.85", whiteSpace:"pre-line", textAlign:"left" }}>{s.body}</div>
         </div>
         <div style={{ display:"flex", gap:"10px" }}>
-          {step > 0 && <button onClick={() => setStep(s => s - 1)} style={{ flex:1, padding:"13px", background:"transparent", border:"1px solid "+T.cardBorder, borderRadius:"10px", color:T.textSecondary, fontSize:"14px", fontWeight:"600", cursor:"pointer", fontFamily:FF }}>← Back</button>}
-          <button onClick={() => isLast ? onDone() : setStep(s => s + 1)} style={{ flex:1, padding:"13px", background:T.coral, border:"none", borderRadius:"10px", color:"#fff", fontSize:"14px", fontWeight:"700", cursor:"pointer", fontFamily:FF }}>
-            {isLast ? "Let's Create! 🚀" : "Next →"}
+          {step > 0 && <button onClick={() => setStep(s => s - 1)} style={{ flex:1, padding:"13px", background:"transparent", border:"1px solid "+T.cardBorder, borderRadius:"10px", color:T.textMuted, fontSize:"14px", fontWeight:"600", cursor:"pointer", fontFamily:PF }}>← Back</button>}
+          <button onClick={() => isLast ? onDone() : setStep(s => s + 1)} style={{ flex:1, padding:"13px", background:T.coral, border:"none", borderRadius:"10px", color:"#fff", fontSize:"14px", fontWeight:"700", cursor:"pointer", fontFamily:PF }}>
+            {isLast ? "Start Creating →" : "Next →"}
           </button>
         </div>
         <div style={{ textAlign:"center", marginTop:"14px" }}>
-          <button onClick={onDone} style={{ background:"none", border:"none", color:T.textMuted, fontSize:"12px", cursor:"pointer", fontFamily:FF }}>Skip tour</button>
+          <button onClick={onDone} style={{ background:"none", border:"none", color:T.textMuted, fontSize:"12px", cursor:"pointer", fontFamily:PF }}>Skip tour</button>
         </div>
       </div>
     </div>
@@ -1299,10 +1302,18 @@ export default function App(){
   },[]);
   const[descriptStatus,setDescriptStatus]=useState("");
   const[descriptSending,setDescriptSending]=useState(false);
+  const[editorChat,setEditorChat]=useState([]);
+  const[editorChatInput,setEditorChatInput]=useState("");
+  const[editorChatLoading,setEditorChatLoading]=useState(false);
+  const[editorLeftTab,setEditorLeftTab]=useState("transcript");
+  const[transcriptHighlights,setTranscriptHighlights]=useState([]);
+  const[editorSelections,setEditorSelections]=useState({brief:true,clips:true,hook:false,pullquotes:false});
+  const[editorGenerating,setEditorGenerating]=useState(false);
   const[clipTexts,setClipTexts]=useState(Array(10).fill(""));
   const[clipResults,setClipResults]=useState([]);
   const[clipPlatforms,setClipPlatforms]=useState(["YouTube"]);
   const[showAdmin,setShowAdmin]=useState(false);
+  const[adminInitialView,setAdminInitialView]=useState("shows");
   const[showAdminGate,setShowAdminGate]=useState(false);
   const[isAdmin,setIsAdmin]=useState(false);
   const[isClient,setIsClient]=useState(false);
@@ -1316,6 +1327,9 @@ export default function App(){
   const[onboardingComplete,setOnboardingComplete]=useState(true);
   const[onboardingStep,setOnboardingStep]=useState(null);
   const[accountType,setAccountType]=useState("agency");
+  const[orgPlan,setOrgPlan]=useState("beta");
+  const[betaExpired,setBetaExpired]=useState(false);
+  const[showSuperAdmin,setShowSuperAdmin]=useState(false);
   const fileRef=useRef(null);
   const[showUserMenu,setShowUserMenu]=useState(false);
   const userMenuRef=useRef(null);
@@ -1328,11 +1342,16 @@ export default function App(){
   const[selectedFormat,setSelectedFormat]=useState(null);
   const[epGuest,setEpGuest]=useState("");
   const[epGuestUrl,setEpGuestUrl]=useState("");
+  const[epGuestPaste,setEpGuestPaste]=useState("");
   const[epTopic,setEpTopic]=useState("");
   const[epTakeaway,setEpTakeaway]=useState("");
   const[epMoments,setEpMoments]=useState("");
   const[epPanelists,setEpPanelists]=useState("");
   const[epPlanRequest,setEpPlanRequest]=useState("");
+  const[prepExtras,setPrepExtras]=useState({hook:false,bridge:false,permissionSlip:false,openingQuestions:false});
+  const[plannerChat,setPlannerChat]=useState([]);
+  const[plannerInput,setPlannerInput]=useState("");
+  const[plannerLoading,setPlannerLoading]=useState(false);
   const[showSaveFormat,setShowSaveFormat]=useState(false);
   const[saveFormatName,setSaveFormatName]=useState("");
   const[saveFormatOk,setSaveFormatOk]=useState(false);
@@ -1344,7 +1363,7 @@ export default function App(){
 
   const d=show?shows[show]:null;
   const clr=d?.clr||T.coral;
-  const ci={welcome:0,configure:1,"clips-setup":2,input:2,generating:2,result:2,"prep-format":1,"prep-details":2,"guest-setup":1,"guest-results":2}[step]||0;
+  const ci={welcome:0,configure:1,"clips-setup":2,input:2,generating:2,result:2,"prep-format":1,"prep-details":2,"planner-chat":2,"guest-setup":1,"guest-results":2}[step]||0;
 
   useEffect(()=>{
     if(!authReady)return;
@@ -1367,7 +1386,7 @@ export default function App(){
     const results=[];const platList=clipPlatforms.join(", ");
     for(let i=0;i<clipCount;i++){
       const clipTx=clipTexts[i].trim();
-      if(!clipTx){results.push({index:i+1,skipped:true,content:{},originalTx:""});continue;}
+      if(!clipTx){results.push({index:i+1,skipped:true,content:{}});continue;}
       try{
         const clipSys=`You are creating social media clip content for ${d.name}.
 
@@ -1406,8 +1425,8 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
         if(i>0) await new Promise(res=>setTimeout(res,2000));
         const j=await claudeAPI({model:"claude-sonnet-4-6",max_tokens:2000,system:clipSys,messages:[{role:"user",content:`CLIP ${i+1} TRANSCRIPT:\n${clipTx.substring(0,8000)}`}]});
         const t=j.content?.filter(b=>b.type==="text").map(b=>b.text).join("\n")||"";
-        results.push({index:i+1,skipped:false,content:t,originalTx:clipTx});
-      }catch(e){results.push({index:i+1,skipped:false,content:`Error: ${e.message}`,originalTx:clipTx});}
+        results.push({index:i+1,skipped:false,content:t});
+      }catch(e){results.push({index:i+1,skipped:false,content:`Error: ${e.message}`});}
     }
     setClipResults(results);setBusy(false);setStep("result");
   }
@@ -1416,20 +1435,8 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
     if(!tx.trim()){setErr("Paste the transcript.");return;}
     setErr("");setBusy(true);setRaw("");setSecs([]);setStep("generating");
     try{
-      // Build AI Rules injection — check trigger words against transcript
-      const aiRulesBlock=(()=>{
-        const rules=d?.aiRules||[];
-        if(!rules.length) return "";
-        const txLower=tx.toLowerCase();
-        const applicable=rules.filter(r=>{
-          if(!r.instruction?.trim()) return false;
-          if(!r.trigger?.trim()) return true;
-          return txLower.includes(r.trigger.toLowerCase());
-        });
-        if(!applicable.length) return "";
-        return "\n\nSHOW-SPECIFIC RULES FOR THIS EPISODE (apply every one of these):\n"+applicable.map((r,i)=>`${i+1}. [${r.name}] ${r.instruction}`).join("\n");
-      })();
-      const j=await claudeAPI({model:"claude-sonnet-4-6",max_tokens:mode==="editor"?4000:8000,system:sys(d,show,guest,ep,mode,extraPlatforms,editorClipCount)+aiRulesBlock,messages:[{role:"user",content:mode==="editor"?`Analyze this transcript carefully and generate the Editor Brief as instructed.\n\nTRANSCRIPT:\n${tx.substring(0,90000)}`:`Generate the COMPLETE content package in plain text.\n\nTRANSCRIPT:\n${tx.substring(0,90000)}`}]});
+      const matched=matchEpisodeRules(d,tx);
+      const j=await claudeAPI({model:"claude-sonnet-4-6",max_tokens:mode==="editor"?4000:8000,system:sys(d,show,guest,ep,mode,extraPlatforms,editorClipCount,matched),messages:[{role:"user",content:mode==="editor"?`Analyze this transcript carefully and generate the Editor Brief as instructed.\n\nTRANSCRIPT:\n${tx.substring(0,90000)}`:`Generate the COMPLETE content package in plain text.\n\nTRANSCRIPT:\n${tx.substring(0,90000)}`}]});
       if(j.error){setErr(j.error.message);setStep("input");}
       else{const t=j.content?.filter(i=>i.type==="text").map(i=>i.text).join("\n")||"";if(!t.trim()){setErr("No content generated. Please try again.");setStep("input");return;}setRaw(strip(t));const parsed=parse(t);const bpRaw=d?.bp||null;// Attach original HTML boilerplate to show notes section (spread to ensure React detects change)
       const withBp=parsed.map(s=>s.id==="shownotes"&&bpRaw?{...s,bpHtml:bpRaw}:s);
@@ -1477,6 +1484,8 @@ EPISODE DETAILS:
 Guest/Topic: ${epTopic || "[not specified]"}
 ${epGuest ? `Guest Name: ${epGuest}` : ""}
 ${epGuestUrl ? `Guest URL/Handle: ${epGuestUrl}` : ""}
+${epGuestPaste ? `RAW GUEST INFO (pasted from email/form/bio — extract details from this):
+${epGuestPaste}` : ""}
 One Takeaway: ${epTakeaway || "[not specified — suggest the single most listener-relevant takeaway from this guest/topic in the Episode Overview, labeled SUGGESTED TAKEAWAY]"}
 ${epMoments ? `Key Moments/Angles: ${epMoments}` : ""}
 ${epPanelists ? `Additional Panelists: ${epPanelists}` : ""}
@@ -1490,6 +1499,13 @@ HOW TO HANDLE THIS REQUEST:
 - If they are asking you to SUGGEST or brainstorm topics: add a "SUGGESTED TOPICS" section near the top with 3–5 specific, on-brand topic ideas (each with a one-line why-it-fits), then prep the strongest one in full below.
 - If it's a single solo or guest episode: just plan it in full as instructed below.
 - TOPIC FRESHNESS: You do NOT have live web access. When you reference what's "trending," base it on general knowledge and clearly label it [BASED ON GENERAL KNOWLEDGE — please verify it's still current]. Never fabricate specific recent events, statistics, or headlines.` : ""}
+
+${(prepExtras.hook||prepExtras.bridge||prepExtras.permissionSlip||prepExtras.openingQuestions)?`EXTRAS REQUESTED (generate these in addition to the main outline):
+${prepExtras.hook?"- HOOK OPTIONS: Write 3 alternate hook scripts (30 seconds / ~75 words each) the host can choose from.":""}
+${prepExtras.bridge?"- BRIDGE: Write a personal bridge script the host can read and personalize.":""}
+${prepExtras.permissionSlip?"- PERMISSION SLIP CLOSE: Write the full permission slip close with exact sign-off line.":""}
+${prepExtras.openingQuestions?"- OPENING QUESTIONS: Write 3–5 strong opening questions to kick off the conversation.":""}
+`:""}
 
 ACCURACY RULES — NON-NEGOTIABLE:
 - Never invent guest biographical details. If you cannot verify something, write: "[Could not verify — please fill in manually]"
@@ -1582,8 +1598,57 @@ PRE-RECORDING CHECKLIST
       const parsed = parse(stripped);
       setSecs(parsed.length > 1 ? parsed : [{ id: "full", title: "Episode Prep Package", content: stripped }]);
       setStep("result");
-    } catch(e) { setErr(e.message); setStep("prep-details"); }
+    } catch(e) { setErr(e.message||"Something went wrong."); setStep("prep-details"); }
     finally { setBusy(false); }
+  }
+
+  async function sendPlannerChat(userMsg) {
+    const d = shows[show]; if (!d) return;
+    const isInit = userMsg === "__INIT__";
+    const msg = isInit ? null : (userMsg ?? plannerInput.trim()); if (!isInit && !msg) return;
+    const newMessages = isInit ? [] : [...plannerChat, {role:"user",content:msg}];
+    if (!isInit) setPlannerChat(newMessages); setPlannerInput(""); setPlannerLoading(true);
+    const voiceTraits = Array.isArray(d?.voice?.traits)?d.voice.traits.join(", "):(d?.voice?.traits||"");
+    const onePerson = d?.epPrep?.onePerson||{};
+    const system = `You are Sage — an expert podcast planning companion for ${d.name}.
+
+You are warm, curious, and deeply skilled in podcast storytelling, episode formats, series architecture, audience strategy, and content planning. You know how to ask the right questions, do structured thinking out loud, and help hosts move from vague ideas to clear, actionable plans.
+
+SHOW DNA:
+- Show: ${d.name}
+- Tag: ${d.tag||""}
+- Hosts: ${d.hosts||""}
+- Voice/Tone: ${voiceTraits}
+- Energy: ${d.voice?.energy||""}
+- THE ONE PERSON: ${onePerson.name||""} | 2AM question: "${onePerson.question2AM||""}" | Core wound: "${onePerson.wound||""}"
+- Story-Mission: ${d.epPrep?.storyMission||""}
+
+YOUR ROLE:
+- Help the host plan episodes, series, seasons, or special content
+- Always connect ideas back to THE ONE PERSON and the show's DNA
+- Be a thinking partner — ask one great question at a time when you need clarity
+- When the host describes an idea, reflect it back with energy and move it forward
+- Suggest specific episode angles, titles, structures, hooks, and questions
+- You CAN do research within your knowledge base — flag anything uncertain with [please verify]
+- Keep responses focused and conversational — this is a dialogue, not a document dump
+- When the host seems ready to plan a specific episode, offer to generate a full Episode Prep Package for them
+
+FORMATTING — CRITICAL:
+- NEVER use markdown. No asterisks, no bold (**text**), no headers (##), no bullet dashes with asterisks, no backticks.
+- Use plain text only. For lists, use a simple dash (-) or number. For emphasis, just use capitalization or word choice.
+- Write the way you'd talk, not the way you'd write a report.
+
+OPENING: If this is the first message in the conversation, greet the host warmly by name (use ${d.hosts||"there"}) and ask what they'd like to plan. Suggest 3 options: a single episode, a series or season, or something special.`;
+
+    const apiMessages = isInit ? [{role:"user",content:"Please greet me and ask what I'd like to plan."}] : newMessages.map(m=>({role:m.role,content:m.content}));
+    try {
+      const j = await claudeAPI({model:"claude-sonnet-4-6",max_tokens:1500,system,messages:apiMessages});
+      const reply = j.content?.filter(i=>i.type==="text").map(i=>i.text).join("\n")||"";
+      if (!reply) throw new Error("No response");
+      setPlannerChat(isInit ? [{role:"assistant",content:reply}] : [...newMessages,{role:"assistant",content:reply}]);
+    } catch(e) {
+      if (!isInit) setPlannerChat([...newMessages,{role:"assistant",content:"Sorry, something went wrong. Let's try again."}]);
+    } finally { setPlannerLoading(false); }
   }
 
   async function generatePitchEmail(podcast, type){
@@ -1764,11 +1829,18 @@ The email should:
       // Load onboarding state
       if (myOrgId) {
         const { data: orgData } = await supabase.from("organizations")
-          .select("onboarding_complete, account_type").eq("id", myOrgId).single();
+          .select("onboarding_complete, account_type, plan, beta_expires_at").eq("id", myOrgId).single();
         const complete = orgData?.onboarding_complete ?? true;
         setOnboardingComplete(complete);
         setAccountType(orgData?.account_type || "agency");
         if (!complete) setOnboardingStep("profile");
+        const plan = orgData?.plan || "beta";
+        setOrgPlan(plan);
+        if (plan === "beta" && orgData?.beta_expires_at) {
+          const expired = new Date(orgData.beta_expires_at) < new Date();
+          setBetaExpired(expired);
+        }
+        // owner and paid plans never expire
       }
     } catch {
       // If no profile yet, check by email
@@ -1791,6 +1863,8 @@ The email should:
     setOnboardingComplete(true);
     setOnboardingStep(null);
     setAccountType("agency");
+    setOrgPlan("beta");
+    setBetaExpired(false);
     reset();
   }
 
@@ -1838,7 +1912,7 @@ The email should:
     }
   }
 
-  function reset(){setStep("welcome");setMode(null);if(Object.keys(shows).length>1)setShow(null);setGuest(null);setEp("");setTx("");setRaw("");setSecs([]);setErr("");setEditing(false);setESec(null);setETxt("");setExtraPlatforms([]);setClipCount(3);setClipTexts(Array(10).fill(""));setClipResults([]);setClipPlatforms(["YouTube"]);setSelectedFormat(null);setEpGuest("");setEpGuestUrl("");setEpTopic("");setEpTakeaway("");setEpMoments("");setEpPanelists("");setEpPlanRequest("");setShowSaveFormat(false);setSaveFormatName("");setSaveFormatOk(false);setGuestResults([]);setGuestHostName("");setGuestQuery("");setGuestEmails({});}
+  function reset(){setStep("welcome");setMode(null);if(Object.keys(shows).length>1)setShow(null);setGuest(null);setEp("");setTx("");setRaw("");setSecs([]);setErr("");setEditing(false);setESec(null);setETxt("");setExtraPlatforms([]);setClipCount(3);setClipTexts(Array(10).fill(""));setClipResults([]);setClipPlatforms(["YouTube"]);setSelectedFormat(null);setEpGuest("");setEpGuestUrl("");setEpGuestPaste("");setEpTopic("");setEpTakeaway("");setEpMoments("");setEpPanelists("");setEpPlanRequest("");setPrepExtras({hook:false,bridge:false,permissionSlip:false,openingQuestions:false});setPlannerChat([]);setPlannerInput("");setShowSaveFormat(false);setSaveFormatName("");setSaveFormatOk(false);setGuestResults([]);setGuestHostName("");setGuestQuery("");setGuestEmails({});setEditorChat([]);setEditorChatInput("");setEditorLeftTab("brief");setTranscriptHighlights([]);}
 
   function goBack(){
     setErr("");
@@ -1850,9 +1924,10 @@ The email should:
       else if(mode==="clips")setStep("clips-setup");
       else setStep("configure");
     }
-    else if(step==="result"){if(mode==="prep")setStep("prep-details");else setStep("input");}
+    else if(step==="result"){if(mode==="prep")setStep("prep-details");else if(mode==="editor")setStep("welcome");else setStep("input");}
     else if(step==="prep-format"){setStep("welcome");}
     else if(step==="prep-details"){const hasFmts=d?.episodeFormats?.length>0;setStep(hasFmts?"prep-format":"welcome");}
+    else if(step==="planner-chat"){const hasFmts=d?.episodeFormats?.length>0;setStep(hasFmts?"prep-format":"welcome");}
     else if(step==="guest-setup"){setStep("welcome");}
     else if(step==="guest-results"){setStep("guest-setup");}
   }
@@ -1878,12 +1953,14 @@ The email should:
       const agentPrompt = `Create highlights from these timestamps. For each clip, add a marker or comment at the start timestamp so the editor can find them easily:\n\n${clipLines}\n\nLabel each one as CLIP 1, CLIP 2, etc.`;
 
       // Call our Vercel proxy instead of Descript directly (avoids CORS)
+      const showApiKey = shows[show]?.descriptApiKey || descriptApiKey;
       const r = await fetch("/api/descript", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
         projectId: descriptProjectId.trim().split("/").pop().split("?")[0],
-        prompt: agentPrompt
+        prompt: agentPrompt,
+        apiKey: showApiKey,
       })
       });
       const j = await r.json();
@@ -1899,9 +1976,131 @@ The email should:
     }
   }
 
+  async function genEditorSelective(){
+    if(!tx.trim()||busy)return;
+    const d=shows[show];if(!d)return;
+    const selected=Object.entries(editorSelections).filter(([,v])=>v).map(([k])=>k);
+    if(!selected.length)return;
+    const lvlData={"1":{name:"Level 1 — Clean & Clear",desc:"Light technical cleanup only. Remove dead-air, mic bumps, false starts, audio dropouts. Do NOT restructure or remove content for pacing reasons."},"2":{name:"Level 2 — Crafted",desc:"Everything in Level 1, plus: surface strongest hook, remove repetitive points, tighten pacing. The episode should sound intentional without sounding produced."},"3":{name:"Level 3 — Story-Driven",desc:"Everything in Levels 1 and 2, plus: reconstruct the arc, edit aggressively, add b-roll. The episode should feel like a documentary."}};
+    const lvl=lvlData[d.editingLevel||"1"];
+    const voiceTraits=Array.isArray(d.voice?.traits)?d.voice.traits.join(", "):(d.voice?.traits||"");
+    const sections=[];
+    if(editorSelections.brief)sections.push(`EDITOR COMPANION BRIEF\n\nEDITING LEVEL: ${lvl.name}\n\nEPISODE OVERVIEW\n[2-3 sentences on tone, energy, and narrative arc. What's the core message? What makes it worth listening to?]\n\nEDITING APPROACH FOR THIS EPISODE\n[Specific marching orders for the editor based on this episode and editing level. Not generic advice — tied to what you heard in this transcript.]\n\nSECTIONS TO CUT OR TIGHTEN\n[List specific moments with timestamps. For each:\nTIMESTAMP: [start — end]\nREASON: [why cut or tighten]\nSUGGESTION: [cut entirely / trim / restructure]]`);
+    if(editorSelections.clips)sections.push(`SOCIAL CLIP RECOMMENDATIONS\n\nFind exactly ${editorClipCount} moments for high-performing social clips. Each must be under 60 seconds when spoken. For each:\n\nCLIP #[N]\nCLIP TITLE: [4-7 word punchy title]\nTIMESTAMP: [exact start — exact end]\nDURATION: [estimated — must be under 60 seconds]\nBEST PLATFORM: [Instagram Reels / TikTok / YouTube Shorts / LinkedIn — pick ONE]\nQUOTE: [exact words where clip starts and ends — [Speaker]]\nWHY IT PERFORMS: [why this stops the scroll for this show's audience]\nSUGGESTED CAPTION HOOK: [one punchy first line]`);
+    if(editorSelections.hook)sections.push(`INTRO HOOK RECOMMENDATIONS\n\nFind the 3 best moments for a podcast intro hook (spliced before theme music). Each under 60 seconds. For each:\n\nHOOK #[N] — [RECOMMENDED / ALTERNATE 1 / ALTERNATE 2]\nTIMESTAMP: [approx time]\nDURATION: [estimated]\nQUOTE: [exact words — [Speaker]]\nWHY THIS WORKS: [why it hooks this show's audience specifically]\nAUDIENCE TRIGGER: [emotional hook — e.g. Curiosity, Validation, Relief]`);
+    if(editorSelections.pullquotes)sections.push(`PULL QUOTES\n\nFind 6-8 of the most shareable, standalone quotes. Each must be meaningful without episode context. For each:\n\nQUOTE: "[exact words]" — [Speaker]\nWHY IT RESONATES: [1 sentence — tied to audience pain points]\nBEST USE: [social graphic / newsletter / caption / article pull quote]`);
+    const dnaBase=`You are an expert editor coach and content strategist for ${d.name}.\n\nOUTPUT FORMAT: PLAIN TEXT only. Zero markdown. No asterisks. No bold. ALL section headers in ALL CAPS. Separate major sections with ---.\n\nCRITICAL: Every quote pulled from the transcript must attribute the speaker by name — format as "quote text" — [Name]. Never leave a quote unattributed.\n\nSHOW DNA (all outputs must reflect this):\nShow: ${d.name} — "${d.tag}"\nHost(s): ${d.hosts}\n${guest?"GUEST episode.":"SOLO episode."}\nVoice/Tone: ${voiceTraits}\nEnergy: ${d.voice?.energy||""}\nAudience: ${d.aud?.who||""}\nAudience pain points: ${(d.aud?.pains||[]).join(", ")}\nWhat resonates with this audience: ${d.voice?.use||""}\nPhrases this show uses: ${(d.voice?.phrases||[]).join(" | ")}\nAvoid: ${d.voice?.avoid||""}\nEditing level: ${lvl.name} — ${lvl.desc}\nShow rules: ${d.rules||"none"}\n\nGenerate ONLY the sections below. Analyze the full transcript carefully before writing. Every output must be grounded in what actually appears in this specific transcript — not generic podcast advice.`;
+    setEditorGenerating(true);setErr("");setSecs([]);
+    try{
+      const j=await claudeAPI({model:"claude-sonnet-4-6",max_tokens:6000,system:dnaBase,messages:[{role:"user",content:`Analyze this transcript and generate ONLY the following sections. Do not add any other sections or content beyond what is listed below:\n\n${sections.join("\n\n---\n\n")}\n\nTRANSCRIPT:\n${tx.substring(0,90000)}`}]});
+      if(j.error){setErr(j.error.message||"Error generating.");return;}
+      const t=j.content?.filter(i=>i.type==="text").map(i=>i.text).join("\n")||"";
+      if(!t.trim()){setErr("No content generated. Please try again.");return;}
+      setRaw(strip(t));const parsed=parse(t);
+      setSecs(parsed.length?parsed:[{id:"full",title:"Editor Brief",content:strip(t)}]);
+      // Extract QUOTE: lines and highlight them in the transcript
+      const quoteMatches=[];
+      t.split("\n").forEach(line=>{const qm=line.match(/^QUOTE:\s*(.+)$/i);if(qm){let needle=qm[1].replace(/^[""]|[""]$/g,"").trim();if(!needle)return;if(tx.includes(needle)){quoteMatches.push(needle);return;}const stripped=needle.replace(/^[""]|[""]$/g,"").trim();if(tx.includes(stripped)){quoteMatches.push(stripped);return;}const first80=needle.slice(0,80);if(first80.length>10&&tx.includes(first80))quoteMatches.push(first80);}});
+      if(quoteMatches.length>0)setTranscriptHighlights(quoteMatches);
+      setEditorLeftTab("brief");
+    }catch(e){setErr(e.message||"Network error.");}
+    finally{setEditorGenerating(false);}
+  }
+
+  async function sendEditorChat(messageText) {
+    const userMsg = (messageText || editorChatInput).trim();
+    if (!userMsg || editorChatLoading) return;
+    const d = shows[show];
+    const newMessages = [...editorChat, { role: "user", content: userMsg }];
+    setEditorChat(newMessages);
+    setEditorChatInput("");
+    setEditorChatLoading(true);
+    try {
+      const systemPrompt = `You are an expert podcast editor coach helping the editor of "${d?.name || "this podcast"}".
+Show DNA context:
+- Voice/Tone: ${Array.isArray(d?.voice?.traits) ? d.voice.traits.join(", ") : (d?.voice?.traits || "not specified")}
+- Audience: ${d?.aud?.who || "not specified"}
+- Editing Level: ${{"1":"Level 1 — Clean & Clear (light touch, remove stumbles only)","2":"Level 2 — Crafted (tighten pacing, restructure if needed)","3":"Level 3 — Story-Driven (aggressive edits, documentary style)"}[d?.editingLevel||"1"]}
+- Episode Rules: ${d?.episodeRules?.join("; ") || "none"}
+
+The editor has already received the AI-generated editing brief for this episode. You are their interactive coach.
+Help them:
+- Find the best clips and pull quotes from transcript excerpts they paste
+- Give specific, actionable editing suggestions
+- Identify what to cut and why
+- Coach them on pacing, structure, and hooks
+- Teach editing principles that make shows stronger
+- Answer questions about editorial decisions
+
+When referencing specific moments in the transcript, quote the exact words verbatim inside double quotes (e.g., "the exact phrase from the transcript") so the editor can locate them. Be specific with timestamps when available. Be direct and practical. Keep responses focused and under 300 words unless detail is truly needed. When you quote transcript text verbatim, those passages will be automatically highlighted in the editor's transcript view.
+
+Full transcript available for context (first 40,000 chars):
+${tx.substring(0, 40000)}`;
+
+      const j = await claudeAPI({
+        model: "claude-sonnet-4-6",
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: newMessages.map(m => ({ role: m.role, content: m.content })),
+      });
+      const reply = j.content?.filter(i => i.type === "text").map(i => i.text).join("\n") || "";
+      if (!reply) throw new Error("Empty response");
+      setEditorChat([...newMessages, { role: "assistant", content: reply }]);
+      // Extract quoted phrases from the reply to highlight in transcript
+      const quoted = [];
+      const quoteRe = /"([^"]{10,120})"/g;
+      let m;
+      while ((m = quoteRe.exec(reply)) !== null) {
+        if (tx.includes(m[1])) quoted.push(m[1]);
+      }
+      if (quoted.length > 0) {
+        setTranscriptHighlights(quoted);
+        setEditorLeftTab("transcript");
+      }
+    } catch (e) {
+      setEditorChat([...newMessages, { role: "assistant", content: "Sorry, something went wrong. Please try again." }]);
+    } finally {
+      setEditorChatLoading(false);
+    }
+  }
+
   // Show auth screen if not logged in
   if(!authReady||!currentUser){
     return <Auth onAuthenticated={handleAuthenticated}/>;
+  }
+
+  // Show beta-expired screen
+  if(betaExpired){
+    return(
+      <div style={{minHeight:"100vh",width:"100%",background:T.bg,display:"flex",alignItems:"center",justifyContent:"center",padding:"24px"}}>
+        <style>{`*{box-sizing:border-box}@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}`}</style>
+        <div style={{width:"100%",maxWidth:"520px",animation:"fadeUp .4s ease"}}>
+          <div style={{display:"flex",justifyContent:"center",marginBottom:"40px"}}>
+            <img src="/logo-nav.png" alt="Podcast Impact Content Studio" style={{height:"180px",objectFit:"contain"}}/>
+          </div>
+          <div style={{background:T.card,border:`1px solid ${T.cardBorder}`,borderRadius:"16px",padding:"40px",textAlign:"center"}}>
+            <div style={{fontSize:"40px",marginBottom:"16px"}}>⏰</div>
+            <h1 style={{fontSize:"28px",fontWeight:"700",color:T.text,margin:"0 0 12px",fontFamily:PF,lineHeight:"1.2"}}>Your free beta has ended</h1>
+            <p style={{fontSize:"15px",color:T.textMuted,margin:"0 0 28px",lineHeight:"1.7",fontFamily:"'DM Sans', system-ui, sans-serif"}}>
+              Thank you for being one of our beta users — your feedback has been invaluable.
+              To continue using Podcast Impact Content Studio, reach out to us about our early adopter pricing.
+            </p>
+            <a href="mailto:tamar@podcastimpactstudio.com?subject=Continuing after beta"
+               style={{display:"inline-block",padding:"14px 32px",background:T.coral,borderRadius:"8px",color:"#fff",fontSize:"15px",fontWeight:"700",textDecoration:"none",fontFamily:"'DM Sans', system-ui, sans-serif",marginBottom:"20px"}}>
+              Get Early Adopter Pricing →
+            </a>
+            <div style={{borderTop:`1px solid ${T.cardBorder}`,paddingTop:"20px",marginTop:"4px"}}>
+              <button onClick={handleSignOut} style={{background:"transparent",border:"none",color:T.textMuted,fontSize:"13px",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif"}}>
+                Sign out
+              </button>
+            </div>
+          </div>
+          <p style={{textAlign:"center",fontSize:"12px",color:T.textMuted,marginTop:"20px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>
+            Questions? Email <a href="mailto:tamar@podcastimpactstudio.com" style={{color:T.coral}}>tamar@podcastimpactstudio.com</a>
+          </p>
+        </div>
+      </div>
+    );
   }
 
   // Show onboarding for new users who haven't added a show yet
@@ -1909,7 +2108,7 @@ The email should:
     return(
       <div style={{minHeight:"100vh",width:"100%",background:T.bg,color:T.text}}>
         <style>{`*{box-sizing:border-box}@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}button:hover{opacity:.85}`}</style>
-        {showAdmin&&<AdminPanel shows={shows} orgId={orgId} accountType={accountType} userEmail={currentUser?.email} userName={userProfile?.name||(currentUser?.email?.split("@")[0]||"")} onSignOut={handleSignOut} onClose={()=>setShowAdmin(false)} onSaved={async()=>{await refreshShows();await markOnboardingComplete();setShowAdmin(false);}}/>}
+        {showAdmin&&<AdminPanel shows={shows} orgId={orgId} accountType={accountType} userEmail={currentUser?.email} userName={userProfile?.name||(currentUser?.email?.split("@")[0]||"")} onSignOut={handleSignOut} initialView={adminInitialView} onClose={()=>{setShowAdmin(false);setAdminInitialView("shows");}} onSaved={async()=>{await refreshShows();await markOnboardingComplete();setShowAdmin(false);setAdminInitialView("shows");}}/>}
         <OnboardingScreen
           step={onboardingStep}
           user={currentUser}
@@ -1934,7 +2133,7 @@ The email should:
     if(newMode==="prep"){
       const hasFmts=shows[showKey]?.episodeFormats?.length>0;
       setStep(hasFmts?"prep-format":"prep-details");
-    } else if(newMode==="editor") setStep("input");
+    } else if(newMode==="editor"){setTx("");setEditorChat([]);setEditorChatInput("");setEditorLeftTab("transcript");setTranscriptHighlights([]);setStep("result");}
     else if(newMode==="guest"){
       const dna=shows[showKey];
       setGuestResults([]);
@@ -1947,17 +2146,12 @@ The email should:
   // Sidebar nav click handler
   function handleSidebarNav(newMode){
     if(Object.keys(shows).length===0&&isAdmin){setShowAdmin(true);return;}
-    const showKeys=Object.keys(shows);
+    const showKeys=Object.keys(shows).sort((a,b)=>shows[a].name.localeCompare(shows[b].name));
     if(show){
-      // Already have a show — just switch mode
       advanceToMode(newMode, show);
-    } else if(showKeys.length===1){
-      // Single show — auto-select and go
+    } else if(showKeys.length>=1){
+      // Auto-select first show (alphabetically) and navigate directly
       advanceToMode(newMode, showKeys[0]);
-    } else {
-      // No show selected — go home so user can pick from the dropdown
-      setMode(null);
-      setStep("welcome");
     }
   }
 
@@ -1969,7 +2163,8 @@ The email should:
       <style>{`*{box-sizing:border-box}@keyframes spin{to{transform:rotate(360deg)}}@keyframes pulse{0%,100%{opacity:.3}50%{opacity:1}}@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}textarea::placeholder,input::placeholder{color:${T.textMuted}}button:hover{opacity:.85}::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#3A3A3A;border-radius:2px}a{transition:opacity .2s}a:hover{opacity:.7}.sidebar-nav-item:hover{background:#252525}.sidebar-show-select:focus{outline:2px solid #C41230;border-color:#C41230}@media(max-width:900px){.welcome-cards{grid-template-columns:repeat(2,1fr)!important}}@media(max-width:560px){.welcome-cards{grid-template-columns:1fr!important}}`}</style>
 
       {showProfile&&currentUser&&<Profile user={currentUser} onClose={()=>setShowProfile(false)} onSignOut={handleSignOut}/>}
-      {showAdmin&&<AdminPanel shows={shows} orgId={orgId} accountType={accountType} userEmail={currentUser?.email} userName={userProfile?.name||(currentUser?.email?.split("@")[0]||"")} onSignOut={handleSignOut} onClose={()=>setShowAdmin(false)} onSaved={async()=>{await refreshShows();if(!onboardingComplete)await markOnboardingComplete();}}/>}
+      {showAdmin&&<AdminPanel shows={shows} orgId={orgId} accountType={accountType} userEmail={currentUser?.email} userName={userProfile?.name||(currentUser?.email?.split("@")[0]||"")} onSignOut={handleSignOut} initialView={adminInitialView} onClose={()=>{setShowAdmin(false);setAdminInitialView("shows");}} onSaved={async()=>{await refreshShows();if(!onboardingComplete)await markOnboardingComplete();}}/>}
+      {showSuperAdmin&&<SuperAdmin onClose={()=>setShowSuperAdmin(false)}/>}
 
       {/* BETA DISCLAIMER — shown once per user account */}
       {!betaAcknowledged&&<BetaDisclaimerModal onAcknowledge={()=>{const key="pis_beta_ack_"+(currentUser?.id||"anon");localStorage.setItem(key,"1");setBetaAcknowledged(true);setShowTour(true);}}/>}
@@ -2004,34 +2199,18 @@ The email should:
           </div>
         )}
 
-        {/* Section Navigation */}
-        {(()=>{
-          const allowed = isClient && clientConfig?.allowedModes?.length > 0 ? clientConfig.allowedModes : null;
-          const navItems = [
-            {label:"Home",               section:"home",   action:()=>{setMode(null);setStep("welcome");},  visible:true},
-            {label:"Content Generation", section:"create", action:()=>{setMode(null);setStep("welcome");},  visible:!allowed||allowed.includes("full")||allowed.includes("clips")},
-            {label:"Editorial",          section:"editor", action:()=>handleSidebarNav("editor"),           visible:!allowed||allowed.includes("editor")},
-            {label:"Episode Planning",   section:"prep",   action:()=>handleSidebarNav("prep"),             visible:!allowed||allowed.includes("prep")},
-            {label:"Guest Finder",       section:"guest",  action:()=>handleSidebarNav("guest"),            visible:!allowed||allowed.includes("guest")},
-          ].filter(i=>i.visible);
-          if(!navItems.length) return null;
-          return(
-          <div style={{padding:"8px 0",borderBottom:"1px solid #2E2E2E"}}>
-            <div style={{fontSize:"12px",color:"#555555",letterSpacing:"2px",textTransform:"uppercase",padding:"4px 16px 6px",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600"}}>NAVIGATE</div>
-            {navItems.map(item=>{
-              const isActive = item.section==="home" ? step==="welcome" : item.section==="create" ? (mode==="full"||mode==="clips") : item.section==="guest" ? mode==="guest" : mode===item.section;
-              return(
-              <button key={item.label} onClick={item.action}
-                style={{width:"100%",padding:"10px 16px",background:isActive?"#2E2E2E":"transparent",border:"none",boxShadow:isActive?"inset 3px 0 0 "+T.coral:"none",color:isActive?"#FFFFFF":"#8A8A8A",fontSize:"15px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",display:"flex",alignItems:"center",transition:"all .15s"}}
-                onMouseEnter={e=>{if(!isActive){e.currentTarget.style.background="#252525";e.currentTarget.style.color="#CCCCCC";}}}
-                onMouseLeave={e=>{if(!isActive){e.currentTarget.style.background="transparent";e.currentTarget.style.color="#8A8A8A";}}}>
-                <span>{item.label}</span>
-              </button>
-              );
-            })}
-          </div>
-          );
-        })()}
+
+        {/* Home nav */}
+        <div style={{padding:"8px 0",borderBottom:"1px solid #2E2E2E"}}>
+          {(()=>{const isActive=step==="welcome";return(
+            <button onClick={()=>{setMode(null);setStep("welcome");setShow(null);}}
+              className="sidebar-nav-item"
+              style={{width:"100%",padding:"9px 16px",background:isActive?"#2E2E2E":"transparent",border:"none",borderLeft:`3px solid ${isActive?T.coral:"transparent"}`,color:isActive?"#FFFFFF":"#8A8A8A",fontSize:"14px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",display:"flex",alignItems:"center",gap:"10px",transition:"all .15s"}}>
+              <span style={{width:"6px",height:"6px",borderRadius:"50%",background:isActive?T.coral:"#444",flexShrink:0,display:"inline-block"}}/>
+              <span>Home</span>
+            </button>
+          );})()}
+        </div>
 
         {/* Spacer */}
         <div style={{flex:1}}/>
@@ -2053,7 +2232,7 @@ The email should:
           ].map(item=>(
             <button key={item.label} onClick={item.action}
               className="sidebar-nav-item"
-              style={{width:"100%",padding:"10px 16px",background:"transparent",border:"none",color:"#8A8A8A",fontSize:"15px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",display:"block"}}>
+              style={{width:"100%",padding:"10px 16px",background:"transparent",border:"none",borderLeft:"3px solid transparent",color:"#8A8A8A",fontSize:"15px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",display:"block"}}>
               {item.label}
             </button>
           ))}
@@ -2063,7 +2242,7 @@ The email should:
           <button
             className="sidebar-nav-item"
             onClick={()=>isAdmin?setShowAdmin(true):setShowProfile(true)}
-            style={{width:"100%",padding:"10px 16px",background:"transparent",border:"none",color:"#FFFFFF",fontSize:"15px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",display:"block"}}>
+            style={{width:"100%",padding:"10px 16px",background:"transparent",border:"none",borderLeft:"3px solid transparent",color:"#FFFFFF",fontSize:"15px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",display:"block"}}>
             Settings
           </button>
           <div style={{padding:"8px 16px 0"}}>
@@ -2087,7 +2266,10 @@ The email should:
                       {label:"My Profile",action:()=>{setShowProfile(true);setShowUserMenu(false);}},
                       ...(isAdmin?[
                         {label:"Podcast Settings",action:()=>{setShowAdmin(true);setShowUserMenu(false);}},
-                        {label:"Workspace & Team",action:()=>{setShowAdmin(true);setShowUserMenu(false);}},
+                        {label:"Workspace Settings",action:()=>{setAdminInitialView("settings");setShowAdmin(true);setShowUserMenu(false);}},
+                      ]:[]),
+                      ...(orgPlan==="owner"?[
+                        {label:"Owner Admin",action:()=>{setShowSuperAdmin(true);setShowUserMenu(false);}},
                       ]:[]),
                     ].map(item=>(
                       <button key={item.label} onClick={item.action}
@@ -2119,7 +2301,7 @@ The email should:
         <div style={{height:"48px",background:T.surface,borderBottom:`1px solid ${T.cardBorder}`,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 32px",flexShrink:0}}>
           <div style={{fontSize:"12px",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1.5px",textTransform:"uppercase",display:"flex",alignItems:"center",gap:"8px"}}>
             {(mode==="full"||mode==="clips")&&step!=="welcome"&&<span style={{color:T.coral,fontWeight:"700"}}>Content</span>}
-            {mode==="editor"&&step!=="welcome"&&<span style={{color:T.coral,fontWeight:"700"}}>Editorial</span>}
+            {mode==="editor"&&step!=="welcome"&&<span style={{color:T.coral,fontWeight:"700"}}>Editing Assistant</span>}
             {mode==="prep"&&step!=="welcome"&&<span style={{color:T.coral,fontWeight:"700"}}>Planning</span>}
             {mode==="guest"&&step!=="welcome"&&<span style={{color:T.coral,fontWeight:"700"}}>Guest Finder</span>}
             {mode&&step!=="welcome"&&<span style={{color:T.cardBorder}}>›</span>}
@@ -2131,11 +2313,21 @@ The email should:
             {step==="result"&&<span>Results</span>}
             {step==="prep-format"&&<span>Select Format</span>}
             {step==="prep-details"&&<span>Episode Details</span>}
+            {step==="planner-chat"&&<span>Planning Buddy</span>}
             {step==="guest-setup"&&<span>Search</span>}
             {step==="guest-results"&&<span>Results</span>}
           </div>
           {/* Progress + nav buttons */}
           <div style={{display:"flex",alignItems:"center",gap:"12px"}}>
+            {/* Compact show switcher — visible in all non-welcome steps */}
+            {step!=="welcome"&&Object.keys(shows).length>1&&(
+              <select value={show||""} onChange={e=>{if(e.target.value)advanceToMode(mode,e.target.value);}}
+                style={{height:"30px",padding:"0 8px",background:T.card,border:"1px solid "+T.cardBorder,borderRadius:"6px",color:T.textSecondary,fontSize:"12px",fontFamily:PF,cursor:"pointer",outline:"none",maxWidth:"140px"}}>
+                {[...Object.entries(shows)].sort(([,a],[,b])=>a.name.localeCompare(b.name)).map(([k,s])=>(
+                  <option key={k} value={k}>{s.name}</option>
+                ))}
+              </select>
+            )}
             {step!=="welcome"&&step!=="generating"&&(
               <>
                 {ci>0&&<div style={{display:"flex",gap:"3px",alignItems:"center"}}>
@@ -2182,7 +2374,7 @@ The email should:
 
                 {/* Greeting */}
                 <div style={{marginBottom:"36px"}}>
-                  <div style={{fontSize:"13px",fontWeight:"700",letterSpacing:"2.5px",textTransform:"uppercase",color:T.coral,marginBottom:"12px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Good morning, {displayName?displayName.split(" ")[0]:"there"}</div>
+                  <div style={{fontSize:"13px",fontWeight:"700",letterSpacing:"2.5px",textTransform:"uppercase",color:T.coral,marginBottom:"12px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{(()=>{const h=new Date().getHours();return h<12?"Good morning":h<17?"Good afternoon":"Good evening";})()}, {displayName?displayName.split(" ")[0]:"there"}</div>
                   <h1 style={{fontFamily:SF,fontSize:"48px",fontWeight:"normal",color:T.text,margin:"0 0 12px",letterSpacing:"-1px",lineHeight:"1.1",textWrap:"balance"}}>Your podcast companion is ready.</h1>
                   <p style={{fontSize:"18px",color:T.textMuted,margin:0,fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.6",maxWidth:"560px"}}>Select your show, then choose a workflow — everything generated will match your voice and audience.</p>
                 </div>
@@ -2270,7 +2462,7 @@ The email should:
                         <div style={{display:"flex",alignItems:"center",gap:"12px"}}>
                           <div style={{width:"38px",height:"38px",borderRadius:"9px",background:"rgba(100,85,70,.09)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><svg width="17" height="17" viewBox="0 0 14 14" fill="none"><rect x="1" y="2.5" width="8" height="9" rx="1" stroke="#7A5C4A" strokeWidth="1.4"/><path d="M9 5l4-2v8l-4-2V5z" stroke="#7A5C4A" strokeWidth="1.4" strokeLinejoin="round"/></svg></div>
                           <div>
-                            <div style={{fontSize:"10px",fontWeight:"700",letterSpacing:"2px",textTransform:"uppercase",color:"#5A4F45",marginBottom:"4px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Editorial</div>
+                            <div style={{fontSize:"10px",fontWeight:"700",letterSpacing:"2px",textTransform:"uppercase",color:"#5A4F45",marginBottom:"4px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Editing Assistant</div>
                             <div style={{fontFamily:SF,fontSize:"17px",fontWeight:"normal",color:T.text}}>Editor briefs &amp; clip guidance</div>
                           </div>
                         </div>
@@ -2468,7 +2660,7 @@ The email should:
             {/* GENERATING */}
             {step==="generating"&&<div style={{textAlign:"center",padding:"100px 20px",animation:"fadeUp .4s ease"}}>
               <div style={{width:"40px",height:"40px",border:`2px solid ${T.cardBorder}`,borderTopColor:T.coral,borderRadius:"50%",animation:"spin 1s linear infinite",margin:"0 auto 28px"}}/>
-              <h2 style={{fontSize:"38px",fontWeight:"600",color:T.text,marginBottom:"12px",fontFamily:PF,lineHeight:"1.2"}}>{mode==="editor"?"Preparing your editor companion brief…":mode==="clips"?"Writing your short-form copy…":mode==="prep"?"Building your episode prep package…":"Building your content package…"}</h2>
+              <h2 style={{fontSize:"38px",fontWeight:"normal",color:T.text,marginBottom:"12px",fontFamily:SF,lineHeight:"1.2"}}>{mode==="editor"?"Preparing your editor companion brief…":mode==="clips"?"Writing your short-form copy…":mode==="prep"?"Building your episode prep package…":"Building your content package…"}</h2>
               <p style={{fontSize:"16px",color:T.textMuted,margin:"0 0 8px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{d?.name} · {MODES.find(m=>m.id===mode)?.label}</p>
               <p style={{fontSize:"13px",color:T.coral,animation:"pulse 2s ease-in-out infinite",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1px"}}>THIS TAKES ABOUT 30 SECONDS</p>
             </div>}
@@ -2482,12 +2674,12 @@ The email should:
                   <div style={{fontSize:"32px",marginBottom:"12px"}}>📋</div>
                   <div style={{fontSize:"16px",fontWeight:"600",color:T.text,marginBottom:"8px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>No formats set up yet</div>
                   <div style={{fontSize:"14px",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.6",marginBottom:"20px"}}>Go to Settings → Episode Formats to add your first format, or continue without one and the AI will do its best with your Show DNA.</div>
-                  <button onClick={()=>{setSelectedFormat(null);setStep("prep-details");}} style={{padding:"12px 24px",background:T.coral,border:"none",borderRadius:"8px",color:"#fff",fontSize:"14px",fontWeight:"700",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif"}}>✨ Custom planning — continue →</button>
+                  <button onClick={()=>{setSelectedFormat(null);setPlannerChat([]);setPlannerInput("");setStep("planner-chat");setTimeout(()=>sendPlannerChat("__INIT__"),100);}} style={{padding:"12px 24px",background:T.coral,border:"none",borderRadius:"8px",color:"#fff",fontSize:"14px",fontWeight:"700",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif"}}>✨ Custom planning — continue →</button>
                 </div>
               ) : (
                 <div style={{display:"flex",flexDirection:"column",gap:"12px"}}>
                   {d.episodeFormats.map((fmt,i)=>(
-                    <div key={fmt.id||i} onClick={()=>{setSelectedFormat(fmt);setStep("prep-details");}} style={{background:T.card,border:"1px solid "+T.cardBorder,borderRadius:"12px",padding:"20px 24px",cursor:"pointer",transition:"all .15s"}}>
+                    <div key={fmt.id||i} onClick={()=>{setSelectedFormat(fmt);setEpTopic("");setEpGuest("");setEpGuestUrl("");setEpGuestPaste("");setEpTakeaway("");setEpMoments("");setEpPanelists("");setPrepExtras({hook:false,bridge:false,permissionSlip:false,openingQuestions:false});setErr("");setStep("prep-details");}} style={{background:T.card,border:"1px solid "+T.cardBorder,borderRadius:"12px",padding:"20px 24px",cursor:"pointer",transition:"all .15s"}}>
                       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                         <div>
                           <div style={{fontSize:"16px",fontWeight:"700",color:T.text,marginBottom:"4px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{fmt.name}</div>
@@ -2497,46 +2689,116 @@ The email should:
                       </div>
                     </div>
                   ))}
-                  <button onClick={()=>{setSelectedFormat(null);setStep("prep-details");}} style={{padding:"16px",background:T.coralSoft,border:"1px solid "+T.coralMid,borderRadius:"10px",color:T.coral,fontSize:"14px",fontWeight:"700",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",textAlign:"left"}}>✨ Custom — I'll describe what I want to plan →</button>
+                  <button onClick={()=>{setSelectedFormat(null);setPlannerChat([]);setPlannerInput("");setStep("planner-chat");setTimeout(()=>sendPlannerChat("__INIT__"),100);}} style={{padding:"16px",background:T.coralSoft,border:"1px solid "+T.coralMid,borderRadius:"10px",color:T.coral,fontSize:"14px",fontWeight:"700",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",textAlign:"left"}}>✨ Custom — I'll describe what I want to plan →</button>
                 </div>
               )}
             </div>}
-            {step==="prep-details"&&d&&<div style={{animation:"fadeUp .4s ease"}}>
-              <p style={{fontSize:"14px",color:T.coral,margin:"0 0 8px",letterSpacing:"2px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600"}}>{d.name}{selectedFormat?" · "+selectedFormat.name:""}</p>
-              <h2 style={{fontSize:"36px",fontWeight:"700",color:T.text,margin:"0 0 8px",letterSpacing:"-0.5px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>What would you like to plan?</h2>
-              <p style={{fontSize:"15px",color:T.textMuted,margin:"0 0 32px",fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.6"}}>{selectedFormat?`Planning in your ${selectedFormat.name} format. `:"Custom planning — describe it in your own words below. "}The more detail you provide, the more tailored your plan will be.</p>
-              <div style={{display:"flex",flexDirection:"column",gap:"20px",marginBottom:"32px"}}>
-                <div>
-                  <label style={{fontSize:"12px",fontWeight:"700",color:T.textMuted,letterSpacing:"1px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",display:"block",marginBottom:"8px"}}>Topic / Title / Content Being Covered *</label>
-                  <input value={epTopic} onChange={e=>setEpTopic(e.target.value)} placeholder="e.g. 'The Body Keeps the Score' or 'Managing anxiety at work'" style={{width:"100%",padding:"12px 16px",border:"1px solid "+T.cardBorder,borderRadius:"8px",background:T.card,color:T.text,fontSize:"15px",fontFamily:"'DM Sans', system-ui, sans-serif",boxSizing:"border-box"}} />
+            {step==="prep-details"&&d&&(()=>{
+              const isGuest=selectedFormat?.type==="Guest Interview"||selectedFormat?.type==="Listener Spotlight";
+              const isPanel=selectedFormat?.type==="Panel Discussion"||selectedFormat?.type==="Review & Reaction Panel";
+              const fld={width:"100%",padding:"12px 16px",border:"1px solid "+T.cardBorder,borderRadius:"8px",background:T.card,color:T.text,fontSize:"15px",fontFamily:"'DM Sans', system-ui, sans-serif",boxSizing:"border-box"};
+              const lbl={fontSize:"12px",fontWeight:"700",color:T.textMuted,letterSpacing:"1px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",display:"block",marginBottom:"8px"};
+              return(<div style={{animation:"fadeUp .4s ease"}}>
+                <p style={{fontSize:"14px",color:T.coral,margin:"0 0 8px",letterSpacing:"2px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600"}}>{d.name}{selectedFormat?" · "+selectedFormat.name:""}</p>
+                <h2 style={{fontSize:"36px",fontWeight:"700",color:T.text,margin:"0 0 8px",letterSpacing:"-0.5px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{isGuest?"Tell us about your guest":"What's this episode about?"}</h2>
+                <p style={{fontSize:"15px",color:T.textMuted,margin:"0 0 32px",fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.6"}}>{isGuest?"Paste in anything you have — a bio, intake form, email — and the AI will research your guest and build a tailored interview outline.":"The more you share, the better the outline. The AI will check your Show DNA and build around it."}</p>
+                <div style={{display:"flex",flexDirection:"column",gap:"20px",marginBottom:"32px"}}>
+                  {isGuest?(<>
+                    <div>
+                      <label style={lbl}>Guest Name <span style={{fontWeight:"400",textTransform:"none"}}>(optional — AI will extract from pasted info)</span></label>
+                      <input value={epGuest} onChange={e=>setEpGuest(e.target.value)} placeholder="Full name" style={fld}/>
+                    </div>
+                    <div>
+                      <label style={lbl}>Guest Info — paste anything you have *</label>
+                      <p style={{fontSize:"13px",color:T.textMuted,margin:"0 0 8px",fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.5"}}>Paste a bio, intake form, email, LinkedIn summary, or anything about this guest. The AI will extract what's relevant.</p>
+                      <textarea value={epGuestPaste} onChange={e=>setEpGuestPaste(e.target.value)} placeholder={"Paste their bio, intake form responses, email, or anything else here…\n\nExample:\nDr. Jane Smith is a nutritionist and author of 'Eat to Thrive.' She's been featured in Forbes and Oprah Magazine. Her website is drjanesmith.com…"} rows={8} style={{...fld,resize:"vertical",lineHeight:"1.6"}}/>
+                    </div>
+                    <div>
+                      <label style={lbl}>Website or Social Links <span style={{fontWeight:"400",textTransform:"none"}}>(optional — helps with accuracy)</span></label>
+                      <input value={epGuestUrl} onChange={e=>setEpGuestUrl(e.target.value)} placeholder="https://guestwebsite.com or @handle" style={fld}/>
+                    </div>
+                    <div style={{background:T.coralSoft,border:"1px solid "+T.coralMid,borderRadius:"10px",padding:"16px 18px"}}>
+                      <label style={{...lbl,color:T.coral,marginBottom:"4px"}}>Include in outline (optional)</label>
+                      <p style={{fontSize:"13px",color:T.textMuted,margin:"0 0 10px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Select any extras to generate alongside the interview outline.</p>
+                      {[["openingQuestions","Opening Questions — 3 strong openers to start the conversation"],["hook","Hook Options — 3 alternate 30-second hooks to choose from"],["bridge","Bridge — personal host connection script"],["permissionSlip","Permission Slip Close — full close with sign-off line"]].map(([k,label])=>(
+                        <label key={k} style={{display:"flex",alignItems:"center",gap:"10px",marginBottom:"8px",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",fontSize:"14px",color:T.text}}>
+                          <input type="checkbox" checked={prepExtras[k]} onChange={e=>setPrepExtras(p=>({...p,[k]:e.target.checked}))} style={{width:"16px",height:"16px",accentColor:T.coral,cursor:"pointer"}}/>
+                          {label}
+                        </label>
+                      ))}
+                    </div>
+                  </>):(<>
+                    <div>
+                      <label style={lbl}>Episode Topic or Working Title *</label>
+                      <input value={epTopic} onChange={e=>setEpTopic(e.target.value)} placeholder="e.g. 'Managing anxiety at work' or 'Why I quit my 6-figure job'" style={fld}/>
+                    </div>
+                    {isPanel&&<div>
+                      <label style={lbl}>Panelists or Contributors <span style={{fontWeight:"400",textTransform:"none"}}>(optional)</span></label>
+                      <input value={epPanelists} onChange={e=>setEpPanelists(e.target.value)} placeholder="Names of panelists" style={fld}/>
+                    </div>}
+                    <div>
+                      <label style={lbl}>What are you thinking about covering? <span style={{fontWeight:"400",textTransform:"none"}}>(optional)</span></label>
+                      <textarea value={epMoments} onChange={e=>setEpMoments(e.target.value)} placeholder="Any angles, moments, questions, or ideas already in your head — dump them here…" rows={4} style={{...fld,resize:"vertical",lineHeight:"1.6"}}/>
+                    </div>
+                    <div>
+                      <label style={lbl}>The ONE Takeaway <span style={{fontWeight:"400",textTransform:"none"}}>(optional)</span></label>
+                      <input value={epTakeaway} onChange={e=>setEpTakeaway(e.target.value)} placeholder="What should the listener walk away knowing, feeling, or doing? (one sentence)" style={fld}/>
+                    </div>
+                    <div style={{background:T.coralSoft,border:"1px solid "+T.coralMid,borderRadius:"10px",padding:"16px 18px"}}>
+                      <label style={{...lbl,color:T.coral,marginBottom:"4px"}}>Also generate alongside the outline (optional)</label>
+                      <p style={{fontSize:"13px",color:T.textMuted,margin:"0 0 10px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Select any extras to include in your planning doc.</p>
+                      {[["hook","Hook Options — 3 alternate 30-second hooks to choose from"],["bridge","Bridge — personal host connection script"],["permissionSlip","Permission Slip Close — full close with sign-off line"]].map(([k,label])=>(
+                        <label key={k} style={{display:"flex",alignItems:"center",gap:"10px",marginBottom:"8px",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",fontSize:"14px",color:T.text}}>
+                          <input type="checkbox" checked={prepExtras[k]} onChange={e=>setPrepExtras(p=>({...p,[k]:e.target.checked}))} style={{width:"16px",height:"16px",accentColor:T.coral,cursor:"pointer"}}/>
+                          {label}
+                        </label>
+                      ))}
+                    </div>
+                  </>)}
                 </div>
-                {(!selectedFormat || selectedFormat.type==="Guest Interview" || selectedFormat.type==="Review & Reaction Panel") && <div>
-                  <label style={{fontSize:"12px",fontWeight:"700",color:T.textMuted,letterSpacing:"1px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",display:"block",marginBottom:"8px"}}>Guest Name <span style={{fontWeight:"400",textTransform:"none"}}>(optional)</span></label>
-                  <input value={epGuest} onChange={e=>setEpGuest(e.target.value)} placeholder="Full name" style={{width:"100%",padding:"12px 16px",border:"1px solid "+T.cardBorder,borderRadius:"8px",background:T.card,color:T.text,fontSize:"15px",fontFamily:"'DM Sans', system-ui, sans-serif",boxSizing:"border-box"}} />
-                </div>}
-                {(!selectedFormat || selectedFormat.type==="Guest Interview" || selectedFormat.type==="Review & Reaction Panel") && <div>
-                  <label style={{fontSize:"12px",fontWeight:"700",color:T.textMuted,letterSpacing:"1px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",display:"block",marginBottom:"8px"}}>Guest URL or Social Handle <span style={{fontWeight:"400",textTransform:"none"}}>(optional — helps with accuracy)</span></label>
-                  <input value={epGuestUrl} onChange={e=>setEpGuestUrl(e.target.value)} placeholder="https://guestwebsite.com or @handle" style={{width:"100%",padding:"12px 16px",border:"1px solid "+T.cardBorder,borderRadius:"8px",background:T.card,color:T.text,fontSize:"15px",fontFamily:"'DM Sans', system-ui, sans-serif",boxSizing:"border-box"}} />
-                </div>}
-                <div style={{background:T.coralSoft,border:"1px solid "+T.coralMid,borderRadius:"10px",padding:"16px 18px"}}>
-                  <label style={{fontSize:"12px",fontWeight:"700",color:T.coral,letterSpacing:"1px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",display:"block",marginBottom:"4px"}}>✨ What would you like to plan together?</label>
-                  <p style={{fontSize:"13px",color:T.textMuted,margin:"0 0 10px",fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.5"}}>Plan this single episode, ask for topic ideas, or describe something bigger — e.g. "Plan a 5-part series on ADHD" or "I want to react to this article and tie it to our show."</p>
-                  <textarea value={epPlanRequest} onChange={e=>setEpPlanRequest(e.target.value)} placeholder='Leave blank to plan a standard episode, or tell the AI exactly what you want to build…' rows={3} style={{width:"100%",padding:"12px 16px",border:"1px solid "+T.cardBorder,borderRadius:"8px",background:T.card,color:T.text,fontSize:"15px",fontFamily:"'DM Sans', system-ui, sans-serif",resize:"vertical",boxSizing:"border-box"}} />
-                </div>
-                <div>
-                  <label style={{fontSize:"12px",fontWeight:"700",color:T.textMuted,letterSpacing:"1px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",display:"block",marginBottom:"8px"}}>The ONE Takeaway <span style={{fontWeight:"400",textTransform:"none"}}>(optional)</span></label>
-                  <input value={epTakeaway} onChange={e=>setEpTakeaway(e.target.value)} placeholder="What should the ONE person walk away with? (one sentence)" style={{width:"100%",padding:"12px 16px",border:"1px solid "+T.cardBorder,borderRadius:"8px",background:T.card,color:T.text,fontSize:"15px",fontFamily:"'DM Sans', system-ui, sans-serif",boxSizing:"border-box"}} />
-                </div>
-                <div>
-                  <label style={{fontSize:"12px",fontWeight:"700",color:T.textMuted,letterSpacing:"1px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",display:"block",marginBottom:"8px"}}>Specific Moments, Quotes, or Angles You Want to Include <span style={{fontWeight:"400",textTransform:"none"}}>(optional)</span></label>
-                  <textarea value={epMoments} onChange={e=>setEpMoments(e.target.value)} placeholder="Any moments, quotes, or angles you already know you want to hit..." rows={4} style={{width:"100%",padding:"12px 16px",border:"1px solid "+T.cardBorder,borderRadius:"8px",background:T.card,color:T.text,fontSize:"15px",fontFamily:"'DM Sans', system-ui, sans-serif",resize:"vertical",boxSizing:"border-box"}} />
-                </div>
-                {selectedFormat?.type==="Review & Reaction Panel" && <div>
-                  <label style={{fontSize:"12px",fontWeight:"700",color:T.textMuted,letterSpacing:"1px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",display:"block",marginBottom:"8px"}}>Additional Panelists or Contributors <span style={{fontWeight:"400",textTransform:"none"}}>(optional)</span></label>
-                  <input value={epPanelists} onChange={e=>setEpPanelists(e.target.value)} placeholder="Names of other panelists" style={{width:"100%",padding:"12px 16px",border:"1px solid "+T.cardBorder,borderRadius:"8px",background:T.card,color:T.text,fontSize:"15px",fontFamily:"'DM Sans', system-ui, sans-serif",boxSizing:"border-box"}} />
-                </div>}
+                {err&&<p style={{color:"#C41230",fontSize:"14px",margin:"0 0 16px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{err}</p>}
+                <button onClick={genPrep} disabled={isGuest?!epGuestPaste.trim():!epTopic.trim()} style={{padding:"16px 32px",background:(isGuest?epGuestPaste.trim():epTopic.trim())?T.coral:T.cardBorder,border:"none",borderRadius:"10px",color:"#fff",fontSize:"16px",fontWeight:"700",cursor:(isGuest?epGuestPaste.trim():epTopic.trim())?"pointer":"not-allowed",fontFamily:"'DM Sans', system-ui, sans-serif",transition:"background 0.2s"}}>Generate Episode Outline →</button>
+              </div>);
+            })()}
+
+            {/* PLANNING BUDDY — SAGE */}
+            {step==="planner-chat"&&d&&<div style={{animation:"fadeUp .4s ease",display:"flex",flexDirection:"column",height:"calc(100vh - 200px)",maxHeight:"700px"}}>
+              <div style={{marginBottom:"20px"}}>
+                <p style={{fontSize:"14px",color:T.coral,margin:"0 0 4px",letterSpacing:"2px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600"}}>{d.name} · Planning Buddy</p>
+                <h2 style={{fontSize:"30px",fontWeight:"700",color:T.text,margin:"0",letterSpacing:"-0.5px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Sage <span style={{fontSize:"16px",fontWeight:"400",color:T.textMuted,letterSpacing:"0"}}>— your expert podcast planner</span></h2>
               </div>
-              <button onClick={genPrep} disabled={!epTopic.trim()} style={{padding:"16px 32px",background:epTopic.trim()?T.coral:T.cardBorder,border:"none",borderRadius:"10px",color:"#fff",fontSize:"16px",fontWeight:"700",cursor:epTopic.trim()?"pointer":"not-allowed",fontFamily:"'DM Sans', system-ui, sans-serif",transition:"background 0.2s"}}>Start Planning →</button>
+              <div style={{flex:1,overflowY:"auto",display:"flex",flexDirection:"column",gap:"16px",paddingBottom:"12px"}}>
+                {plannerChat.length===0&&plannerLoading&&(
+                  <div style={{display:"flex",alignItems:"center",gap:"10px",padding:"16px"}}>
+                    <div style={{width:"28px",height:"28px",borderRadius:"50%",background:T.coral,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:"14px",color:"#fff",fontWeight:"700"}}>S</div>
+                    <div style={{display:"flex",gap:"4px",alignItems:"center",padding:"12px 16px",background:T.card,border:"1px solid "+T.cardBorder,borderRadius:"12px"}}>
+                      <span style={{width:"6px",height:"6px",borderRadius:"50%",background:T.textMuted,display:"inline-block",animation:"pulse 1.2s ease-in-out infinite"}}/>
+                      <span style={{width:"6px",height:"6px",borderRadius:"50%",background:T.textMuted,display:"inline-block",animation:"pulse 1.2s ease-in-out infinite .2s"}}/>
+                      <span style={{width:"6px",height:"6px",borderRadius:"50%",background:T.textMuted,display:"inline-block",animation:"pulse 1.2s ease-in-out infinite .4s"}}/>
+                    </div>
+                  </div>
+                )}
+                {plannerChat.map((m,i)=>(
+                  <div key={i} style={{display:"flex",gap:"10px",alignItems:"flex-start",flexDirection:m.role==="user"?"row-reverse":"row",padding:"0 4px"}}>
+                    <div style={{width:"28px",height:"28px",borderRadius:"50%",background:m.role==="user"?T.cardBorder:T.coral,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:"13px",color:m.role==="user"?T.textMuted:"#fff",fontWeight:"700"}}>{m.role==="user"?"U":"S"}</div>
+                    <div style={{maxWidth:"80%",padding:"12px 16px",background:m.role==="user"?T.coralSoft:T.card,border:"1px solid "+(m.role==="user"?T.coralMid:T.cardBorder),borderRadius:"12px",fontSize:"15px",color:T.text,fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.6",whiteSpace:"pre-wrap"}}>{m.content.replace(/\*\*/g,"").replace(/^#+\s/gm,"")}</div>
+                  </div>
+                ))}
+                {plannerChat.length>0&&plannerLoading&&(
+                  <div style={{display:"flex",alignItems:"center",gap:"10px",padding:"0 4px"}}>
+                    <div style={{width:"28px",height:"28px",borderRadius:"50%",background:T.coral,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:"14px",color:"#fff",fontWeight:"700"}}>S</div>
+                    <div style={{display:"flex",gap:"4px",alignItems:"center",padding:"12px 16px",background:T.card,border:"1px solid "+T.cardBorder,borderRadius:"12px"}}>
+                      <span style={{width:"6px",height:"6px",borderRadius:"50%",background:T.textMuted,display:"inline-block",animation:"pulse 1.2s ease-in-out infinite"}}/>
+                      <span style={{width:"6px",height:"6px",borderRadius:"50%",background:T.textMuted,display:"inline-block",animation:"pulse 1.2s ease-in-out infinite .2s"}}/>
+                      <span style={{width:"6px",height:"6px",borderRadius:"50%",background:T.textMuted,display:"inline-block",animation:"pulse 1.2s ease-in-out infinite .4s"}}/>
+                    </div>
+                  </div>
+                )}
+              </div>
+              <div style={{display:"flex",gap:"10px",paddingTop:"12px",borderTop:"1px solid "+T.cardBorder}}>
+                <textarea value={plannerInput} onChange={e=>setPlannerInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();if(!plannerLoading)sendPlannerChat();}}} placeholder="Type your idea, question, or brain dump here… (Enter to send, Shift+Enter for new line)" rows={2} style={{flex:1,padding:"12px 16px",border:"1px solid "+T.cardBorder,borderRadius:"10px",background:T.card,color:T.text,fontSize:"15px",fontFamily:"'DM Sans', system-ui, sans-serif",resize:"none",lineHeight:"1.5",outline:"none"}}/>
+                <button onClick={()=>sendPlannerChat()} disabled={!plannerInput.trim()||plannerLoading} style={{padding:"12px 20px",background:plannerInput.trim()&&!plannerLoading?T.coral:T.cardBorder,border:"none",borderRadius:"10px",color:"#fff",fontSize:"15px",fontWeight:"700",cursor:plannerInput.trim()&&!plannerLoading?"pointer":"not-allowed",fontFamily:"'DM Sans', system-ui, sans-serif",transition:"background 0.2s",alignSelf:"flex-end"}}>Send →</button>
+              </div>
             </div>}
 
             {/* GUEST FINDER — SETUP */}
@@ -2676,39 +2938,147 @@ The email should:
             </div>}
 
             {/* RESULT */}
-            {step==="result"&&<div style={{animation:"fadeUp .4s ease"}}>
+            {step==="result"&&<div style={{animation:"fadeUp .4s ease",display:mode==="editor"?"flex":"block",gap:"24px",alignItems:"flex-start"}}>
+            <div style={{flex:1,minWidth:0}}>
+              {/* Editor tabs — Brief / Transcript */}
+              {mode==="editor"&&(
+                <div style={{display:"flex",gap:"0",marginBottom:"20px",background:T.card,border:"1px solid "+T.cardBorder,borderRadius:"10px",overflow:"hidden",flexShrink:0}}>
+                  {[["brief","📋 Brief"],["transcript","📄 Transcript"]].map(([id,label])=>(
+                    <button key={id} onClick={()=>setEditorLeftTab(id)}
+                      style={{flex:1,padding:"11px 16px",background:editorLeftTab===id?T.coral:"transparent",border:"none",color:editorLeftTab===id?"#fff":T.textMuted,fontSize:"13px",fontWeight:"700",cursor:"pointer",fontFamily:PF,letterSpacing:"1px",transition:"all .15s",borderRight:id==="brief"?"1px solid "+T.cardBorder:"none"}}>
+                      {label}
+                      {id==="transcript"&&transcriptHighlights.length>0&&editorLeftTab!=="transcript"&&<span style={{display:"inline-block",marginLeft:"6px",background:"#F5A623",borderRadius:"10px",padding:"1px 7px",fontSize:"10px",color:"#fff",fontWeight:"700"}}>{transcriptHighlights.length}</span>}
+                    </button>
+                  ))}
+                </div>
+              )}
+              {/* Transcript view */}
+              {mode==="editor"&&editorLeftTab==="transcript"?(
+                <div style={{background:T.card,border:"1px solid "+T.cardBorder,borderRadius:"10px",overflow:"hidden"}}>
+                  <div style={{padding:"14px 20px",borderBottom:"1px solid "+T.cardBorder,background:T.surface,display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:"8px"}}>
+                    <div style={{fontSize:"12px",fontWeight:"700",letterSpacing:"2px",textTransform:"uppercase",color:T.textMuted,fontFamily:PF}}>Episode Transcript{tx.trim()?` · ${tx.trim().split(/\s+/).length.toLocaleString()} words`:""}</div>
+                    <div style={{display:"flex",alignItems:"center",gap:"10px"}}>
+                      {transcriptHighlights.length>0&&<>
+                        <span style={{fontSize:"12px",color:"#F5A623",fontFamily:PF,fontWeight:"700"}}>{transcriptHighlights.length} passage{transcriptHighlights.length!==1?"s":""} highlighted</span>
+                        <button onClick={()=>setTranscriptHighlights([])} style={{fontSize:"11px",color:T.textMuted,background:"none",border:"none",cursor:"pointer",fontFamily:PF,padding:0}}>Clear</button>
+                      </>}
+                      <label style={{display:"flex",alignItems:"center",gap:"6px",cursor:"pointer",fontSize:"12px",color:T.textMuted,fontFamily:PF}}>
+                        <input ref={fileRef} type="file" accept=".txt,.md" style={{display:"none"}} onChange={handleFileInput}/>
+                        <button onClick={()=>fileRef.current?.click()} style={{fontSize:"11px",padding:"4px 10px",background:"transparent",border:"1px solid "+T.cardBorder,borderRadius:"5px",color:T.textMuted,cursor:"pointer",fontFamily:PF}}>Upload file</button>
+                      </label>
+                    </div>
+                  </div>
+                  {transcriptHighlights.length>0?(
+                    <div style={{padding:"20px 24px",maxHeight:"72vh",overflowY:"auto",fontFamily:PF,fontSize:"14px",lineHeight:"1.8",color:T.text,whiteSpace:"pre-wrap"}}>
+                      {(()=>{
+                        const escaped=transcriptHighlights.map(h=>h.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"));
+                        const re=new RegExp(`(${escaped.join("|")})`, "g");
+                        const parts=tx.split(re);
+                        return parts.map((part,i)=>{
+                          const isHighlight=transcriptHighlights.includes(part);
+                          return isHighlight
+                            ? <mark key={i} style={{background:"#F5A62340",borderBottom:"2px solid #F5A623",borderRadius:"2px",padding:"1px 2px",color:T.text}}>{part}</mark>
+                            : <span key={i}>{part}</span>;
+                        });
+                      })()}
+                    </div>
+                  ):(
+                    <div onDragOver={e=>{e.preventDefault();setDragging(true);}} onDragLeave={()=>setDragging(false)} onDrop={e=>{e.preventDefault();setDragging(false);const f=e.dataTransfer.files[0];if(f)readFile(f);}}>
+                      {!tx.trim()&&<div style={{padding:"20px 24px 0",textAlign:"center",color:T.textMuted,fontSize:"13px",fontFamily:PF}}>Paste your transcript below, or drag and drop a .txt file {dragging?"— drop it!":""}</div>}
+                      <textarea
+                        value={tx}
+                        onChange={e=>setTx(e.target.value)}
+                        placeholder={"Paste your full episode transcript here — include timestamps if available (e.g. [00:03:47]).\n\nThe AI Editor Coach on the right can then answer questions, find clip moments, and coach you through this episode at the editing level set in your Show DNA."}
+                        style={{width:"100%",minHeight:"65vh",border:"none",outline:"none",resize:"none",padding:"20px 24px",fontSize:"14px",lineHeight:"1.8",color:T.text,background:dragging?"#FFF8F0":T.card,fontFamily:PF,boxSizing:"border-box"}}
+                      />
+                    </div>
+                  )}
+                </div>
+              ):(<>
+              {/* Editor mode — show generator when empty, results when populated */}
+              {mode==="editor"&&(secs.length===0||editorGenerating)?(
+                <div>
+                  {/* DNA context banner */}
+                  {(()=>{const lvl=d?.editingLevel||"1";const lvlLabels={"1":"Level 1 — Clean & Clear","2":"Level 2 — Paced & Polished","3":"Level 3 — Story-Driven"};const voiceTraits=Array.isArray(d?.voice?.traits)?d.voice.traits.join(", "):(d?.voice?.traits||"");return(<div style={{background:T.coralSoft,border:"1px solid "+T.coralMid,borderRadius:"10px",padding:"16px 20px",marginBottom:"20px"}}>
+                    <div style={{fontSize:"11px",fontWeight:"700",letterSpacing:"2px",color:T.coral,fontFamily:PF,marginBottom:"10px"}}>SHOW DNA — {d?.name?.toUpperCase()}</div>
+                    <div style={{display:"flex",flexWrap:"wrap",gap:"16px"}}>
+                      <div><div style={{fontSize:"11px",color:T.textMuted,fontFamily:PF,letterSpacing:"1px",marginBottom:"2px"}}>EDITING LEVEL</div><div style={{fontSize:"13px",color:T.text,fontFamily:PF,fontWeight:"600"}}>{lvlLabels[lvl]}</div></div>
+                      {voiceTraits&&<div><div style={{fontSize:"11px",color:T.textMuted,fontFamily:PF,letterSpacing:"1px",marginBottom:"2px"}}>VOICE</div><div style={{fontSize:"13px",color:T.text,fontFamily:PF,fontWeight:"600"}}>{voiceTraits}</div></div>}
+                      {d?.aud?.who&&<div><div style={{fontSize:"11px",color:T.textMuted,fontFamily:PF,letterSpacing:"1px",marginBottom:"2px"}}>AUDIENCE</div><div style={{fontSize:"13px",color:T.text,fontFamily:PF,fontWeight:"600"}}>{d.aud.who}</div></div>}
+                    </div>
+                  </div>);})()}
+                  {err&&<div style={{background:"#D94F4F18",border:"1px solid #D94F4F44",borderRadius:"8px",padding:"12px 16px",color:"#F09090",fontSize:"14px",marginBottom:"16px",fontFamily:PF}}>{err}</div>}
+                  {!tx.trim()&&<div style={{background:T.card,border:"1px dashed "+T.cardBorder,borderRadius:"10px",padding:"32px",textAlign:"center",marginBottom:"20px"}}>
+                    <div style={{fontSize:"28px",marginBottom:"8px"}}>📄</div>
+                    <div style={{fontSize:"15px",color:T.textMuted,fontFamily:PF,marginBottom:"4px"}}>Paste your transcript first</div>
+                    <button onClick={()=>setEditorLeftTab("transcript")} style={{marginTop:"10px",padding:"8px 18px",background:T.coral,border:"none",borderRadius:"6px",color:"#fff",fontSize:"13px",fontWeight:"700",cursor:"pointer",fontFamily:PF}}>Go to Transcript →</button>
+                  </div>}
+                  <div style={{fontSize:"13px",fontWeight:"700",letterSpacing:"2px",color:T.textMuted,fontFamily:PF,marginBottom:"12px"}}>WHAT WOULD YOU LIKE TO GENERATE?</div>
+                  <div style={{display:"flex",flexDirection:"column",gap:"8px",marginBottom:"20px"}}>
+                    {[
+                      ["brief","Editor Companion Brief","What to cut, pacing notes, and episode overview"],
+                      ["clips","Best Clip Moments",`${editorClipCount} clips with timestamps, quotes, and why they perform`],
+                      ["hook","Cold Open / Hook","Top 3 intro hook moments ranked by impact"],
+                      ["pullquotes","Pull Quotes","6-8 shareable standalone quotes to flag for your social team"],
+                    ].map(([key,label,desc])=>(
+                      <label key={key} style={{display:"flex",alignItems:"flex-start",gap:"12px",padding:"12px 16px",background:editorSelections[key]?T.coralSoft:T.card,border:"1px solid "+(editorSelections[key]?T.coralMid:T.cardBorder),borderRadius:"8px",cursor:"pointer",transition:"all .15s"}}>
+                        <input type="checkbox" checked={editorSelections[key]} onChange={e=>setEditorSelections(s=>({...s,[key]:e.target.checked}))} style={{marginTop:"2px",accentColor:T.coral,flexShrink:0,width:"16px",height:"16px"}}/>
+                        <div>
+                          <div style={{fontSize:"14px",fontWeight:"600",color:editorSelections[key]?T.coral:T.text,fontFamily:PF,lineHeight:"1.2"}}>{label}</div>
+                          <div style={{fontSize:"12px",color:T.textMuted,fontFamily:PF,marginTop:"2px"}}>{desc}</div>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                  {editorSelections.clips&&<div style={{marginBottom:"20px"}}>
+                    <div style={{fontSize:"12px",fontWeight:"700",letterSpacing:"1.5px",color:T.textMuted,fontFamily:PF,marginBottom:"8px"}}>NUMBER OF CLIPS</div>
+                    <div style={{display:"flex",flexWrap:"wrap",gap:"6px"}}>
+                      {[3,4,5,6,7,8,9,10].map(n=>(
+                        <button key={n} onClick={()=>setEditorClipCount(n)} style={{padding:"8px 16px",background:editorClipCount===n?T.coral:T.card,border:"1px solid "+(editorClipCount===n?T.coral:T.cardBorder),borderRadius:"6px",color:editorClipCount===n?"#fff":T.textSecondary,fontSize:"14px",fontWeight:editorClipCount===n?"700":"400",cursor:"pointer",fontFamily:PF,transition:"all .15s"}}>{n}</button>
+                      ))}
+                    </div>
+                  </div>}
+                  {editorGenerating?(
+                    <div style={{textAlign:"center",padding:"32px 0"}}>
+                      <div style={{width:"32px",height:"32px",border:`2px solid ${T.cardBorder}`,borderTopColor:T.coral,borderRadius:"50%",animation:"spin 1s linear infinite",margin:"0 auto 14px"}}/>
+                      <div style={{fontSize:"14px",color:T.textMuted,fontFamily:PF}}>Analyzing transcript and generating…</div>
+                      <div style={{fontSize:"12px",color:T.coral,marginTop:"6px",fontFamily:PF,letterSpacing:"1px"}}>THIS TAKES ABOUT 30 SECONDS</div>
+                    </div>
+                  ):(
+                    <button onClick={genEditorSelective} disabled={!tx.trim()||!Object.values(editorSelections).some(Boolean)} style={{width:"100%",padding:"14px",background:tx.trim()&&Object.values(editorSelections).some(Boolean)?T.coral:"#ccc",border:"none",borderRadius:"8px",color:"#fff",fontSize:"15px",fontWeight:"700",cursor:tx.trim()&&Object.values(editorSelections).some(Boolean)?"pointer":"not-allowed",fontFamily:PF,letterSpacing:"0.5px",transition:"all .2s"}}>
+                      Generate Selected Outputs →
+                    </button>
+                  )}
+                  {!editorGenerating&&!tx.trim()&&<div style={{fontSize:"12px",color:T.textMuted,fontFamily:PF,textAlign:"center",marginTop:"8px"}}>Paste your transcript in the Transcript tab first</div>}
+                </div>
+              ):(
+              <>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"28px",flexWrap:"wrap",gap:"12px"}}>
                 <div>
-                  <h2 style={{fontSize:"36px",fontWeight:"700",color:T.text,margin:"0 0 4px",letterSpacing:"-0.5px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{mode==="clips"?"Clips Ready":mode==="prep"?"Episode Prep Ready":"Content Package Ready"}</h2>
-                  <p style={{fontSize:"16px",color:T.textMuted,margin:0,fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1px"}}>{d?.name.toUpperCase()}{ep?` · EP ${ep}`:""}{mode==="clips"?` · ${clipResults.filter(r=>!r.skipped).length} CLIPS`:` · ${secs.length} SECTIONS`}</p>
+                  <h2 style={{fontSize:"36px",fontWeight:"700",color:T.text,margin:"0 0 4px",letterSpacing:"-0.5px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{mode==="clips"?"Clips Ready":mode==="prep"?"Episode Prep Ready":mode==="editor"?"Editor Brief Ready":mode==="guest"?"Guest Research Ready":"Content Package Ready"}</h2>
+                  <p style={{fontSize:"16px",color:T.textMuted,margin:0,fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1px"}}>{d?.name.toUpperCase()}{ep?` · EP ${ep}`:""}{mode==="clips"?` · ${clipResults.filter(r=>!r.skipped).length} CLIPS`:mode==="editor"?` · EDITING BRIEF`:` · ${secs.length} SECTIONS`}</p>
                 </div>
-                <div style={{display:"flex",gap:"8px"}}>
-                  {mode!=="clips"&&<button onClick={()=>{const bpH=secs.find(s=>s.bpHtml)?.bpHtml||"";copyText(raw,bpH);setCpAll(true);setTimeout(()=>setCpAll(false),2000);}} style={{...ghost,background:cpAll?T.coralSoft:"transparent",borderColor:cpAll?T.coralMid:T.cardBorder,color:cpAll?T.coral:T.textMuted}}>{cpAll?"✓ COPIED":"COPY ALL"}</button>}
-                  {mode!=="clips"&&<button onClick={()=>{dlDoc(raw,`${d?.name}${mode==="prep"?` — Episode Prep${epTopic?` — ${epTopic}`:""}`:ep?` — Ep ${ep}`:""} Content Package`,d?.bp);setDlOk(true);setTimeout(()=>setDlOk(false),2500);}} style={{...ghost,background:dlOk?T.coralSoft:"transparent",borderColor:dlOk?T.coralMid:T.cardBorder,color:dlOk?T.coral:T.textMuted}}>{dlOk?"✓ DOWNLOADED":"📄 WORD DOC"}</button>}
-                  {mode==="clips"&&<button onClick={()=>{const clipDoc=clipResults.filter(r=>!r.skipped).map(r=>`CLIP ${r.index}\n\n${r.content}${r.originalTx?`\n\n---\nORIGINAL TRANSCRIPT\n\n${r.originalTx}`:""}`).join("\n\n");dlDoc(clipDoc,`${d?.name}${ep?` — Ep ${ep}`:""} — Clips`);setDlOk(true);setTimeout(()=>setDlOk(false),2500);}} style={{...ghost,background:dlOk?T.coralSoft:"transparent",borderColor:dlOk?T.coralMid:T.cardBorder,color:dlOk?T.coral:T.textMuted}}>{dlOk?"✓ DOWNLOADED":"📄 WORD DOC"}</button>}
-                  {mode!=="clips"&&<button onClick={uploadToGDrive} disabled={gDriveStatus==="uploading"} title="Export to Google Drive as a Google Doc" style={{...ghost,background:gDriveStatus==="ok"?T.coralSoft:gDriveStatus==="error"||gDriveStatus==="disconnected"?"#D94F4F18":"transparent",borderColor:gDriveStatus==="ok"?T.coralMid:gDriveStatus==="error"||gDriveStatus==="disconnected"?"#D94F4F44":T.cardBorder,color:gDriveStatus==="ok"?T.coral:gDriveStatus==="error"||gDriveStatus==="disconnected"?"#D94F4F":T.textMuted,opacity:gDriveStatus==="uploading"?.6:1}}>{gDriveStatus==="uploading"?"UPLOADING…":gDriveStatus==="ok"?"✓ EXPORTED TO DRIVE":gDriveStatus==="error"?"✕ EXPORT FAILED":gDriveStatus==="disconnected"?"⚙ CONNECT IN SETTINGS":"📁 EXPORT TO GOOGLE DRIVE"}</button>}
-                  <button onClick={()=>{setStep(mode==="clips"?"clips-setup":"input");setRaw("");setSecs([]);setClipResults([]);}} style={ghost}>{mode==="clips"?"NEW CLIPS":"NEW EPISODE"}</button>
+                <div style={{display:"flex",gap:"8px",flexWrap:"wrap"}}>
+                  {mode!=="clips"&&mode!=="editor"&&<button onClick={()=>{const bpH=secs.find(s=>s.bpHtml)?.bpHtml||"";copyText(raw,bpH);setCpAll(true);setTimeout(()=>setCpAll(false),2000);}} style={{...ghost,background:cpAll?T.coralSoft:"transparent",borderColor:cpAll?T.coralMid:T.cardBorder,color:cpAll?T.coral:T.textMuted}}>{cpAll?"✓ COPIED":"COPY ALL"}</button>}
+                  {mode!=="clips"&&mode!=="editor"&&<button onClick={()=>{dlDoc(raw,`${d?.name}${mode==="prep"?` — Episode Prep${epTopic?` — ${epTopic}`:""}`:ep?` — Ep ${ep}`:""} Content Package`,d?.bp);setDlOk(true);setTimeout(()=>setDlOk(false),2500);}} style={{...ghost,background:dlOk?T.coralSoft:"transparent",borderColor:dlOk?T.coralMid:T.cardBorder,color:dlOk?T.coral:T.textMuted}}>{dlOk?"✓ DOWNLOADED":"📄 WORD DOC"}</button>}
+                  {mode==="clips"&&<button onClick={()=>{const clipDoc=clipResults.filter(r=>!r.skipped).map(r=>`CLIP ${r.index}\n\n${r.content}`).join("\n\n");dlDoc(clipDoc,`${d?.name}${ep?` — Ep ${ep}`:""} — Clips`);setDlOk(true);setTimeout(()=>setDlOk(false),2500);}} style={{...ghost,background:dlOk?T.coralSoft:"transparent",borderColor:dlOk?T.coralMid:T.cardBorder,color:dlOk?T.coral:T.textMuted}}>{dlOk?"✓ DOWNLOADED":"📄 WORD DOC"}</button>}
+                  {mode!=="clips"&&mode!=="editor"&&<button onClick={uploadToGDrive} disabled={gDriveStatus==="uploading"} title="Export to Google Drive as a Google Doc" style={{...ghost,background:gDriveStatus==="ok"?T.coralSoft:gDriveStatus==="error"||gDriveStatus==="disconnected"?"#D94F4F18":"transparent",borderColor:gDriveStatus==="ok"?T.coralMid:gDriveStatus==="error"||gDriveStatus==="disconnected"?"#D94F4F44":T.cardBorder,color:gDriveStatus==="ok"?T.coral:gDriveStatus==="error"||gDriveStatus==="disconnected"?"#D94F4F":T.textMuted,opacity:gDriveStatus==="uploading"?.6:1}}>{gDriveStatus==="uploading"?"UPLOADING…":gDriveStatus==="ok"?"✓ EXPORTED TO DRIVE":gDriveStatus==="error"?"✕ EXPORT FAILED":gDriveStatus==="disconnected"?"⚙ CONNECT IN SETTINGS":"📁 EXPORT TO GOOGLE DRIVE"}</button>}
+                  {mode==="editor"&&secs.length>0&&<button onClick={()=>{setSecs([]);setRaw("");setEditorLeftTab("brief");}} style={ghost}>GENERATE MORE</button>}
+                  <button onClick={()=>{if(mode==="editor"){setTx("");setSecs([]);setRaw("");setEditorChat([]);setEditorChatInput("");setEditorLeftTab("transcript");setTranscriptHighlights([]);}else{setStep(mode==="clips"?"clips-setup":"input");setRaw("");setSecs([]);setClipResults([]);setEditorChat([]);setEditorChatInput("");setEditorLeftTab("brief");setTranscriptHighlights([]);}}} style={ghost}>{mode==="clips"?"NEW CLIPS":"NEW EPISODE"}</button>
                 </div>
               </div>
-              {d?.publishDay&&d?.publishTime&&d?.publishTz&&(()=>{try{const sched=formatPublishSchedule(d,userProfile?.timezone);if(!sched)return null;return(<div style={{background:T.coralSoft,border:"1px solid "+T.coralMid,borderRadius:"8px",padding:"12px 18px",marginBottom:"20px",display:"flex",alignItems:"center",gap:"10px"}}><span style={{fontSize:"18px"}}>📅</span><div><div style={{fontSize:"11px",color:T.coral,fontWeight:"700",letterSpacing:"1.5px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>PUBLISH SCHEDULE</div><div style={{fontSize:"14px",color:T.textSecondary,marginTop:"2px",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"500"}}>{sched.showTime}{sched.isDifferent?" · "+sched.localTime+" your time":""}</div></div></div>);}catch{return null;}})()}
-              {mode==="editor"&&(()=>{const lvl=d?.editingLevel||"1";const lvlLabels={"1":"Level 1 — Basic Clean Edit","2":"Level 2 — Paced & Polished","3":"Level 3 — Creative & Strategic"};const lvlDesc={"1":"Removing filler, stumbles, and repetition. Flagging the best moments for this show's audience.","2":"Tightening pacing, restructuring for flow, and optimizing hooks for audience engagement.","3":"Deep structural decisions, storytelling arc, and audience-specific content strategy."};return(<div style={{background:"rgba(30,20,10,.04)",border:"1px solid "+T.cardBorder,borderRadius:"8px",padding:"12px 18px",marginBottom:"20px",display:"flex",alignItems:"center",gap:"10px"}}><span style={{fontSize:"16px"}}>🎬</span><div><div style={{fontSize:"11px",color:T.textMuted,fontWeight:"700",letterSpacing:"1.5px",fontFamily:"'DM Sans', system-ui, sans-serif",textTransform:"uppercase"}}>{lvlLabels[lvl]}</div><div style={{fontSize:"13px",color:T.textSecondary,marginTop:"2px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{lvlDesc[lvl]}</div></div></div>);})()}
-              {mode==="editor"&&tx&&secs.length>0&&<HighlightedTranscript transcript={tx} sections={secs}/>}
+              {d?.publishDay&&d?.publishTime&&d?.publishTz&&mode!=="editor"&&(()=>{try{const sched=formatPublishSchedule(d,userProfile?.timezone);if(!sched)return null;return(<div style={{background:T.coralSoft,border:"1px solid "+T.coralMid,borderRadius:"8px",padding:"12px 18px",marginBottom:"20px",display:"flex",alignItems:"center",gap:"10px"}}><span style={{fontSize:"18px"}}>📅</span><div><div style={{fontSize:"11px",color:T.coral,fontWeight:"700",letterSpacing:"1.5px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>PUBLISH SCHEDULE</div><div style={{fontSize:"14px",color:T.textSecondary,marginTop:"2px",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"500"}}>{sched.showTime}{sched.isDifferent?" · "+sched.localTime+" your time":""}</div></div></div>);}catch{return null;}})()}
+              {mode==="editor"&&secs.length>0&&(()=>{const lvl=d?.editingLevel||"1";const lvlLabels={"1":"Level 1 — Clean & Clear","2":"Level 2 — Paced & Polished","3":"Level 3 — Story-Driven"};const lvlDesc={"1":"Removing filler, stumbles, and repetition. Flagging the best moments for this show's audience.","2":"Tightening pacing, restructuring for flow, and optimizing hooks for audience engagement.","3":"Deep structural decisions, storytelling arc, and audience-specific content strategy."};return(<div style={{background:"rgba(30,20,10,.04)",border:"1px solid "+T.cardBorder,borderRadius:"8px",padding:"12px 18px",marginBottom:"20px",display:"flex",alignItems:"center",gap:"10px"}}><span style={{fontSize:"16px"}}>🎬</span><div><div style={{fontSize:"11px",color:T.textMuted,fontWeight:"700",letterSpacing:"1.5px",fontFamily:"'DM Sans', system-ui, sans-serif",textTransform:"uppercase"}}>{lvlLabels[lvl]}</div><div style={{fontSize:"13px",color:T.textSecondary,marginTop:"2px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{lvlDesc[lvl]}</div></div></div>);})()}
               {err&&<div style={{background:"#D94F4F18",border:"1px solid #D94F4F44",borderRadius:"8px",padding:"12px 16px",color:"#F09090",fontSize:"14px",marginBottom:"12px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{err}</div>}
               {mode==="clips"?(
                 <div>
                   {clipResults.map((clip,i)=>clip.skipped?null:(
                     <div key={i} style={{background:T.card,border:`1px solid ${T.cardBorder}`,borderRadius:"10px",marginBottom:"10px",overflow:"hidden"}}>
                       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 20px",borderBottom:`1px solid ${T.cardBorder}`,background:T.surface}}>
-                        <span style={{fontSize:"11px",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"2px",color:d.clr,fontWeight:"700"}}>CLIP {clip.index}</span>
-                        <button onClick={()=>copyText(clip.content+(clip.originalTx?`\n\n---\nORIGINAL TRANSCRIPT\n\n${clip.originalTx}`:""))} style={ghost}>COPY</button>
+                        <span style={{fontSize:"11px",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"2px",color:d.clr,fontWeight:"700"}}>✂️ CLIP {clip.index}</span>
+                        <button onClick={()=>copyText(clip.content)} style={ghost}>COPY</button>
                       </div>
                       <div style={{padding:"20px 24px"}}>{renderContent(clip.content)}</div>
-                      {clip.originalTx&&(
-                        <div style={{margin:"0 24px 24px",padding:"16px 18px",background:T.surface,border:`1px solid ${T.cardBorder}`,borderRadius:"8px"}}>
-                          <div style={{fontSize:"10px",fontWeight:"700",letterSpacing:"2px",textTransform:"uppercase",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",marginBottom:"10px"}}>ORIGINAL TRANSCRIPT</div>
-                          <div style={{fontSize:"13px",color:T.textSecondary,fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.8",whiteSpace:"pre-wrap"}}>{clip.originalTx}</div>
-                        </div>
-                      )}
                     </div>
                   ))}
                 </div>
@@ -2774,7 +3144,94 @@ The email should:
                   </div>}
                 </>
               )}
+              </>
+              )}
+              </>)}
+            </div>
+            {/* ── EDITOR AI COACH PANEL ── */}
+            {mode==="editor"&&(()=>{
+              const QUICK=[
+                {label:"Best clip moments",q:"What are the top 3 clip moments in this episode and why?"},
+                {label:"What to cut",q:"What sections should be cut or tightened, and why?"},
+                {label:"Hook strength",q:"How strong is the opening hook? How would you improve it?"},
+                {label:"Pull quotes",q:"Give me 5 pull quotes worth sharing on social from this episode."},
+                {label:"Pacing notes",q:"How is the pacing? Where does it drag and how should it be tightened?"},
+                {label:"Editing tips",q:"What are the top 3 editing principles I should apply to this episode?"},
+              ];
+              const chatEndRef = {current:null};
+              return (
+                <div style={{width:"360px",minWidth:"320px",flexShrink:0,position:"sticky",top:"20px",maxHeight:"calc(100vh - 160px)",display:"flex",flexDirection:"column",background:T.card,border:"1px solid "+T.cardBorder,borderRadius:"12px",overflow:"hidden",boxShadow:"0 2px 16px rgba(30,20,10,.06)"}}>
+                  {/* Header */}
+                  <div style={{padding:"16px 20px",borderBottom:"1px solid "+T.cardBorder,background:T.surface,flexShrink:0}}>
+                    <div style={{fontSize:"11px",fontWeight:"700",letterSpacing:"2px",textTransform:"uppercase",color:T.coral,marginBottom:"4px",fontFamily:PF}}>AI Editor Coach</div>
+                    <div style={{fontSize:"14px",color:T.textSecondary,fontFamily:PF,lineHeight:"1.4"}}>Ask questions, paste transcript sections, get editing guidance.</div>
+                  </div>
+                  {/* Quick actions */}
+                  {editorChat.length===0&&(
+                    <div style={{padding:"14px 16px",borderBottom:"1px solid "+T.cardBorder,flexShrink:0}}>
+                      <div style={{fontSize:"11px",color:T.textMuted,fontWeight:"700",letterSpacing:"1.5px",textTransform:"uppercase",fontFamily:PF,marginBottom:"8px"}}>Quick Questions</div>
+                      <div style={{display:"flex",flexWrap:"wrap",gap:"6px"}}>
+                        {QUICK.map(q=>(
+                          <button key={q.label} onClick={()=>sendEditorChat(q.q)}
+                            style={{padding:"5px 10px",background:T.bg,border:"1px solid "+T.cardBorder,borderRadius:"20px",color:T.textSecondary,fontSize:"12px",cursor:"pointer",fontFamily:PF,transition:"all .15s"}}
+                            onMouseEnter={e=>{e.currentTarget.style.borderColor=T.coral;e.currentTarget.style.color=T.coral;}}
+                            onMouseLeave={e=>{e.currentTarget.style.borderColor=T.cardBorder;e.currentTarget.style.color=T.textSecondary;}}>
+                            {q.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {/* Chat messages */}
+                  <div style={{flex:1,overflowY:"auto",padding:"16px",display:"flex",flexDirection:"column",gap:"12px"}}>
+                    {editorChat.length===0&&(
+                      <div style={{textAlign:"center",padding:"24px 0",color:T.textMuted,fontSize:"13px",fontFamily:PF,lineHeight:"1.6"}}>
+                        <div style={{fontSize:"28px",marginBottom:"10px"}}>🎬</div>
+                        <div>Ask anything about this episode,<br/>or paste a transcript section<br/>for specific feedback.</div>
+                      </div>
+                    )}
+                    {editorChat.map((m,i)=>(
+                      <div key={i} style={{display:"flex",flexDirection:"column",gap:"2px",alignItems:m.role==="user"?"flex-end":"flex-start"}}>
+                        <div style={{maxWidth:"90%",padding:"10px 14px",borderRadius:m.role==="user"?"12px 12px 2px 12px":"12px 12px 12px 2px",background:m.role==="user"?T.coral:"rgba(30,20,10,.06)",color:m.role==="user"?"#fff":T.text,fontSize:"13px",lineHeight:"1.65",fontFamily:PF,whiteSpace:"pre-wrap"}}>
+                          {m.content}
+                        </div>
+                        <div style={{fontSize:"11px",color:T.textMuted,fontFamily:PF,padding:"0 2px"}}>{m.role==="user"?"You":"Coach"}</div>
+                      </div>
+                    ))}
+                    {editorChatLoading&&(
+                      <div style={{display:"flex",flexDirection:"column",gap:"2px",alignItems:"flex-start"}}>
+                        <div style={{padding:"10px 14px",borderRadius:"12px 12px 12px 2px",background:"rgba(30,20,10,.06)",fontSize:"13px",fontFamily:PF,color:T.textMuted}}>
+                          <span style={{display:"inline-flex",gap:"4px"}}><span style={{animation:"pulse 1.2s infinite"}}>●</span><span style={{animation:"pulse 1.2s .2s infinite"}}>●</span><span style={{animation:"pulse 1.2s .4s infinite"}}>●</span></span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  {/* Input */}
+                  <div style={{padding:"12px 16px",borderTop:"1px solid "+T.cardBorder,flexShrink:0,background:T.surface}}>
+                    {editorChat.length>0&&(
+                      <button onClick={()=>setEditorChat([])} style={{fontSize:"11px",color:T.textMuted,background:"none",border:"none",cursor:"pointer",fontFamily:PF,padding:"0 0 8px",letterSpacing:"1px",textTransform:"uppercase"}}>Clear chat</button>
+                    )}
+                    <div style={{display:"flex",gap:"8px",alignItems:"flex-end"}}>
+                      <textarea
+                        value={editorChatInput}
+                        onChange={e=>setEditorChatInput(e.target.value)}
+                        onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendEditorChat();}}}
+                        placeholder={"Ask a question or paste a transcript section…"}
+                        rows={3}
+                        style={{flex:1,background:T.bg,border:"1px solid "+T.cardBorder,borderRadius:"8px",padding:"10px 12px",fontSize:"13px",color:T.text,fontFamily:PF,resize:"none",outline:"none",lineHeight:"1.5"}}
+                      />
+                      <button onClick={()=>sendEditorChat()} disabled={!editorChatInput.trim()||editorChatLoading}
+                        style={{padding:"10px 14px",background:editorChatInput.trim()&&!editorChatLoading?T.coral:"#ccc",border:"none",borderRadius:"8px",color:"#fff",fontSize:"13px",fontWeight:"700",cursor:editorChatInput.trim()&&!editorChatLoading?"pointer":"not-allowed",fontFamily:PF,flexShrink:0,transition:"background .15s"}}>
+                        →
+                      </button>
+                    </div>
+                    <div style={{fontSize:"11px",color:T.textMuted,marginTop:"6px",fontFamily:PF}}>Shift+Enter for new line · Enter to send</div>
+                  </div>
+                </div>
+              );
+            })()}
             </div>}
+
 
           </div>
         </div>

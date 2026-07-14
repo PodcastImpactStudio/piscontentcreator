@@ -21,6 +21,7 @@ const T = {
 };
 const FF = "'DM Sans', system-ui, sans-serif";
 const PF = "'DM Sans', system-ui, sans-serif";
+const SF = "Georgia, 'Times New Roman', serif";
 const LS = { fontFamily: FF };
 const GA = { fontFamily: FF };
 
@@ -311,22 +312,6 @@ const PRESET_FORMATS = [
     example: "'The four questions I ask before I take on any new client'",
     structure: "HOOK (0:00–1:30)\nOpen with the problem your listener is sitting in right now. Make them feel seen before you say a word about the solution.\n\nBRIDGE (1:30–3:00)\nYour personal connection to this topic — the moment it became real for you.\n\nTHE CONTENT (3:00–18:00)\nWalk through your teaching, framework, or point of view. Use stories and examples — not just theory.\n\nTHE TAKEAWAY (18:00–20:00)\nThe one thing you want your listener to do, think, or feel differently after this.\n\nPERMISSION SLIP CLOSE (20:00–22:00)\nGive them permission to try it imperfectly.",
   },
-  {
-    category: "SOLO",
-    name: "Belief Deep-Dive",
-    type: "Solo Monologue",
-    desc: "Examine a belief you used to hold — where it came from, what it cost you, and what replaced it.",
-    example: "'The belief that made me terrible at saying no — and what it cost me'",
-    structure: "HOOK (0:00–1:30)\nOpen with the belief as it used to sound in your head. Say it out loud.\n\nTHE EXCAVATION (1:30–12:00)\nWhere did you get it? What did it cost you? When did it start to crack?\n\nTHE SHIFT (12:00–18:00)\nWhat happened that changed things? What do you believe now?\n\nPERMISSION SLIP CLOSE (18:00–20:00)\nGive your listener explicit permission to release that belief too.",
-  },
-  {
-    category: "SOLO",
-    name: "Permission Slip Episode",
-    type: "Solo Monologue",
-    desc: "Give your listener explicit permission to do or feel the thing they've been secretly wanting.",
-    example: "'You're allowed to stop explaining yourself to people who've already decided'",
-    structure: "HOOK (0:00–1:30)\nState the permission slip right up front. Say it plain.\n\nWHY THEY NEED IT (1:30–8:00)\nName the pressure. Who told them they couldn't? What belief is in the way?\n\nYOUR STORY (8:00–15:00)\nThe moment you gave yourself this permission — what happened before and after.\n\nPERMISSION SLIP CLOSE (15:00–20:00)\nGive it again, slower, like you mean it.",
-  },
   // ── INTERVIEW ─────────────────────────────────────────────────────────────────
   {
     category: "INTERVIEW",
@@ -343,6 +328,14 @@ const PRESET_FORMATS = [
     desc: "Two acts: the expertise, then the personal story that made them care about it.",
     example: "'She wrote the book on burnout recovery — here's her burnout story'",
     structure: "HOOK (0:00–1:30)\nThe topic and why it matters to your listener right now.\n\nTHE EXPERTISE (1:30–22:00)\nFramework, research, method — with real examples pressed out of them.\n\nTHE PIVOT (22:00–24:00)\nHost: 'Now tell me the story that made you care about this.'\n\nTHE PERSONAL STORY (24:00–38:00)\nThe guest's wound, turning point, or lived experience.\n\nBRIDGE + PERMISSION SLIP CLOSE (38:00–42:00)\nHost personal connection + permission slip for the listener.",
+  },
+  {
+    category: "INTERVIEW",
+    name: "Listener Spotlight",
+    type: "Guest Interview",
+    desc: "A community member or loyal listener in the guest seat. Not an expert — a real person living the topic your show covers. Gets your audience invested and shows listeners they belong in the conversation.",
+    example: "'She's been listening since episode 3 — here's what changed for her'",
+    structure: "HOOK (0:00–1:30)\nStart with why this listener's story matters — what they represent for the broader community. Make the audience feel like this could be them.\n\nGUEST INTRO (1:30–3:00)\nWho they are in real life — not credentials, just human context. How they found the show and why they stayed.\n\nTHEIR STORY (3:00–22:00)\nThe lived experience. What brought them to this topic, what they were struggling with, what shifted. Press into the specifics — the more real, the better.\n\nWHAT THE SHOW MEANT TO THEM (22:00–30:00)\nHow the community or content showed up for them. Keep it genuine — not a testimonial, a conversation.\n\nQUESTIONS FROM THE COMMUNITY (30:00–38:00)\nIf possible, bring in questions submitted by other listeners. Makes the episode feel like a community conversation, not just an interview.\n\nCLOSE (38:00–42:00)\nHost reflects on what this listener's story reveals about the community as a whole. Invitation for other listeners to share their own.",
   },
   // ── COACHING ──────────────────────────────────────────────────────────────────
   {
@@ -372,11 +365,11 @@ const PRESET_FORMATS = [
   // ── SPECIAL ───────────────────────────────────────────────────────────────────
   {
     category: "SPECIAL",
-    name: "Origin Episode",
-    type: "Solo Monologue",
-    desc: "Your WHY. The moment that made you care. Every show needs this one.",
-    example: "'Why I built this show — and who I'm actually building it for'",
-    structure: "HOOK (0:00–1:30)\nStart with your listener. Who is this show for and what do you want it to do for them.\n\nTHE ORIGIN STORY (1:30–15:00)\nThe moment that made you care about this topic. The wound. The turning point.\n\nWHY THIS SHOW (15:00–20:00)\nWhat you believe about how this work can change something. What you're here to do.\n\nTHE INVITATION (20:00–23:00)\nWho this is for. Who it's not for. What they can expect if they stay.\n\nPERMISSION SLIP CLOSE (23:00–25:00)\nGive them permission to be exactly where they are right now.",
+    name: "Panel Episode",
+    type: "Panel Discussion",
+    desc: "A curated group of experts discusses a topic together. Best when panelists disagree — the tension is the content.",
+    example: "'Three nutritionists walk into a podcast — and they don't agree on anything'",
+    structure: "HOOK (0:00–1:30)\nState the question or tension driving the conversation. Make clear this isn't a lecture — it's a debate.\n\nPANEL INTROS (1:30–4:00)\nShort human intros for each panelist — their lens, not their resume. Who are they and why do they care about this topic?\n\nROUND ONE — THE COMMON GROUND (4:00–14:00)\nStart with what everyone agrees on. Establish the baseline before the friction begins.\n\nROUND TWO — THE TENSION (14:00–30:00)\nSurface the real disagreements. Host steers — doesn't referee. Let panelists push back on each other.\n\nROUND THREE — PRACTICAL TAKEAWAYS (30:00–40:00)\nEach panelist gives their one most actionable recommendation for the listener.\n\nCLOSE (40:00–44:00)\nHost synthesizes the key tension and what the listener can take from it.",
   },
   {
     category: "SPECIAL",
@@ -400,8 +393,7 @@ function getStoredGDrive() {
   } catch { return null; }
 }
 
-function SettingsView({ shows, globalSettings, setGlobalSettings, saveGlobalSettings, globalSettingsSaved, globalSettingsLoading, orgId, accountType, userEmail, orgData, setOrgData, saveOrgData, orgDataSaved }) {
-  const [activeSection, setActiveSection] = useState("integrations");
+function SettingsView({ shows, globalSettings, setGlobalSettings, saveGlobalSettings, globalSettingsSaved, globalSettingsLoading, orgId, accountType, userEmail, orgData, setOrgData, saveOrgData, orgDataSaved, activeSection, setActiveSection }) {
   const [team, setTeam] = useState([]);
   const [teamLoading, setTeamLoading] = useState(true);
   const showKeys = Object.keys(shows || {});
@@ -537,23 +529,12 @@ function SettingsView({ shows, globalSettings, setGlobalSettings, saveGlobalSett
   }
 
   return (
-    <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
-      <div style={{ width: "200px", background: "#222222", borderRight: "1px solid #2E2E2E", flexShrink: 0, padding: "8px 0" }}>
-        {sections.map(s => (
-          <div key={s.id} onClick={() => setActiveSection(s.id)}
-            style={{ width: "100%", display: "flex", alignItems: "center", padding: "10px 16px", background: activeSection === s.id ? "#2E2E2E" : "transparent", boxShadow: activeSection === s.id ? "inset 3px 0 0 " + T.coral : "none", color: activeSection === s.id ? "#FFFFFF" : "#8A8A8A", fontSize: "15px", cursor: "pointer", textAlign: "left", fontFamily: FF, fontWeight: activeSection === s.id ? "600" : "400", transition: "all .15s", userSelect: "none" }}
-            onMouseEnter={e => { if (activeSection !== s.id) { e.currentTarget.style.background = "#252525"; e.currentTarget.style.color = "#CCCCCC"; } }}
-            onMouseLeave={e => { if (activeSection !== s.id) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#8A8A8A"; } }}>
-            <span>{s.label}</span>
-          </div>
-        ))}
-      </div>
-      <div style={{ flex: 1, overflowY: "auto", padding: "32px" }}>
+    <div style={{ flex: 1, overflowY: "auto", padding: "32px" }}>
 
         {activeSection === "integrations" && (
           <div style={{ maxWidth: "680px" }}>
             <div style={{ marginBottom: "28px" }}>
-              <div style={{ fontSize: "28px", fontWeight: "600", color: T.text, marginBottom: "6px", fontFamily: PF }}>Integrations</div>
+              <div style={{ fontSize: "28px", fontWeight: "normal", color: T.text, marginBottom: "6px", fontFamily: SF }}>Integrations</div>
               <div style={{ fontSize: "15px", color: T.textMuted, fontFamily: FF }}>Connect external tools to enhance your workflow.</div>
             </div>
             {/* Content Schedule URL */}
@@ -619,7 +600,7 @@ function SettingsView({ shows, globalSettings, setGlobalSettings, saveGlobalSett
         {activeSection === "workspace" && (
           <div style={{ maxWidth: "680px" }}>
             <div style={{ marginBottom: "28px" }}>
-              <div style={{ fontSize: "28px", fontWeight: "600", color: T.text, marginBottom: "6px", fontFamily: PF }}>Workspace</div>
+              <div style={{ fontSize: "28px", fontWeight: "normal", color: T.text, marginBottom: "6px", fontFamily: SF }}>Workspace</div>
               <div style={{ fontSize: "15px", color: T.textMuted, fontStyle: "italic" }}>Configure your production workspace.</div>
             </div>
 
@@ -688,7 +669,7 @@ function SettingsView({ shows, globalSettings, setGlobalSettings, saveGlobalSett
           return(
           <div style={{ maxWidth: "680px" }}>
             <div style={{ marginBottom: "28px" }}>
-              <div style={{ fontSize: "28px", fontWeight: "600", color: T.text, marginBottom: "6px", fontFamily: PF }}>Team</div>
+              <div style={{ fontSize: "28px", fontWeight: "normal", color: T.text, marginBottom: "6px", fontFamily: SF }}>Team</div>
               <div style={{ fontSize: "15px", color: T.textMuted, fontStyle: "italic" }}>Manage who has access to this workspace.</div>
             </div>
             {/* Role guide */}
@@ -884,7 +865,7 @@ function SettingsView({ shows, globalSettings, setGlobalSettings, saveGlobalSett
         {activeSection === "billing" && (
           <div style={{ maxWidth: "680px" }}>
             <div style={{ marginBottom: "28px" }}>
-              <div style={{ fontSize: "28px", fontWeight: "600", color: T.text, marginBottom: "6px", fontFamily: PF }}>Billing</div>
+              <div style={{ fontSize: "28px", fontWeight: "normal", color: T.text, marginBottom: "6px", fontFamily: SF }}>Billing</div>
               <div style={{ fontSize: "15px", color: T.textMuted, fontStyle: "italic" }}>Manage your subscription and usage.</div>
             </div>
             <div style={{ background: T.card, border: "1px solid " + T.cardBorder, borderRadius: "12px", padding: "24px" }}>
@@ -903,7 +884,6 @@ function SettingsView({ shows, globalSettings, setGlobalSettings, saveGlobalSett
           </div>
         )}
 
-      </div>
     </div>
   );
 }
@@ -961,7 +941,7 @@ function AccessCodesSection({ supabase, T, PF, FF, inp }) {
   return (
     <div style={{ maxWidth: "680px" }}>
       <div style={{ marginBottom: "28px" }}>
-        <div style={{ fontSize: "28px", fontWeight: "600", color: T.text, marginBottom: "6px", fontFamily: PF }}>Access Codes</div>
+        <div style={{ fontSize: "28px", fontWeight: "normal", color: T.text, marginBottom: "6px", fontFamily: SF }}>Access Codes</div>
         <div style={{ fontSize: "15px", color: T.textMuted, fontStyle: "italic" }}>Control who can sign up. Every new account requires a valid code.</div>
       </div>
 
@@ -1049,8 +1029,8 @@ export function AdminGate({ onSuccess, onClose }) {
   );
 }
 
-export function AdminPanel({ shows, orgId, onClose, onSaved, accountType = "agency", userEmail = "", userName = "", onSignOut }) {
-  const [adminView, setAdminView] = useState("shows");
+export function AdminPanel({ shows, orgId, onClose, onSaved, accountType = "agency", userEmail = "", userName = "", onSignOut, initialView = "shows" }) {
+  const [adminView, setAdminView] = useState(initialView);
   const [selKey, setSelKey] = useState(null);
   const [form, setForm] = useState(null);
   const [tab, setTab] = useState("basic");
@@ -1075,15 +1055,21 @@ export function AdminPanel({ shows, orgId, onClose, onSaved, accountType = "agen
   const [epfForm, setEpfForm] = useState({ name: "", type: "Guest Interview", targetLength: "", structure: "", signOffLine: "", ratingSystem: "" });
   const [epfEditing, setEpfEditing] = useState(null);
   const [epfShowForm, setEpfShowForm] = useState(false);
-  const [arForm, setArForm] = useState({ name: "", trigger: "", instruction: "" });
-  const [arEditing, setArEditing] = useState(null);
-  const [arShowForm, setArShowForm] = useState(false);
   const [epfPasteText, setEpfPasteText] = useState("");
   const [epfPasteOpen, setEpfPasteOpen] = useState(false);
   const [epfParsing, setEpfParsing] = useState(false);
   const [epfMsg, setEpfMsg] = useState("");
   const [showPresetsPanel, setShowPresetsPanel] = useState(false);
   const [showAIPanel, setShowAIPanel] = useState(false);
+  const [showUserMenuAdmin, setShowUserMenuAdmin] = useState(false);
+  const [activeSettingsSection, setActiveSettingsSection] = useState("integrations");
+  const settingsSections = [
+    { id: "integrations", label: "Integrations" },
+    { id: "workspace", label: "Workspace" },
+    ...(accountType === "agency" ? [{ id: "team", label: "Team" }] : []),
+    ...(accountType === "agency" ? [{ id: "codes", label: "Access Codes" }] : []),
+    { id: "billing", label: "Billing" },
+  ];
 
   useEffect(() => {
     async function loadGlobalSettings() {
@@ -1159,7 +1145,7 @@ export function AdminPanel({ shows, orgId, onClose, onSaved, accountType = "agen
         permissionSlips: (s.epPrep?.permissionSlips || []).join("\n"),
       },
       episodeFormats: s.episodeFormats || [],
-      aiRules: s.aiRules || [],
+      episodeRules: s.episodeRules || [],
     });
     setRawDna(""); setMsg(""); setTab("basic"); setNewShowPath("manual");
   }
@@ -1177,7 +1163,7 @@ export function AdminPanel({ shows, orgId, onClose, onSaved, accountType = "agen
       editingLevel: "1",
       epPrep: { onePerson: { name: "", question2AM: "", wound: "" }, storyMission: "", permissionSlips: "" },
       episodeFormats: [],
-      aiRules: [],
+      episodeRules: [],
     });
     setNewId(""); setRawDna(""); setMsg(""); setAddingNew(true); setTab("basic"); setNewShowPath(null);
   }
@@ -1506,7 +1492,7 @@ ${epfPasteText.substring(0, 8000)}`;
           permissionSlips: form.epPrep.permissionSlips.split("\n").map(s => s.trim()).filter(Boolean),
         },
         episodeFormats: form.episodeFormats || [],
-        aiRules: form.aiRules || [],
+        episodeRules: form.episodeRules || [],
         tpl: { sn: "", yt: "", sm: "", gk: "", em: "", bl: "" },
       };
       await saveShow(id, dna, orgId);
@@ -1552,119 +1538,165 @@ ${epfPasteText.substring(0, 8000)}`;
     <div style={{ position: "fixed", inset: 0, zIndex: 1000, display: "flex", flexDirection: "row" }}>
       <style>{`
         .admin-show-select:focus{outline:none;border-color:#7A0019;box-shadow:0 0 0 3px rgba(122,0,25,.08);}
+        .admin-sidebar-nav-btn{transition:background .15s,color .15s;}
+        .admin-sidebar-nav-btn:hover{background:#252525 !important;color:#CCCCCC !important;}
       `}</style>
 
-      {/* ── LEFT SIDEBAR ── */}
+      {/* ── STUDIO-STYLE LEFT SIDEBAR ── */}
       <div style={{ width: "240px", minWidth: "240px", height: "100vh", background: "#222222", display: "flex", flexDirection: "column", flexShrink: 0, borderRight: "1px solid #2E2E2E", overflowY: "auto" }}>
 
         {/* Logo */}
         <div style={{ padding: "24px 20px 20px", display: "flex", alignItems: "center", justifyContent: "center", borderBottom: "1px solid #2E2E2E" }}>
-          <img src="/logo-nav.png" alt="Podcast Impact Content Studio" style={{ height: "120px", objectFit: "contain", width: "100%", cursor: "pointer" }} onClick={onClose} />
+          <img src="/logo-nav.png" alt="Podcast Impact Content Studio" style={{ height: "120px", objectFit: "contain", width: "100%" }} />
         </div>
 
         {/* Back to Studio */}
         <div style={{ padding: "10px 16px", borderBottom: "1px solid #2E2E2E" }}>
           <button onClick={onClose}
             style={{ width: "100%", padding: "9px 14px", background: T.coral, border: "1px solid " + T.coral, borderRadius: "6px", color: "#FFFFFF", fontSize: "13px", fontWeight: "700", cursor: "pointer", textAlign: "left", fontFamily: FF, display: "flex", alignItems: "center", gap: "8px" }}>
-            <span>← Back to Studio</span>
+            ← Back to Studio
           </button>
         </div>
 
-        {/* MANAGE nav */}
-        <div style={{ padding: "8px 0", borderBottom: "1px solid #2E2E2E" }}>
-          <div style={{ fontSize: "12px", color: "#555555", letterSpacing: "2px", textTransform: "uppercase", padding: "4px 16px 6px", fontFamily: FF, fontWeight: "600" }}>MANAGE</div>
-          {[
-            { id: "shows", label: "Show DNA Manager" },
-            { id: "settings", label: "Workspace & Team" },
-          ].map(item => {
-            const isActive = adminView === item.id;
-            return (
-              <div key={item.id} onClick={() => setAdminView(item.id)}
-                style={{ width: "100%", padding: "10px 16px", background: isActive ? "#2E2E2E" : "transparent", boxShadow: isActive ? "inset 3px 0 0 " + T.coral : "none", color: isActive ? "#FFFFFF" : "#8A8A8A", fontSize: "15px", cursor: "pointer", textAlign: "left", fontFamily: FF, display: "flex", alignItems: "center", transition: "all .15s", userSelect: "none" }}
-                onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = "#252525"; e.currentTarget.style.color = "#CCCCCC"; } }}
-                onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#8A8A8A"; } }}>
-                <span>{item.label}</span>
-              </div>
-            );
-          })}
+        {/* NAVIGATE — DNA tabs (shows) or settings sections */}
+        <div style={{ padding: "8px 0" }}>
+          <div style={{ fontSize: "12px", color: "#555555", letterSpacing: "2px", textTransform: "uppercase", padding: "4px 16px 6px", fontFamily: FF, fontWeight: "600" }}>NAVIGATE</div>
+          {adminView === "settings" ? (
+            settingsSections.map(s => {
+              const isActive = activeSettingsSection === s.id;
+              return (
+                <div key={s.id}
+                  onClick={() => setActiveSettingsSection(s.id)}
+                  style={{ width: "100%", padding: "10px 16px", background: isActive ? "#2E2E2E" : "transparent", boxShadow: isActive ? `inset 3px 0 0 ${T.coral}` : "none", color: isActive ? "#FFFFFF" : "#8A8A8A", fontSize: "15px", fontWeight: isActive ? "600" : "400", cursor: "pointer", textAlign: "left", fontFamily: FF, display: "flex", alignItems: "center", userSelect: "none" }}
+                  onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = "#252525"; e.currentTarget.style.color = "#CCCCCC"; } }}
+                  onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#8A8A8A"; } }}>
+                  {s.label}
+                </div>
+              );
+            })
+          ) : (
+            TABS.map(t => {
+              const isActive = !!form && tab === t.id;
+              const isEnabled = !!form;
+              return (
+                <div key={t.id}
+                  onClick={() => { if (isEnabled) setTab(t.id); }}
+                  style={{ width: "100%", padding: "10px 16px", background: isActive ? "#2E2E2E" : "transparent", boxShadow: isActive ? `inset 3px 0 0 ${T.coral}` : "none", color: isActive ? "#FFFFFF" : isEnabled ? "#8A8A8A" : "#444444", fontSize: "15px", fontWeight: isActive ? "600" : "400", cursor: isEnabled ? "pointer" : "default", textAlign: "left", fontFamily: FF, display: "flex", alignItems: "center", userSelect: "none" }}
+                  onMouseEnter={e => { if (isActive || !isEnabled) return; e.currentTarget.style.background = "#252525"; e.currentTarget.style.color = "#CCCCCC"; }}
+                  onMouseLeave={e => { if (isActive || !isEnabled) return; e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#8A8A8A"; }}>
+                  {t.label}
+                </div>
+              );
+            })
+          )}
         </div>
 
-        {/* Show DNA Manager content — shows list OR tab nav depending on state */}
-        {adminView === "shows" && (
-          <div style={{ padding: "8px 0", flex: 1, overflowY: "auto" }}>
-            {/* If a show is selected for editing, show NAVIGATE (DNA tab nav) */}
-            {selKey && selKey !== "__new__" && form ? (
-              <>
-                <div onClick={() => { setSelKey(null); setForm(null); }}
-                  style={{ width: "100%", padding: "8px 16px", background: "transparent", color: "#555555", fontSize: "12px", cursor: "pointer", textAlign: "left", fontFamily: FF, display: "flex", alignItems: "center", gap: "6px", marginBottom: "4px", userSelect: "none" }}
-                  onMouseEnter={e => { e.currentTarget.style.color = "#CCCCCC"; }}
-                  onMouseLeave={e => { e.currentTarget.style.color = "#555555"; }}>
-                  <span>← All Shows</span>
+        {/* Spacer */}
+        <div style={{ flex: 1 }} />
+
+        {/* Bottom links */}
+        <div style={{ borderTop: "1px solid #2E2E2E", padding: "8px 0" }}>
+          {[
+            { label: "Share Feedback", action: () => { window.location.href = "mailto:info@podimpactstudio.com?subject=PIS Content Creator Feedback"; } },
+            { label: "What's New", action: () => {} },
+            { label: "Help & Guide", action: () => {} },
+          ].map(item => (
+            <button key={item.label} onClick={item.action}
+              className="admin-sidebar-nav-btn"
+              style={{ width: "100%", padding: "10px 16px", background: "transparent", border: "none", borderLeft: "3px solid transparent", color: "#8A8A8A", fontSize: "15px", cursor: "pointer", textAlign: "left", fontFamily: FF, display: "block" }}>
+              {item.label}
+            </button>
+          ))}
+        </div>
+        <div style={{ height: "1px", background: "#2E2E2E", margin: "0 16px" }} />
+        <div style={{ padding: "8px 0 4px" }}>
+          <button onClick={() => setAdminView("settings")}
+            className="admin-sidebar-nav-btn"
+            style={{ width: "100%", padding: "10px 16px", background: adminView === "settings" ? "#2E2E2E" : "transparent", border: "none", borderLeft: `3px solid ${adminView === "settings" ? T.coral : "transparent"}`, color: adminView === "settings" ? "#FFFFFF" : "#FFFFFF", fontSize: "15px", cursor: "pointer", textAlign: "left", fontFamily: FF, display: "block" }}>
+            Settings
+          </button>
+          {/* User button */}
+          <div style={{ padding: "8px 16px 0", position: "relative" }}>
+            <button onClick={() => setShowUserMenuAdmin(v => !v)}
+              style={{ width: "100%", padding: "8px 0", background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: "10px", fontFamily: FF }}>
+              <div style={{ width: "30px", height: "30px", borderRadius: "50%", background: T.coral, color: "#fff", fontSize: "13px", fontWeight: "700", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{adminUserInitial}</div>
+              <div style={{ flex: 1, overflow: "hidden", textAlign: "left" }}>
+                <div style={{ fontSize: "15px", color: "#FFFFFF", fontWeight: "500", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{adminUserName}</div>
+              </div>
+              <div style={{ fontSize: "14px", color: "#6B6B6B", flexShrink: 0 }}>→</div>
+            </button>
+            {showUserMenuAdmin && (
+              <div style={{ position: "absolute", bottom: "calc(100% + 8px)", left: "16px", right: "16px", background: "#252525", border: "1px solid #3A3A3A", borderRadius: "10px", boxShadow: "0 8px 32px rgba(0,0,0,.6)", zIndex: 999, overflow: "hidden" }}>
+                <div style={{ padding: "10px 14px", borderBottom: "1px solid #3A3A3A" }}>
+                  <div style={{ fontSize: "12px", color: "#6B6B6B", fontFamily: FF, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{userEmail}</div>
                 </div>
-                <div style={{ fontSize: "12px", color: "#555555", letterSpacing: "2px", textTransform: "uppercase", padding: "4px 16px 6px", fontFamily: FF, fontWeight: "600" }}>NAVIGATE</div>
-                {TABS.map(t => {
-                  const isActive = tab === t.id;
-                  return (
-                    <div key={t.id} onClick={() => setTab(t.id)}
-                      style={{ width: "100%", padding: "10px 16px", background: isActive ? "#2E2E2E" : "transparent", boxShadow: isActive ? "inset 3px 0 0 " + T.coral : "none", color: isActive ? "#FFFFFF" : "#8A8A8A", fontSize: "14px", cursor: "pointer", textAlign: "left", fontFamily: FF, display: "flex", alignItems: "center", transition: "all .15s", userSelect: "none" }}
-                      onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = "#252525"; e.currentTarget.style.color = "#CCCCCC"; } }}
-                      onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#8A8A8A"; } }}>
-                      <span>{t.label}</span>
-                    </div>
-                  );
-                })}
-              </>
-            ) : (
-              /* Otherwise show list of shows */
-              <>
-                <div style={{ fontSize: "12px", color: "#555555", letterSpacing: "2px", textTransform: "uppercase", padding: "4px 16px 6px", fontFamily: FF, fontWeight: "600" }}>SHOWS</div>
-                {[...Object.entries(shows)].sort(([, a], [, b]) => a.name.localeCompare(b.name)).map(([k, s]) => {
-                  const isActive = selKey === k;
-                  return (
-                    <div key={k} onClick={() => selectShow(k)}
-                      style={{ width: "100%", padding: "10px 16px", background: isActive ? "#2E2E2E" : "transparent", boxShadow: isActive ? "inset 3px 0 0 " + T.coral : "none", color: isActive ? "#FFFFFF" : "#8A8A8A", fontSize: "14px", cursor: "pointer", textAlign: "left", fontFamily: FF, display: "flex", alignItems: "center", transition: "all .15s", userSelect: "none" }}
-                      onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = "#252525"; e.currentTarget.style.color = "#CCCCCC"; } }}
-                      onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#8A8A8A"; } }}>
-                      <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.name}</span>
-                    </div>
-                  );
-                })}
-                <div onClick={startNew}
-                  style={{ width: "100%", padding: "10px 16px", background: "transparent", color: "#555555", fontSize: "14px", cursor: "pointer", textAlign: "left", fontFamily: FF, display: "flex", alignItems: "center", userSelect: "none" }}
-                  onMouseEnter={e => { e.currentTarget.style.color = "#CCCCCC"; e.currentTarget.style.background = "#252525"; }}
-                  onMouseLeave={e => { e.currentTarget.style.color = "#555555"; e.currentTarget.style.background = "transparent"; }}>
-                  <span>+ Add Show</span>
+                <div style={{ padding: "4px 0" }}>
+                  {[
+                    { label: "Workspace Settings", action: () => { setAdminView("settings"); setShowUserMenuAdmin(false); } },
+                  ].map(item => (
+                    <button key={item.label} onClick={item.action}
+                      style={{ width: "100%", padding: "9px 14px", background: "transparent", border: "none", color: "#FFFFFF", fontSize: "13px", fontFamily: FF, cursor: "pointer", textAlign: "left", transition: "background .1s" }}
+                      onMouseEnter={e => e.currentTarget.style.background = "#3A3A3A"}
+                      onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                      {item.label}
+                    </button>
+                  ))}
+                  <div style={{ height: "1px", background: "#3A3A3A", margin: "4px 0" }} />
+                  <button onClick={() => { onSignOut?.(); setShowUserMenuAdmin(false); }}
+                    style={{ width: "100%", padding: "9px 14px", background: "transparent", border: "none", color: "#F09090", fontSize: "13px", fontFamily: FF, cursor: "pointer", textAlign: "left", transition: "background .1s" }}
+                    onMouseEnter={e => e.currentTarget.style.background = "#3A3A3A"}
+                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                    Sign out
+                  </button>
                 </div>
-              </>
+              </div>
             )}
           </div>
-        )}
-
-        {/* User at bottom */}
-        <div style={{ marginTop: "auto", padding: "16px", borderTop: "1px solid #2E2E2E", display: "flex", alignItems: "center", gap: "8px" }}>
-          <div style={{ width: "28px", height: "28px", borderRadius: "50%", background: T.coral, color: "#fff", fontSize: "11px", fontWeight: "700", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{adminUserInitial}</div>
-          <span style={{ fontSize: "12px", color: "#CCCCCC", fontFamily: FF, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{adminUserName}</span>
         </div>
       </div>
 
-      {/* ── CONTENT AREA ── */}
+      {/* ── MAIN CONTENT AREA ── */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", background: T.bg }}>
 
         {adminView === "settings" ? (
-          <SettingsView shows={shows} globalSettings={globalSettings} setGlobalSettings={setGlobalSettings} saveGlobalSettings={saveGlobalSettings} globalSettingsSaved={globalSettingsSaved} globalSettingsLoading={globalSettingsLoading} orgId={orgId} accountType={accountType} userEmail={userEmail} orgData={orgData} setOrgData={setOrgData} saveOrgData={saveOrgData} orgDataSaved={orgDataSaved} />
-        ) : (
+          <SettingsView shows={shows} globalSettings={globalSettings} setGlobalSettings={setGlobalSettings} saveGlobalSettings={saveGlobalSettings} globalSettingsSaved={globalSettingsSaved} globalSettingsLoading={globalSettingsLoading} orgId={orgId} accountType={accountType} userEmail={userEmail} orgData={orgData} setOrgData={setOrgData} saveOrgData={saveOrgData} orgDataSaved={orgDataSaved} activeSection={activeSettingsSection} setActiveSection={setActiveSettingsSection} />
+        ) : (<>
+
+        {/* ── STUDIO-STYLE SHOW SELECTOR BAR ── */}
+        <div style={{ background: T.card, borderBottom: `1px solid ${T.cardBorder}`, padding: "14px 32px", display: "flex", alignItems: "center", gap: "16px", flexShrink: 0, boxShadow: "0 1px 4px rgba(30,20,10,.05)" }}>
+          <div style={{ width: "26px", height: "26px", borderRadius: "50%", background: T.coral, color: "#fff", fontSize: "12px", fontWeight: "700", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>1</div>
+          <div style={{ fontSize: "12px", fontWeight: "700", letterSpacing: "2px", textTransform: "uppercase", color: T.textMuted, whiteSpace: "nowrap", fontFamily: FF }}>Select Show</div>
+          <div style={{ flex: 1, position: "relative" }}>
+            <select className="admin-show-select"
+              value={selKey && selKey !== "__new__" ? selKey : ""}
+              onChange={e => e.target.value ? selectShow(e.target.value) : null}
+              style={{ width: "100%", appearance: "none", background: "#fff", border: `1px solid ${T.cardBorder}`, borderRadius: "8px", padding: "11px 36px 11px 15px", fontSize: "16px", fontWeight: "600", color: selKey && selKey !== "__new__" ? T.text : T.textMuted, fontFamily: FF, cursor: "pointer", outline: "none" }}>
+              <option value="">Choose a show…</option>
+              {[...Object.entries(shows)].sort(([,a],[,b]) => a.name.localeCompare(b.name)).map(([k, s]) => (
+                <option key={k} value={k}>{s.name}</option>
+              ))}
+            </select>
+            <span style={{ position: "absolute", right: "13px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: T.textMuted, fontSize: "12px" }}>▾</span>
+          </div>
+          <div style={{ fontSize: "13px", color: selKey && selKey !== "__new__" ? "#3A6B3A" : T.textMuted, whiteSpace: "nowrap", fontFamily: FF, fontWeight: selKey && selKey !== "__new__" ? "600" : "400" }}>
+            {selKey && selKey !== "__new__" ? "DNA loaded ✓" : "Show DNA loads automatically"}
+          </div>
+          <button onClick={startNew}
+            style={{ flexShrink: 0, fontSize: "13px", fontWeight: "700", color: T.coral, background: "transparent", border: "1px solid " + T.coral + "55", padding: "8px 14px", borderRadius: "7px", cursor: "pointer", fontFamily: FF, whiteSpace: "nowrap" }}>
+            + Add Show
+          </button>
+        </div>
+
+        {/* ── CONTENT ── */}
         <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
 
         {!form ? (
           /* ── EMPTY STATE ── */
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-            {/* Empty state body */}
-            <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <div style={{ textAlign: "center", color: T.textMuted }}>
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" style={{ marginBottom: "16px", opacity: 0.3 }}><circle cx="12" cy="12" r="10" stroke="#7A0019" strokeWidth="1.5"/><path d="M12 8v4M12 16h.01" stroke="#7A0019" strokeWidth="1.5" strokeLinecap="round"/></svg>
-                <div style={{ fontFamily: "Georgia, serif", fontSize: "20px", color: T.textSecondary, marginBottom: "6px", fontWeight: "normal" }}>Select a show to edit its DNA</div>
-                <div style={{ fontSize: "13px", color: T.textMuted, fontFamily: FF }}>Choose a show from the sidebar, or click <strong style={{ color: T.coral }}>+ Add Show</strong></div>
-              </div>
+          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ textAlign: "center", color: T.textMuted }}>
+              <div style={{ fontSize: "40px", marginBottom: "16px", opacity: 0.4 }}>🎙️</div>
+              <div style={{ fontFamily: "Georgia, serif", fontSize: "20px", color: T.textSecondary, marginBottom: "6px", fontWeight: "normal" }}>Select a show to edit its DNA</div>
+              <div style={{ fontSize: "13px", color: T.textMuted, fontFamily: FF }}>or click <strong style={{ color: T.coral }}>+ Add Show</strong> to create a new one</div>
             </div>
           </div>
 
@@ -1674,7 +1706,7 @@ ${epfPasteText.substring(0, 8000)}`;
             <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 60px" }}>
               <div style={{ maxWidth: "760px", width: "100%" }}>
                 <div style={{ textAlign: "center", marginBottom: "48px" }}>
-                  <div style={{ fontSize: "30px", fontWeight: "700", color: T.text, fontFamily: PF, marginBottom: "10px" }}>How would you like to set up your show?</div>
+                  <div style={{ fontSize: "30px", fontWeight: "normal", color: T.text, fontFamily: SF, marginBottom: "10px" }}>How would you like to set up your show?</div>
                   <div style={{ fontSize: "16px", color: T.textSecondary, fontFamily: FF, lineHeight: "1.5" }}>
                     The more we know about your show, the more your content will sound like you.
                   </div>
@@ -1738,7 +1770,7 @@ ${epfPasteText.substring(0, 8000)}`;
             <div style={{ maxWidth: "640px", width: "100%" }}>
               <button onClick={() => setNewShowPath(null)} style={{ background: "none", border: "none", color: T.textMuted, fontSize: "13px", cursor: "pointer", fontFamily: FF, marginBottom: "24px", padding: 0, display: "flex", alignItems: "center", gap: "6px" }}>← Back</button>
               <div style={{ marginBottom: "28px" }}>
-                <div style={{ fontSize: "26px", fontWeight: "700", color: T.text, fontFamily: PF, marginBottom: "8px" }}>Paste your Show DNA</div>
+                <div style={{ fontSize: "26px", fontWeight: "normal", color: T.text, fontFamily: SF, marginBottom: "8px" }}>Paste your Show DNA</div>
                 <div style={{ fontSize: "14px", color: T.textSecondary, fontFamily: FF, lineHeight: "1.6" }}>Paste your existing Show DNA doc or detailed show brief below. AI will read it and fill in every field automatically.</div>
               </div>
               <textarea value={rawDna} onChange={e => setRawDna(e.target.value)}
@@ -1760,7 +1792,7 @@ ${epfPasteText.substring(0, 8000)}`;
             <div style={{ maxWidth: "640px", width: "100%" }}>
               <button onClick={() => setNewShowPath(null)} style={{ background: "none", border: "none", color: T.textMuted, fontSize: "13px", cursor: "pointer", fontFamily: FF, marginBottom: "24px", padding: 0, display: "flex", alignItems: "center", gap: "6px" }}>← Back</button>
               <div style={{ marginBottom: "28px" }}>
-                <div style={{ fontSize: "26px", fontWeight: "700", color: T.text, fontFamily: PF, marginBottom: "8px" }}>Paste episode transcripts</div>
+                <div style={{ fontSize: "26px", fontWeight: "normal", color: T.text, fontFamily: SF, marginBottom: "8px" }}>Paste episode transcripts</div>
                 <div style={{ fontSize: "14px", color: T.textSecondary, fontFamily: FF, lineHeight: "1.6" }}>Paste 3–5 of your best episode transcripts below (or upload .txt / .docx files). AI will draft your show's voice, audience, and style automatically.</div>
               </div>
               <div onDragOver={e => { e.preventDefault(); setTranscriptDragging(true); }} onDragLeave={() => setTranscriptDragging(false)} onDrop={handleTranscriptDrop}
@@ -1787,17 +1819,6 @@ ${epfPasteText.substring(0, 8000)}`;
         ) : (
           /* ── MAIN SHOW EDITOR ── */
           <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-
-            {/* Show name header bar */}
-            <div style={{ padding: "12px 24px", borderBottom: "1px solid " + T.cardBorder, background: T.surface, display: "flex", alignItems: "center", gap: "14px", flexShrink: 0 }}>
-              <span style={{ fontSize: "10px", fontWeight: "700", letterSpacing: "2px", textTransform: "uppercase", color: T.textMuted, whiteSpace: "nowrap", fontFamily: FF }}>Editing</span>
-              <span style={{ fontSize: "15px", fontWeight: "700", color: T.text, fontFamily: FF }}>{selKey === "__new__" ? "New Show" : (shows[selKey]?.name || "")}</span>
-              <div style={{ flex: 1 }} />
-              <button onClick={startNew}
-                style={{ fontSize: "11px", fontWeight: "700", color: T.coral, background: T.coralSoft, border: "1px solid " + T.coralMid, padding: "6px 12px", borderRadius: "7px", cursor: "pointer", fontFamily: FF, whiteSpace: "nowrap", letterSpacing: ".3px" }}>
-                + Add Show
-              </button>
-            </div>
 
             {/* ── Editor content ── */}
             <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
@@ -1831,7 +1852,7 @@ ${epfPasteText.substring(0, 8000)}`;
                   </button>
                   <button onClick={handleSave} disabled={saving}
                     style={{ padding: "8px 20px", background: T.coral, border: "none", borderRadius: "6px", color: "#fff", fontSize: "13px", fontWeight: "700", cursor: saving ? "not-allowed" : "pointer", fontFamily: FF, letterSpacing: "0.5px", opacity: saving ? 0.6 : 1, whiteSpace: "nowrap" }}>
-                    {saving ? "Saving..." : "Save Show →"}
+                    {saving ? "Saving..." : "Save Show"}
                   </button>
                 </div>
               </div>
@@ -1841,7 +1862,7 @@ ${epfPasteText.substring(0, 8000)}`;
                 <div onClick={() => !deleting && setDeleteConfirm(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: "20px" }}>
                   <div onClick={e => e.stopPropagation()} style={{ background: T.card, border: "1px solid " + T.cardBorder, borderRadius: "14px", padding: "28px", maxWidth: "460px", width: "100%", boxShadow: "0 24px 64px rgba(0,0,0,0.3)" }}>
                     <div style={{ fontSize: "32px", marginBottom: "12px" }}>🗑</div>
-                    <div style={{ fontSize: "20px", fontWeight: "700", color: T.text, marginBottom: "8px", fontFamily: PF }}>Delete "{form?.name || shows[selKey]?.name || "this show"}"?</div>
+                    <div style={{ fontSize: "20px", fontWeight: "normal", color: T.text, marginBottom: "8px", fontFamily: SF }}>Delete "{form?.name || shows[selKey]?.name || "this show"}"?</div>
                     <div style={{ background: "#D94F4F14", border: "1px solid #D94F4F44", borderRadius: "8px", padding: "12px 14px", marginBottom: "20px" }}>
                       <div style={{ fontSize: "14px", color: "#C0392B", fontWeight: "700", fontFamily: FF, marginBottom: "4px" }}>⚠️ This cannot be undone.</div>
                       <div style={{ fontSize: "13px", color: T.textSecondary, fontFamily: FF, lineHeight: "1.5" }}>This permanently deletes the show and all of its DNA — voice, audience, platforms, show notes builder, episode formats, and boilerplate. There is no way to get it back. You'll need to rebuild it from scratch.</div>
@@ -1874,17 +1895,14 @@ ${epfPasteText.substring(0, 8000)}`;
                 </div>
               )}
 
-              {/* Content area — full width, tab nav is now in the outer sidebar */}
-              <div style={{ flex: 1, overflow: "hidden", position: "relative" }}>
-
-                {/* Main content area */}
-                <div style={{ flex: 1, overflowY: "auto", height: "100%", padding: "40px 48px", position: "relative" }}>
+              {/* Form content */}
+              <div style={{ flex: 1, overflowY: "auto", padding: "40px 48px", position: "relative" }}>
                   <div style={{ maxWidth: "800px" }}>
 
                 {tab === "basic" && (
                   <div>
                     <div style={{ marginBottom: "32px" }}>
-                      <div style={{ fontSize: "24px", fontWeight: "700", color: T.text, fontFamily: PF, marginBottom: "6px" }}>Basic Info</div>
+                      <div style={{ fontSize: "24px", fontWeight: "normal", color: T.text, fontFamily: SF, marginBottom: "6px" }}>Basic Info</div>
                       <div style={{ fontSize: "14px", color: T.textMuted, fontFamily: FF }}>Core show details used across all generated content.</div>
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
@@ -1914,7 +1932,7 @@ ${epfPasteText.substring(0, 8000)}`;
                 {tab === "voice" && (
                   <div>
                     <div style={{ marginBottom: "32px" }}>
-                      <div style={{ fontSize: "24px", fontWeight: "700", color: T.text, fontFamily: PF, marginBottom: "6px" }}>Voice &amp; Tone</div>
+                      <div style={{ fontSize: "24px", fontWeight: "normal", color: T.text, fontFamily: SF, marginBottom: "6px" }}>Voice &amp; Tone</div>
                       <div style={{ fontSize: "14px", color: T.textMuted, fontFamily: FF }}>How this show sounds — the personality, energy, and language that makes it distinct.</div>
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
@@ -1933,7 +1951,7 @@ ${epfPasteText.substring(0, 8000)}`;
                 {tab === "audience" && (
                   <div>
                     <div style={{ marginBottom: "32px" }}>
-                      <div style={{ fontSize: "24px", fontWeight: "700", color: T.text, fontFamily: PF, marginBottom: "6px" }}>Audience</div>
+                      <div style={{ fontSize: "24px", fontWeight: "normal", color: T.text, fontFamily: SF, marginBottom: "6px" }}>Audience</div>
                       <div style={{ fontSize: "14px", color: T.textMuted, fontFamily: FF }}>Who this show is made for — used to write hooks, permission slips, and episode structure.</div>
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
@@ -1958,7 +1976,7 @@ ${epfPasteText.substring(0, 8000)}`;
                 {tab === "platforms" && (
                   <div>
                     <div style={{ marginBottom: "32px" }}>
-                      <div style={{ fontSize: "24px", fontWeight: "700", color: T.text, fontFamily: PF, marginBottom: "6px" }}>Platforms</div>
+                      <div style={{ fontSize: "24px", fontWeight: "normal", color: T.text, fontFamily: SF, marginBottom: "6px" }}>Platforms</div>
                       <div style={{ fontSize: "14px", color: T.textMuted, fontFamily: FF }}>Select every platform this show publishes to. Content will be generated and optimized for each selected platform.</div>
                     </div>
                     <PlatformHub platforms={form.platforms || DEFAULT_PLATFORMS} onChange={pl => setForm(p => ({ ...p, platforms: pl }))} />
@@ -1968,7 +1986,7 @@ ${epfPasteText.substring(0, 8000)}`;
                 {tab === "snnotes" && (
                   <div>
                     <div style={{ marginBottom: "32px" }}>
-                      <div style={{ fontSize: "24px", fontWeight: "700", color: T.text, fontFamily: PF, marginBottom: "6px" }}>Show Notes</div>
+                      <div style={{ fontSize: "24px", fontWeight: "normal", color: T.text, fontFamily: SF, marginBottom: "6px" }}>Show Notes</div>
                       <div style={{ fontSize: "14px", color: T.textMuted, fontFamily: FF }}>Toggle which elements to include and drag to set their order.</div>
                     </div>
                     <SNBuilder elements={form.snElements} onChange={el => setForm(p => ({ ...p, snElements: el }))} />
@@ -1978,7 +1996,7 @@ ${epfPasteText.substring(0, 8000)}`;
                 {tab === "boilerplate" && (
                   <div>
                     <div style={{ marginBottom: "32px" }}>
-                      <div style={{ fontSize: "24px", fontWeight: "700", color: T.text, fontFamily: PF, marginBottom: "6px" }}>Boilerplate</div>
+                      <div style={{ fontSize: "24px", fontWeight: "normal", color: T.text, fontFamily: SF, marginBottom: "6px" }}>Boilerplate</div>
                       <div style={{ fontSize: "14px", color: T.textMuted, fontFamily: FF }}>Automatically appended to Show Notes and YouTube descriptions.</div>
                     </div>
                     <BoilerplateEditor value={form.bp} onChange={v => setForm(p => ({ ...p, bp: v }))} />
@@ -1988,7 +2006,7 @@ ${epfPasteText.substring(0, 8000)}`;
                 {tab === "editing" && (
                   <div>
                     <div style={{ marginBottom: "32px" }}>
-                      <div style={{ fontSize: "24px", fontWeight: "700", color: T.text, fontFamily: PF, marginBottom: "6px" }}>Editor</div>
+                      <div style={{ fontSize: "24px", fontWeight: "normal", color: T.text, fontFamily: SF, marginBottom: "6px" }}>Editor</div>
                       <div style={{ fontSize: "14px", color: T.textMuted, fontFamily: FF }}>Set the editing standard for this show. Editors will see this level as a coaching brief in the Editor Companion.</div>
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
@@ -2007,13 +2025,31 @@ ${epfPasteText.substring(0, 8000)}`;
                         </div>
                       ))}
                     </div>
+
+                    {/* Descript API Key */}
+                    <div style={{ marginTop: "32px", padding: "20px 24px", background: T.surface, border: "1px solid " + T.cardBorder, borderRadius: "12px" }}>
+                      <div style={{ fontSize: "15px", fontWeight: "700", color: T.text, fontFamily: FF, marginBottom: "4px" }}>Descript API Key</div>
+                      <div style={{ fontSize: "13px", color: T.textMuted, fontFamily: FF, marginBottom: "12px", lineHeight: "1.6" }}>
+                        Used to send clip timestamps directly to this show's Descript project. Get your key from Descript → Settings → API Tokens.
+                      </div>
+                      <input
+                        type="password"
+                        value={form.descriptApiKey || ""}
+                        onChange={e => setForm(p => ({ ...p, descriptApiKey: e.target.value }))}
+                        placeholder="descript_•••••••••••••••••••"
+                        style={{ width: "100%", padding: "11px 14px", border: "1px solid " + T.cardBorder, borderRadius: "8px", background: T.card, color: T.text, fontSize: "14px", fontFamily: FF, outline: "none", boxSizing: "border-box" }}
+                      />
+                      <div style={{ fontSize: "12px", color: T.textMuted, marginTop: "6px", fontFamily: FF }}>
+                        Saved per show — each show can have its own Descript account.
+                      </div>
+                    </div>
                   </div>
                 )}
 
                 {tab === "epprep" && (
                   <div>
                     <div style={{ marginBottom: "32px" }}>
-                      <div style={{ fontSize: "24px", fontWeight: "700", color: T.text, fontFamily: PF, marginBottom: "6px" }}>Episode Prep</div>
+                      <div style={{ fontSize: "24px", fontWeight: "normal", color: T.text, fontFamily: SF, marginBottom: "6px" }}>Episode Prep</div>
                       <div style={{ fontSize: "14px", color: T.textMuted, fontFamily: FF }}>Story mission and permission slips — used verbatim in episode structure and closing.</div>
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
@@ -2034,7 +2070,7 @@ ${epfPasteText.substring(0, 8000)}`;
                 {tab === "formats" && (
                   <div>
                     <div style={{ marginBottom: "32px" }}>
-                      <div style={{ fontSize: "24px", fontWeight: "700", color: T.text, fontFamily: PF, marginBottom: "6px" }}>Episode Formats</div>
+                      <div style={{ fontSize: "24px", fontWeight: "normal", color: T.text, fontFamily: SF, marginBottom: "6px" }}>Episode Formats</div>
                       <div style={{ fontSize: "14px", color: T.textMuted, fontFamily: FF }}>{(form.episodeFormats||[]).length} format{(form.episodeFormats||[]).length !== 1 ? "s" : ""} configured for this show.</div>
                     </div>
 
@@ -2175,102 +2211,91 @@ ${epfPasteText.substring(0, 8000)}`;
                 {tab === "airules" && (
                   <div>
                     <div style={{ marginBottom: "28px" }}>
-                      <div style={{ fontSize: "24px", fontWeight: "700", color: T.text, fontFamily: PF, marginBottom: "6px" }}>AI Rules</div>
+                      <div style={{ fontSize: "24px", fontWeight: "normal", color: T.text, fontFamily: SF, marginBottom: "6px" }}>AI Rules</div>
                       <div style={{ fontSize: "14px", color: T.textMuted, fontFamily: FF, lineHeight: "1.6" }}>
-                        Named instructions that tell Claude what to do under specific conditions. Add a trigger word and Claude will apply the rule only when that word appears in the transcript. Leave the trigger blank to always apply the rule.
+                        Define rules that fire automatically when your transcript matches a trigger phrase. Use these for episode types, recurring segments, or special formatting instructions the AI should apply when it detects a certain kind of episode.
                       </div>
                     </div>
 
-                    {/* Rule list */}
-                    {(form.aiRules || []).length === 0 && !arShowForm && (
-                      <div style={{ padding: "40px 24px", textAlign: "center", border: "2px dashed " + T.cardBorder, borderRadius: "12px", marginBottom: "16px" }}>
-                        <div style={{ fontSize: "15px", color: T.textMuted, fontFamily: FF, marginBottom: "6px" }}>No rules yet</div>
-                        <div style={{ fontSize: "13px", color: T.textMuted, fontFamily: FF }}>Add a rule like "Mailbag Episodes" with trigger word <strong style={{ color: T.text }}>mailbag</strong> and Claude will apply your instruction automatically whenever it sees that word in the transcript.</div>
+                    {/* Existing rules */}
+                    {(form.episodeRules || []).length === 0 ? (
+                      <div style={{ background: T.surface, border: "1px solid " + T.cardBorder, borderRadius: "10px", padding: "32px", textAlign: "center", marginBottom: "20px" }}>
+                        <div style={{ fontSize: "28px", marginBottom: "10px", opacity: 0.4 }}>⚡</div>
+                        <div style={{ fontSize: "15px", color: T.textSecondary, fontFamily: FF, marginBottom: "4px" }}>No AI rules yet</div>
+                        <div style={{ fontSize: "13px", color: T.textMuted, fontFamily: FF }}>Add a rule below to get started.</div>
+                      </div>
+                    ) : (
+                      <div style={{ marginBottom: "20px", display: "flex", flexDirection: "column", gap: "12px" }}>
+                        {(form.episodeRules || []).map((rule, idx) => (
+                          <div key={rule.id} style={{ background: T.card, border: "1px solid " + T.cardBorder, borderRadius: "10px", overflow: "hidden" }}>
+                            <div style={{ padding: "14px 20px", borderBottom: "1px solid " + T.cardBorder, background: T.surface, display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px" }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                                <span style={{ fontSize: "13px", fontWeight: "700", color: T.text, fontFamily: FF }}>{rule.name || "Unnamed Rule"}</span>
+                                <span style={{ fontSize: "11px", background: T.coralSoft, border: "1px solid " + T.coralMid, color: T.coral, borderRadius: "20px", padding: "2px 10px", fontFamily: FF, fontWeight: "600" }}>
+                                  trigger: "{rule.trigger}"
+                                </span>
+                              </div>
+                              <button onClick={() => setForm(p => ({ ...p, episodeRules: (p.episodeRules || []).filter((_, i) => i !== idx) }))}
+                                style={{ background: "none", border: "none", color: T.textMuted, fontSize: "13px", cursor: "pointer", fontFamily: FF, padding: "2px 6px", opacity: 0.6 }}
+                                onMouseEnter={e => e.currentTarget.style.opacity = "1"}
+                                onMouseLeave={e => e.currentTarget.style.opacity = "0.6"}>
+                                ✕ Remove
+                              </button>
+                            </div>
+                            <div style={{ padding: "14px 20px" }}>
+                              <div style={{ fontSize: "12px", letterSpacing: "1.5px", textTransform: "uppercase", color: T.textMuted, fontFamily: FF, marginBottom: "6px" }}>Instructions for AI</div>
+                              <textarea value={rule.instructions} onChange={e => setForm(p => ({ ...p, episodeRules: (p.episodeRules || []).map((r, i) => i === idx ? { ...r, instructions: e.target.value } : r) }))}
+                                rows={3} style={{ width: "100%", padding: "10px 12px", border: "1px solid " + T.cardBorder, borderRadius: "8px", background: T.surface, color: T.text, fontSize: "13px", fontFamily: FF, resize: "vertical", boxSizing: "border-box", lineHeight: "1.6" }} />
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     )}
 
-                    {(form.aiRules || []).map((rule, idx) => (
-                      <div key={rule.id || idx} style={{ padding: "16px 20px", background: T.card, border: "1px solid " + T.cardBorder, borderRadius: "10px", marginBottom: "10px", display: "flex", alignItems: "flex-start", gap: "16px" }}>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px" }}>
-                            <span style={{ fontSize: "14px", fontWeight: "700", color: T.text, fontFamily: FF }}>{rule.name || "Unnamed Rule"}</span>
-                            {rule.trigger?.trim() ? (
-                              <span style={{ fontSize: "11px", fontWeight: "700", letterSpacing: "0.8px", padding: "2px 8px", borderRadius: "20px", background: T.coralSoft, color: T.coral, fontFamily: FF, border: "1px solid " + T.coralMid }}>
-                                trigger: "{rule.trigger}"
-                              </span>
-                            ) : (
-                              <span style={{ fontSize: "11px", fontWeight: "700", letterSpacing: "0.8px", padding: "2px 8px", borderRadius: "20px", background: "#52B78812", color: "#52B788", fontFamily: FF, border: "1px solid #52B78840" }}>
-                                always on
-                              </span>
-                            )}
-                          </div>
-                          <div style={{ fontSize: "13px", color: T.textSecondary, fontFamily: FF, lineHeight: "1.6" }}>{rule.instruction}</div>
+                    {/* Add new rule form */}
+                    <div style={{ background: T.card, border: "1px dashed " + T.cardBorder, borderRadius: "10px", padding: "20px" }}>
+                      <div style={{ fontSize: "13px", fontWeight: "700", color: T.text, fontFamily: FF, marginBottom: "16px", letterSpacing: "0.3px" }}>+ Add New Rule</div>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "12px" }}>
+                        <div>
+                          <label style={{ fontSize: "11px", letterSpacing: "1.5px", textTransform: "uppercase", color: T.textMuted, display: "block", marginBottom: "6px", fontFamily: FF }}>Rule Name</label>
+                          <input id="airule-name" placeholder="e.g. Mailbag Episode" style={{ width: "100%", padding: "9px 12px", border: "1px solid " + T.cardBorder, borderRadius: "8px", background: T.surface, color: T.text, fontSize: "14px", fontFamily: FF, boxSizing: "border-box", outline: "none" }} />
                         </div>
-                        <div style={{ display: "flex", gap: "6px", flexShrink: 0 }}>
-                          <button onClick={() => { setArForm({ name: rule.name || "", trigger: rule.trigger || "", instruction: rule.instruction || "" }); setArEditing(rule.id || idx); setArShowForm(true); }}
-                            style={{ padding: "5px 12px", border: "1px solid " + T.cardBorder, borderRadius: "6px", background: "transparent", color: T.text, fontSize: "12px", cursor: "pointer", fontFamily: FF }}>Edit</button>
-                          <button onClick={() => setForm(p => ({ ...p, aiRules: (p.aiRules || []).filter((_, i) => i !== idx) }))}
-                            style={{ padding: "5px 12px", border: "1px solid #F0909040", borderRadius: "6px", background: "transparent", color: "#F09090", fontSize: "12px", cursor: "pointer", fontFamily: FF }}>Delete</button>
+                        <div>
+                          <label style={{ fontSize: "11px", letterSpacing: "1.5px", textTransform: "uppercase", color: T.textMuted, display: "block", marginBottom: "6px", fontFamily: FF }}>Trigger Phrase</label>
+                          <input id="airule-trigger" placeholder="e.g. mailbag" style={{ width: "100%", padding: "9px 12px", border: "1px solid " + T.cardBorder, borderRadius: "8px", background: T.surface, color: T.text, fontSize: "14px", fontFamily: FF, boxSizing: "border-box", outline: "none" }} />
+                          <div style={{ fontSize: "11px", color: T.textMuted, fontFamily: FF, marginTop: "4px", fontStyle: "italic" }}>Found in transcript → rule fires</div>
                         </div>
                       </div>
-                    ))}
-
-                    {/* Add rule button */}
-                    {!arShowForm && (
-                      <button onClick={() => { setArForm({ name: "", trigger: "", instruction: "" }); setArEditing(null); setArShowForm(true); }}
-                        style={{ width: "100%", padding: "12px", border: "2px dashed " + T.cardBorder, borderRadius: "10px", background: "transparent", color: T.coral, fontSize: "14px", fontWeight: "700", cursor: "pointer", fontFamily: FF, marginTop: "8px" }}>
-                        + Add Rule
+                      <div style={{ marginBottom: "14px" }}>
+                        <label style={{ fontSize: "11px", letterSpacing: "1.5px", textTransform: "uppercase", color: T.textMuted, display: "block", marginBottom: "6px", fontFamily: FF }}>Instructions for AI</label>
+                        <textarea id="airule-instructions" rows={3} placeholder={'e.g. This is a Mailbag episode. Prefix every SEO title with "Mailbag:" — for example: "Mailbag: Your Questions About Fat Loss Answered"'}
+                          style={{ width: "100%", padding: "10px 12px", border: "1px solid " + T.cardBorder, borderRadius: "8px", background: T.surface, color: T.text, fontSize: "13px", fontFamily: FF, resize: "vertical", boxSizing: "border-box", lineHeight: "1.6", outline: "none" }} />
+                      </div>
+                      <button onClick={() => {
+                        const name = document.getElementById("airule-name")?.value?.trim();
+                        const trigger = document.getElementById("airule-trigger")?.value?.trim();
+                        const instructions = document.getElementById("airule-instructions")?.value?.trim();
+                        if (!name || !trigger || !instructions) return;
+                        const newRule = { id: Date.now().toString(), name, trigger, instructions };
+                        setForm(p => ({ ...p, episodeRules: [...(p.episodeRules || []), newRule] }));
+                        if (document.getElementById("airule-name")) document.getElementById("airule-name").value = "";
+                        if (document.getElementById("airule-trigger")) document.getElementById("airule-trigger").value = "";
+                        if (document.getElementById("airule-instructions")) document.getElementById("airule-instructions").value = "";
+                      }}
+                        style={{ padding: "10px 22px", background: T.coral, border: "none", borderRadius: "8px", color: "#fff", fontSize: "13px", fontWeight: "700", cursor: "pointer", fontFamily: FF, letterSpacing: "0.5px" }}>
+                        Add Rule
                       </button>
-                    )}
+                    </div>
 
-                    {/* Rule edit form */}
-                    {arShowForm && (
-                      <div style={{ padding: "24px", background: T.surface, border: "1px solid " + T.cardBorder, borderRadius: "12px", marginTop: "16px" }}>
-                        <div style={{ fontSize: "14px", fontWeight: "700", color: T.coral, fontFamily: FF, textTransform: "uppercase", letterSpacing: "1px", marginBottom: "20px" }}>{arEditing !== null ? "Edit Rule" : "New Rule"}</div>
-                        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-
-                          <div>
-                            <label style={{ display: "block", fontSize: "11px", fontWeight: "700", letterSpacing: "1.5px", textTransform: "uppercase", color: T.textMuted, fontFamily: FF, marginBottom: "6px" }}>Rule Name</label>
-                            <input value={arForm.name} onChange={e => setArForm(p => ({ ...p, name: e.target.value }))} placeholder="e.g. Mailbag Episodes"
-                              style={{ width: "100%", padding: "9px 12px", border: "1px solid " + T.cardBorder, borderRadius: "7px", background: T.card, color: T.text, fontSize: "14px", fontFamily: FF, outline: "none", boxSizing: "border-box" }} />
-                          </div>
-
-                          <div>
-                            <label style={{ display: "block", fontSize: "11px", fontWeight: "700", letterSpacing: "1.5px", textTransform: "uppercase", color: T.textMuted, fontFamily: FF, marginBottom: "4px" }}>Trigger Word / Phrase <span style={{ fontWeight: "400", textTransform: "none", letterSpacing: 0, color: T.textMuted }}>(optional — leave blank to always apply)</span></label>
-                            <div style={{ fontSize: "12px", color: T.textMuted, fontFamily: FF, marginBottom: "6px" }}>If the transcript contains this word or phrase, Claude will apply the instruction below.</div>
-                            <input value={arForm.trigger} onChange={e => setArForm(p => ({ ...p, trigger: e.target.value }))} placeholder="e.g. mailbag"
-                              style={{ width: "100%", padding: "9px 12px", border: "1px solid " + T.cardBorder, borderRadius: "7px", background: T.card, color: T.text, fontSize: "14px", fontFamily: FF, outline: "none", boxSizing: "border-box" }} />
-                          </div>
-
-                          <div>
-                            <label style={{ display: "block", fontSize: "11px", fontWeight: "700", letterSpacing: "1.5px", textTransform: "uppercase", color: T.textMuted, fontFamily: FF, marginBottom: "4px" }}>Instruction for Claude</label>
-                            <div style={{ fontSize: "12px", color: T.textMuted, fontFamily: FF, marginBottom: "6px" }}>Write exactly what you want Claude to do. Be specific — Claude will follow this as an additional rule during content generation.</div>
-                            <textarea value={arForm.instruction} onChange={e => setArForm(p => ({ ...p, instruction: e.target.value }))} placeholder={'e.g. This is a mailbag episode. Add "MAILBAG:" before all SEO titles and YouTube titles generated for this episode.'}
-                              style={{ width: "100%", height: "120px", padding: "9px 12px", border: "1px solid " + T.cardBorder, borderRadius: "7px", background: T.card, color: T.text, fontSize: "14px", fontFamily: FF, outline: "none", resize: "vertical", boxSizing: "border-box", lineHeight: "1.6" }} />
-                          </div>
-
-                          <div style={{ display: "flex", gap: "10px" }}>
-                            <button onClick={() => {
-                              if (!arForm.name.trim() || !arForm.instruction.trim()) return;
-                              const rule = { id: "ar-" + Date.now(), name: arForm.name.trim(), trigger: arForm.trigger.trim(), instruction: arForm.instruction.trim() };
-                              if (arEditing !== null) {
-                                setForm(p => ({ ...p, aiRules: (p.aiRules || []).map((r, i) => (r.id === arEditing || i === arEditing) ? rule : r) }));
-                              } else {
-                                setForm(p => ({ ...p, aiRules: [...(p.aiRules || []), rule] }));
-                              }
-                              setArShowForm(false); setArEditing(null); setArForm({ name: "", trigger: "", instruction: "" });
-                            }} style={{ padding: "10px 22px", background: T.coral, border: "none", borderRadius: "8px", color: "#fff", fontSize: "14px", fontWeight: "700", cursor: "pointer", fontFamily: FF }}>Save Rule</button>
-                            <button onClick={() => { setArShowForm(false); setArEditing(null); setArForm({ name: "", trigger: "", instruction: "" }); }}
-                              style={{ padding: "10px 18px", background: "transparent", border: "1px solid " + T.cardBorder, borderRadius: "8px", color: T.textMuted, fontSize: "14px", cursor: "pointer", fontFamily: FF }}>Cancel</button>
-                          </div>
-                        </div>
+                    <div style={{ marginTop: "20px", padding: "14px 16px", background: T.coralSoft, border: "1px solid " + T.coralMid, borderRadius: "8px" }}>
+                      <div style={{ fontSize: "13px", color: T.textSecondary, fontFamily: FF, lineHeight: "1.6" }}>
+                        <strong style={{ color: T.coral }}>How it works:</strong> When you generate content, the app scans your transcript for each trigger phrase (case-insensitive). Any matching rules are automatically added to the AI's instructions for that episode only — no manual steps needed. Rules don't affect episodes where the trigger isn't found.
                       </div>
-                    )}
+                    </div>
                   </div>
                 )}
 
-                </div>
-                </div>
+                  </div>
 
                 {/* Right slide-in AI Fill panel */}
                 {showAIPanel && (() => {
@@ -2346,7 +2371,7 @@ ${epfPasteText.substring(0, 8000)}`;
           </div>
         )}
         </div>
-        )}
+        </>)}
       </div>
     </div>
   );
