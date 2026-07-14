@@ -3,12 +3,11 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const apiKey = process.env.DESCRIPT_API_KEY;
+  const { projectId, prompt, apiKey: userApiKey } = req.body;
+  const apiKey = userApiKey?.trim() || process.env.DESCRIPT_API_KEY;
   if (!apiKey) {
-    return res.status(500).json({ error: "DESCRIPT_API_KEY not configured in Vercel environment variables." });
+    return res.status(400).json({ error: "No Descript API key found. Add your Descript API key in Podcast Settings → Editor tab for this show." });
   }
-
-  const { projectId, prompt } = req.body;
   if (!projectId || !prompt) {
     return res.status(400).json({ error: "Missing projectId or prompt" });
   }

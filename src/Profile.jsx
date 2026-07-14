@@ -70,6 +70,8 @@ const TIMEZONES = [
   ["Pacific/Fiji",                  "Fiji (FJT, UTC+12)"],
 ];
 
+const SF = "Georgia, 'Times New Roman', serif";
+
 const inp = {
   width: "100%", background: T.surface, border: "1px solid " + T.cardBorder,
   borderRadius: "8px", padding: "11px 14px", color: T.text,
@@ -153,7 +155,7 @@ export default function Profile({ user, onClose, onSignOut }) {
         {/* Header */}
         <div style={{ padding: "20px 24px", borderBottom: "1px solid " + T.cardBorder, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
-            <div style={{ fontSize: "18px", fontWeight: "700", color: T.text, fontFamily: "'DM Sans', system-ui, sans-serif" }}>My Account</div>
+            <div style={{ fontSize: "22px", fontWeight: "normal", color: T.text, fontFamily: SF }}>My Account</div>
             <div style={{ fontSize: "13px", color: T.textMuted, marginTop: "2px", fontFamily: "'DM Sans', system-ui, sans-serif" }}>{user.email}</div>
           </div>
           <button onClick={onClose} style={{ padding: "6px 12px", background: "transparent", border: "1px solid " + T.cardBorder, borderRadius: "6px", color: T.textMuted, fontSize: "13px", cursor: "pointer" }}>✕</button>
