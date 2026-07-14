@@ -732,27 +732,42 @@ export default function Auth({ onAuthenticated }) {
   const [mode, setMode] = useState("loading"); // loading | login | signup | setup
 
   useEffect(() => {
-    // Check if this is an invite/recovery link
-    const hash = window.location.hash;
-    const params = new URLSearchParams(hash.replace("#", "?"));
-    const type = params.get("type");
+    // Check both hash (legacy) and query string (PKCE) for invite/recovery type
+    const hashParams = new URLSearchParams(window.location.hash.replace("#", "?"));
+    const searchParams = new URLSearchParams(window.location.search);
+    const type = hashParams.get("type") || searchParams.get("type");
+    const tokenHash = searchParams.get("token_hash");
+    const isInviteOrRecovery = type === "invite" || type === "recovery" || !!tokenHash;
 
-    if (type === "invite" || type === "recovery" || type === "signup") {
-      // Supabase puts the token in the URL — it auto-handles the session
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        if (session) {
-          // Check if profile is complete
-          supabase.from("profiles").select("name, timezone").eq("id", session.user.id).single()
-            .then(({ data }) => {
-              if (!data?.name || !data?.timezone) {
-                setMode("setup");
-              } else {
-                onAuthenticated(session.user);
-              }
-            });
-        } else {
-          setMode("login");
+    function checkProfileAndRoute(session) {
+      supabase.from("profiles").select("name, timezone").eq("id", session.user.id).single()
+        .then(({ data }) => {
+          if (!data?.name || !data?.timezone) {
+            setMode("setup");
+          } else {
+            onAuthenticated(session.user);
+          }
+        });
+    }
+
+    if (isInviteOrRecovery) {
+      // PKCE invite: exchange token_hash for a session if present
+      const exchangePromise = tokenHash
+        ? supabase.auth.verifyOtp({ token_hash: tokenHash, type: type || "invite" })
+        : Promise.resolve({ data: { session: null } });
+
+      exchangePromise.then(({ data: { session: exchangedSession }, error }) => {
+        if (exchangedSession) {
+          checkProfileAndRoute(exchangedSession);
+          return;
         }
+        // Fall back to existing session (legacy hash flow auto-processed it)
+        supabase.auth.getSession().then(({ data: { session } }) => {
+          if (session) {
+            checkProfileAndRoute(session);
+          }
+          // If no session yet, stay in "loading" — onAuthStateChange will fire
+        });
       });
     } else {
       // Normal flow — check existing session
@@ -765,11 +780,18 @@ export default function Auth({ onAuthenticated }) {
       });
     }
 
-    // Listen for auth state changes
+    // Listen for auth state changes (handles legacy hash invite flow)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_IN" && session) {
-        if (mode === "setup") return; // Don't redirect during setup
-        onAuthenticated(session.user);
+        // Check profile completeness — invited users need setup, existing users go straight in
+        supabase.from("profiles").select("name, timezone").eq("id", session.user.id).single()
+          .then(({ data }) => {
+            if (!data?.name || !data?.timezone) {
+              setMode("setup");
+            } else {
+              onAuthenticated(session.user);
+            }
+          });
       }
     });
     return () => subscription.unsubscribe();

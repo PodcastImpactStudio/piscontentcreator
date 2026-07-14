@@ -620,12 +620,114 @@ function renderContent(text){
     const isSub=!isTop&&isSubHeader(line);
     const isBullet=/^[-\u2022]\s/.test(t);
     const isEmpty=!t;
+    const isQuote=/^QUOTE:\s*/i.test(t);
     if(isEmpty)return <div key={li} style={{height:"6px"}}/>;
     if(isTop)return <div key={li} style={{fontWeight:"700",fontSize:"14px",letterSpacing:"2px",textTransform:"uppercase",color:T.coral,marginTop:"18px",marginBottom:"4px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{linkify(line)}</div>;
     if(isSub)return <div key={li} style={{fontWeight:"700",fontSize:"13px",color:T.text,marginTop:"14px",marginBottom:"4px",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1px"}}>{linkify(line)}</div>;
+    if(isQuote){const quoteText=t.replace(/^QUOTE:\s*/i,"");return <div key={li} style={{display:"flex",gap:"0",margin:"6px 0 8px",borderRadius:"6px",overflow:"hidden"}}><div style={{width:"3px",flexShrink:0,background:T.coral,borderRadius:"3px 0 0 3px"}}/><div style={{background:T.coralSoft,padding:"8px 12px",flex:1,borderRadius:"0 6px 6px 0"}}><span style={{fontSize:"10px",fontWeight:"700",letterSpacing:"1.5px",color:T.coral,fontFamily:"'DM Sans', system-ui, sans-serif",display:"block",marginBottom:"3px"}}>TRANSCRIPT</span><span style={{fontSize:"14px",color:T.text,fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.7",fontStyle:"italic"}}>{linkify(quoteText)}</span></div></div>;}
     if(isBullet){const content=t.replace(/^[-\u2022]\s/,"");return <div key={li} style={{display:"flex",gap:"10px",fontSize:"16px",color:T.textSecondary,fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"2.0",marginBottom:"5px"}}><span style={{color:T.textMuted,flexShrink:0,marginTop:"2px"}}>-</span><span>{linkify(content)}</span></div>;}
     return <div key={li} style={{fontSize:"16px",color:T.textSecondary,fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"2.0",marginBottom:"5px"}}>{linkify(line)}</div>;
   });
+}
+
+function HighlightedTranscript({ transcript, sections }) {
+  const [open, setOpen] = useState(false);
+  const FF = "'DM Sans', system-ui, sans-serif";
+
+  // Extract QUOTE: lines from editor-hooks and editor-clips sections
+  const quotes = [];
+  const hookColors = { bg: "#7A001914", border: T.coral, label: "Hook" };
+  const clipColors = { bg: "#185fa514", border: "#185fa5", label: "Clip" };
+
+  function extractFromSection(sec, colors) {
+    if (!sec) return;
+    let num = 0;
+    sec.content.split("\n").forEach(line => {
+      const hookNum = line.match(/^(?:HOOK|CLIP)\s+(\d+)/i);
+      if (hookNum) num = parseInt(hookNum[1]);
+      const m = line.match(/^QUOTE:\s*(.+)$/i);
+      if (m) {
+        const raw = m[1].replace(/^["""'']|["""'']$/g, "").trim();
+        quotes.push({ text: raw, num: num || quotes.length + 1, ...colors });
+      }
+    });
+  }
+
+  extractFromSection(sections.find(s => s.id === "editor-hooks"), hookColors);
+  extractFromSection(sections.find(s => s.id === "editor-clips"), clipColors);
+
+  // Locate each quote in the transcript (exact, then stripped, then first-80-chars)
+  const ranges = [];
+  quotes.forEach(q => {
+    let idx = transcript.indexOf(q.text);
+    let matchText = q.text;
+    if (idx === -1) {
+      const stripped = q.text.replace(/^["""''\s]+|["""''\s]+$/g, "");
+      idx = transcript.indexOf(stripped);
+      if (idx !== -1) matchText = stripped;
+    }
+    if (idx === -1) {
+      const short = q.text.substring(0, 80);
+      idx = transcript.indexOf(short);
+      if (idx !== -1) matchText = short;
+    }
+    if (idx !== -1 && !ranges.some(r => r.start === idx)) {
+      ranges.push({ start: idx, end: idx + matchText.length, q });
+    }
+  });
+  ranges.sort((a, b) => a.start - b.start);
+
+  // Build segments: plain text interspersed with highlighted ranges
+  const segments = [];
+  let pos = 0;
+  ranges.forEach(r => {
+    if (r.start > pos) segments.push({ text: transcript.slice(pos, r.start), hl: null });
+    segments.push({ text: transcript.slice(r.start, r.end), hl: r.q });
+    pos = r.end;
+  });
+  if (pos < transcript.length) segments.push({ text: transcript.slice(pos), hl: null });
+
+  const found = ranges.length;
+  const total = quotes.length;
+
+  return (
+    <div style={{ marginBottom: "10px" }}>
+      <button onClick={() => setOpen(o => !o)}
+        style={{ width: "100%", padding: "13px 20px", background: open ? T.coralSoft : T.card, border: `1px solid ${open ? T.coralMid : T.cardBorder}`, borderRadius: "10px", color: open ? T.coral : T.textSecondary, fontSize: "13px", fontWeight: "700", cursor: "pointer", textAlign: "left", fontFamily: FF, letterSpacing: "1.5px", textTransform: "uppercase", display: "flex", justifyContent: "space-between", alignItems: "center", transition: "all .15s" }}>
+        <span>📄 View Highlighted Transcript</span>
+        <span style={{ fontSize: "11px", fontWeight: "400", letterSpacing: "0" }}>
+          {open ? "▲ Close" : `${found} of ${total} moment${total !== 1 ? "s" : ""} highlighted ▼`}
+        </span>
+      </button>
+      {open && (
+        <div style={{ background: T.card, border: `1px solid ${T.cardBorder}`, borderRadius: "0 0 10px 10px", borderTop: "none", padding: "20px 24px" }}>
+          <div style={{ display: "flex", gap: "16px", marginBottom: "14px", flexWrap: "wrap" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <div style={{ width: "12px", height: "12px", borderRadius: "2px", background: hookColors.bg, border: `1.5px solid ${hookColors.border}` }} />
+              <span style={{ fontSize: "11px", color: T.textMuted, fontFamily: FF }}>Hook moments</span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <div style={{ width: "12px", height: "12px", borderRadius: "2px", background: clipColors.bg, border: `1.5px solid ${clipColors.border}` }} />
+              <span style={{ fontSize: "11px", color: T.textMuted, fontFamily: FF }}>Clip moments</span>
+            </div>
+            {found < total && <span style={{ fontSize: "11px", color: T.textMuted, fontFamily: FF, fontStyle: "italic" }}>{total - found} quote{total - found !== 1 ? "s" : ""} not found in transcript (may be paraphrased by AI)</span>}
+          </div>
+          <div style={{ fontFamily: "monospace", fontSize: "13px", lineHeight: "1.9", color: T.textSecondary, whiteSpace: "pre-wrap", wordBreak: "break-word", maxHeight: "520px", overflowY: "auto", borderRadius: "6px", background: T.surface, padding: "16px 18px", border: `1px solid ${T.cardBorder}` }}>
+            {segments.length > 0 ? segments.map((seg, i) =>
+              seg.hl ? (
+                <mark key={i} title={`${seg.hl.label} ${seg.hl.num}`}
+                  style={{ background: seg.hl.bg, borderBottom: `2px solid ${seg.hl.border}`, borderRadius: "2px", padding: "1px 0", color: "inherit", cursor: "default" }}>
+                  {seg.text}
+                </mark>
+              ) : (
+                <span key={i}>{seg.text}</span>
+              )
+            ) : <span style={{ color: T.textMuted, fontStyle: "italic" }}>Paste a transcript and generate to see highlights.</span>}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 function Sec({s,clr}){const m=SM[s.id]||SM.intro;
@@ -1265,7 +1367,7 @@ export default function App(){
     const results=[];const platList=clipPlatforms.join(", ");
     for(let i=0;i<clipCount;i++){
       const clipTx=clipTexts[i].trim();
-      if(!clipTx){results.push({index:i+1,skipped:true,content:{}});continue;}
+      if(!clipTx){results.push({index:i+1,skipped:true,content:{},originalTx:""});continue;}
       try{
         const clipSys=`You are creating social media clip content for ${d.name}.
 
@@ -1304,8 +1406,8 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
         if(i>0) await new Promise(res=>setTimeout(res,2000));
         const j=await claudeAPI({model:"claude-sonnet-4-6",max_tokens:2000,system:clipSys,messages:[{role:"user",content:`CLIP ${i+1} TRANSCRIPT:\n${clipTx.substring(0,8000)}`}]});
         const t=j.content?.filter(b=>b.type==="text").map(b=>b.text).join("\n")||"";
-        results.push({index:i+1,skipped:false,content:t});
-      }catch(e){results.push({index:i+1,skipped:false,content:`Error: ${e.message}`});}
+        results.push({index:i+1,skipped:false,content:t,originalTx:clipTx});
+      }catch(e){results.push({index:i+1,skipped:false,content:`Error: ${e.message}`,originalTx:clipTx});}
     }
     setClipResults(results);setBusy(false);setStep("result");
   }
@@ -1314,7 +1416,20 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
     if(!tx.trim()){setErr("Paste the transcript.");return;}
     setErr("");setBusy(true);setRaw("");setSecs([]);setStep("generating");
     try{
-      const j=await claudeAPI({model:"claude-sonnet-4-6",max_tokens:mode==="editor"?4000:8000,system:sys(d,show,guest,ep,mode,extraPlatforms,editorClipCount),messages:[{role:"user",content:mode==="editor"?`Analyze this transcript carefully and generate the Editor Brief as instructed.\n\nTRANSCRIPT:\n${tx.substring(0,90000)}`:`Generate the COMPLETE content package in plain text.\n\nTRANSCRIPT:\n${tx.substring(0,90000)}`}]});
+      // Build AI Rules injection — check trigger words against transcript
+      const aiRulesBlock=(()=>{
+        const rules=d?.aiRules||[];
+        if(!rules.length) return "";
+        const txLower=tx.toLowerCase();
+        const applicable=rules.filter(r=>{
+          if(!r.instruction?.trim()) return false;
+          if(!r.trigger?.trim()) return true;
+          return txLower.includes(r.trigger.toLowerCase());
+        });
+        if(!applicable.length) return "";
+        return "\n\nSHOW-SPECIFIC RULES FOR THIS EPISODE (apply every one of these):\n"+applicable.map((r,i)=>`${i+1}. [${r.name}] ${r.instruction}`).join("\n");
+      })();
+      const j=await claudeAPI({model:"claude-sonnet-4-6",max_tokens:mode==="editor"?4000:8000,system:sys(d,show,guest,ep,mode,extraPlatforms,editorClipCount)+aiRulesBlock,messages:[{role:"user",content:mode==="editor"?`Analyze this transcript carefully and generate the Editor Brief as instructed.\n\nTRANSCRIPT:\n${tx.substring(0,90000)}`:`Generate the COMPLETE content package in plain text.\n\nTRANSCRIPT:\n${tx.substring(0,90000)}`}]});
       if(j.error){setErr(j.error.message);setStep("input");}
       else{const t=j.content?.filter(i=>i.type==="text").map(i=>i.text).join("\n")||"";if(!t.trim()){setErr("No content generated. Please try again.");setStep("input");return;}setRaw(strip(t));const parsed=parse(t);const bpRaw=d?.bp||null;// Attach original HTML boilerplate to show notes section (spread to ensure React detects change)
       const withBp=parsed.map(s=>s.id==="shownotes"&&bpRaw?{...s,bpHtml:bpRaw}:s);
@@ -1907,10 +2022,9 @@ The email should:
               const isActive = item.section==="home" ? step==="welcome" : item.section==="create" ? (mode==="full"||mode==="clips") : item.section==="guest" ? mode==="guest" : mode===item.section;
               return(
               <button key={item.label} onClick={item.action}
-                style={{width:"100%",padding:"10px 16px",background:isActive?"#2E2E2E":"transparent",border:"none",borderLeft:`3px solid ${isActive?T.coral:"transparent"}`,color:isActive?"#FFFFFF":"#8A8A8A",fontSize:"15px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",display:"flex",alignItems:"center",gap:"10px",transition:"all .15s"}}
+                style={{width:"100%",padding:"10px 16px",background:isActive?"#2E2E2E":"transparent",border:"none",boxShadow:isActive?"inset 3px 0 0 "+T.coral:"none",color:isActive?"#FFFFFF":"#8A8A8A",fontSize:"15px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",display:"flex",alignItems:"center",transition:"all .15s"}}
                 onMouseEnter={e=>{if(!isActive){e.currentTarget.style.background="#252525";e.currentTarget.style.color="#CCCCCC";}}}
                 onMouseLeave={e=>{if(!isActive){e.currentTarget.style.background="transparent";e.currentTarget.style.color="#8A8A8A";}}}>
-                <span style={{width:"6px",height:"6px",borderRadius:"50%",background:isActive?T.coral:"#444",flexShrink:0,display:"inline-block"}}/>
                 <span>{item.label}</span>
               </button>
               );
@@ -1939,7 +2053,7 @@ The email should:
           ].map(item=>(
             <button key={item.label} onClick={item.action}
               className="sidebar-nav-item"
-              style={{width:"100%",padding:"10px 16px",background:"transparent",border:"none",borderLeft:"3px solid transparent",color:"#8A8A8A",fontSize:"15px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",display:"block"}}>
+              style={{width:"100%",padding:"10px 16px",background:"transparent",border:"none",color:"#8A8A8A",fontSize:"15px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",display:"block"}}>
               {item.label}
             </button>
           ))}
@@ -1949,7 +2063,7 @@ The email should:
           <button
             className="sidebar-nav-item"
             onClick={()=>isAdmin?setShowAdmin(true):setShowProfile(true)}
-            style={{width:"100%",padding:"10px 16px",background:"transparent",border:"none",borderLeft:"3px solid transparent",color:"#FFFFFF",fontSize:"15px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",display:"block"}}>
+            style={{width:"100%",padding:"10px 16px",background:"transparent",border:"none",color:"#FFFFFF",fontSize:"15px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",display:"block"}}>
             Settings
           </button>
           <div style={{padding:"8px 16px 0"}}>
@@ -2571,23 +2685,30 @@ The email should:
                 <div style={{display:"flex",gap:"8px"}}>
                   {mode!=="clips"&&<button onClick={()=>{const bpH=secs.find(s=>s.bpHtml)?.bpHtml||"";copyText(raw,bpH);setCpAll(true);setTimeout(()=>setCpAll(false),2000);}} style={{...ghost,background:cpAll?T.coralSoft:"transparent",borderColor:cpAll?T.coralMid:T.cardBorder,color:cpAll?T.coral:T.textMuted}}>{cpAll?"✓ COPIED":"COPY ALL"}</button>}
                   {mode!=="clips"&&<button onClick={()=>{dlDoc(raw,`${d?.name}${mode==="prep"?` — Episode Prep${epTopic?` — ${epTopic}`:""}`:ep?` — Ep ${ep}`:""} Content Package`,d?.bp);setDlOk(true);setTimeout(()=>setDlOk(false),2500);}} style={{...ghost,background:dlOk?T.coralSoft:"transparent",borderColor:dlOk?T.coralMid:T.cardBorder,color:dlOk?T.coral:T.textMuted}}>{dlOk?"✓ DOWNLOADED":"📄 WORD DOC"}</button>}
-                  {mode==="clips"&&<button onClick={()=>{const clipDoc=clipResults.filter(r=>!r.skipped).map(r=>`CLIP ${r.index}\n\n${r.content}`).join("\n\n");dlDoc(clipDoc,`${d?.name}${ep?` — Ep ${ep}`:""} — Clips`);setDlOk(true);setTimeout(()=>setDlOk(false),2500);}} style={{...ghost,background:dlOk?T.coralSoft:"transparent",borderColor:dlOk?T.coralMid:T.cardBorder,color:dlOk?T.coral:T.textMuted}}>{dlOk?"✓ DOWNLOADED":"📄 WORD DOC"}</button>}
+                  {mode==="clips"&&<button onClick={()=>{const clipDoc=clipResults.filter(r=>!r.skipped).map(r=>`CLIP ${r.index}\n\n${r.content}${r.originalTx?`\n\n---\nORIGINAL TRANSCRIPT\n\n${r.originalTx}`:""}`).join("\n\n");dlDoc(clipDoc,`${d?.name}${ep?` — Ep ${ep}`:""} — Clips`);setDlOk(true);setTimeout(()=>setDlOk(false),2500);}} style={{...ghost,background:dlOk?T.coralSoft:"transparent",borderColor:dlOk?T.coralMid:T.cardBorder,color:dlOk?T.coral:T.textMuted}}>{dlOk?"✓ DOWNLOADED":"📄 WORD DOC"}</button>}
                   {mode!=="clips"&&<button onClick={uploadToGDrive} disabled={gDriveStatus==="uploading"} title="Export to Google Drive as a Google Doc" style={{...ghost,background:gDriveStatus==="ok"?T.coralSoft:gDriveStatus==="error"||gDriveStatus==="disconnected"?"#D94F4F18":"transparent",borderColor:gDriveStatus==="ok"?T.coralMid:gDriveStatus==="error"||gDriveStatus==="disconnected"?"#D94F4F44":T.cardBorder,color:gDriveStatus==="ok"?T.coral:gDriveStatus==="error"||gDriveStatus==="disconnected"?"#D94F4F":T.textMuted,opacity:gDriveStatus==="uploading"?.6:1}}>{gDriveStatus==="uploading"?"UPLOADING…":gDriveStatus==="ok"?"✓ EXPORTED TO DRIVE":gDriveStatus==="error"?"✕ EXPORT FAILED":gDriveStatus==="disconnected"?"⚙ CONNECT IN SETTINGS":"📁 EXPORT TO GOOGLE DRIVE"}</button>}
                   <button onClick={()=>{setStep(mode==="clips"?"clips-setup":"input");setRaw("");setSecs([]);setClipResults([]);}} style={ghost}>{mode==="clips"?"NEW CLIPS":"NEW EPISODE"}</button>
                 </div>
               </div>
               {d?.publishDay&&d?.publishTime&&d?.publishTz&&(()=>{try{const sched=formatPublishSchedule(d,userProfile?.timezone);if(!sched)return null;return(<div style={{background:T.coralSoft,border:"1px solid "+T.coralMid,borderRadius:"8px",padding:"12px 18px",marginBottom:"20px",display:"flex",alignItems:"center",gap:"10px"}}><span style={{fontSize:"18px"}}>📅</span><div><div style={{fontSize:"11px",color:T.coral,fontWeight:"700",letterSpacing:"1.5px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>PUBLISH SCHEDULE</div><div style={{fontSize:"14px",color:T.textSecondary,marginTop:"2px",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"500"}}>{sched.showTime}{sched.isDifferent?" · "+sched.localTime+" your time":""}</div></div></div>);}catch{return null;}})()}
               {mode==="editor"&&(()=>{const lvl=d?.editingLevel||"1";const lvlLabels={"1":"Level 1 — Basic Clean Edit","2":"Level 2 — Paced & Polished","3":"Level 3 — Creative & Strategic"};const lvlDesc={"1":"Removing filler, stumbles, and repetition. Flagging the best moments for this show's audience.","2":"Tightening pacing, restructuring for flow, and optimizing hooks for audience engagement.","3":"Deep structural decisions, storytelling arc, and audience-specific content strategy."};return(<div style={{background:"rgba(30,20,10,.04)",border:"1px solid "+T.cardBorder,borderRadius:"8px",padding:"12px 18px",marginBottom:"20px",display:"flex",alignItems:"center",gap:"10px"}}><span style={{fontSize:"16px"}}>🎬</span><div><div style={{fontSize:"11px",color:T.textMuted,fontWeight:"700",letterSpacing:"1.5px",fontFamily:"'DM Sans', system-ui, sans-serif",textTransform:"uppercase"}}>{lvlLabels[lvl]}</div><div style={{fontSize:"13px",color:T.textSecondary,marginTop:"2px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{lvlDesc[lvl]}</div></div></div>);})()}
+              {mode==="editor"&&tx&&secs.length>0&&<HighlightedTranscript transcript={tx} sections={secs}/>}
               {err&&<div style={{background:"#D94F4F18",border:"1px solid #D94F4F44",borderRadius:"8px",padding:"12px 16px",color:"#F09090",fontSize:"14px",marginBottom:"12px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{err}</div>}
               {mode==="clips"?(
                 <div>
                   {clipResults.map((clip,i)=>clip.skipped?null:(
                     <div key={i} style={{background:T.card,border:`1px solid ${T.cardBorder}`,borderRadius:"10px",marginBottom:"10px",overflow:"hidden"}}>
                       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 20px",borderBottom:`1px solid ${T.cardBorder}`,background:T.surface}}>
-                        <span style={{fontSize:"11px",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"2px",color:d.clr,fontWeight:"700"}}>✂️ CLIP {clip.index}</span>
-                        <button onClick={()=>copyText(clip.content)} style={ghost}>COPY</button>
+                        <span style={{fontSize:"11px",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"2px",color:d.clr,fontWeight:"700"}}>CLIP {clip.index}</span>
+                        <button onClick={()=>copyText(clip.content+(clip.originalTx?`\n\n---\nORIGINAL TRANSCRIPT\n\n${clip.originalTx}`:""))} style={ghost}>COPY</button>
                       </div>
                       <div style={{padding:"20px 24px"}}>{renderContent(clip.content)}</div>
+                      {clip.originalTx&&(
+                        <div style={{margin:"0 24px 24px",padding:"16px 18px",background:T.surface,border:`1px solid ${T.cardBorder}`,borderRadius:"8px"}}>
+                          <div style={{fontSize:"10px",fontWeight:"700",letterSpacing:"2px",textTransform:"uppercase",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",marginBottom:"10px"}}>ORIGINAL TRANSCRIPT</div>
+                          <div style={{fontSize:"13px",color:T.textSecondary,fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.8",whiteSpace:"pre-wrap"}}>{clip.originalTx}</div>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>

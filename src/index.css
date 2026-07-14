@@ -23,7 +23,7 @@ body {
 
 input, textarea, select { font-family: var(--font-sans); }
 
-button { font-family: var(--font-sans); cursor: pointer; transition: opacity 0.15s ease; }
+button { font-family: var(--font-sans); cursor: pointer; transition: opacity 0.15s ease; -webkit-appearance: none; appearance: none; list-style: none; }
 button:hover { opacity: 0.88; }
 
 a { text-decoration: none; }
