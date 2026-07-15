@@ -1986,9 +1986,9 @@ The email should:
     const voiceTraits=Array.isArray(d.voice?.traits)?d.voice.traits.join(", "):(d.voice?.traits||"");
     const sections=[];
     if(editorSelections.brief)sections.push(`EDITOR COMPANION BRIEF\n\nEDITING LEVEL: ${lvl.name}\n\nEPISODE OVERVIEW\n[2-3 sentences on tone, energy, and narrative arc. What's the core message? What makes it worth listening to?]\n\nEDITING APPROACH FOR THIS EPISODE\n[Specific marching orders for the editor based on this episode and editing level. Not generic advice — tied to what you heard in this transcript.]\n\nSECTIONS TO CUT OR TIGHTEN\n[List specific moments with timestamps. For each:\nTIMESTAMP: [start — end]\nREASON: [why cut or tighten]\nSUGGESTION: [cut entirely / trim / restructure]]`);
-    if(editorSelections.clips)sections.push(`SOCIAL CLIP RECOMMENDATIONS\n\nFind exactly ${editorClipCount} moments for high-performing social clips. Each must be under 60 seconds when spoken. For each:\n\nCLIP #[N]\nCLIP TITLE: [4-7 word punchy title]\nTIMESTAMP: [exact start — exact end]\nDURATION: [estimated — must be under 60 seconds]\nBEST PLATFORM: [Instagram Reels / TikTok / YouTube Shorts / LinkedIn — pick ONE]\nQUOTE: [exact words where clip starts and ends — [Speaker]]\nWHY IT PERFORMS: [why this stops the scroll for this show's audience]\nSUGGESTED CAPTION HOOK: [one punchy first line]`);
-    if(editorSelections.hook)sections.push(`INTRO HOOK RECOMMENDATIONS\n\nFind the 3 best moments for a podcast intro hook (spliced before theme music). Each under 60 seconds. For each:\n\nHOOK #[N] — [RECOMMENDED / ALTERNATE 1 / ALTERNATE 2]\nTIMESTAMP: [approx time]\nDURATION: [estimated]\nQUOTE: [exact words — [Speaker]]\nWHY THIS WORKS: [why it hooks this show's audience specifically]\nAUDIENCE TRIGGER: [emotional hook — e.g. Curiosity, Validation, Relief]`);
-    if(editorSelections.pullquotes)sections.push(`PULL QUOTES\n\nFind 6-8 of the most shareable, standalone quotes. Each must be meaningful without episode context. For each:\n\nQUOTE: "[exact words]" — [Speaker]\nWHY IT RESONATES: [1 sentence — tied to audience pain points]\nBEST USE: [social graphic / newsletter / caption / article pull quote]`);
+    if(editorSelections.clips)sections.push(`SOCIAL CLIP RECOMMENDATIONS\n\nFind exactly ${editorClipCount} moments for high-performing social clips. Each must be between 20 and 45 seconds when spoken — nothing longer. For each:\n\nCLIP #[N]\nCLIP TITLE: [4-7 word punchy title]\nTIMESTAMP: [exact start — exact end]\nDURATION: [estimated — must be 20–45 seconds]\nBEST PLATFORM: [Instagram Reels / TikTok / YouTube Shorts / LinkedIn — pick ONE]\nQUOTE: [exact words where clip starts and ends — [Speaker]]\nWHY IT PERFORMS: [why this stops the scroll for this show's audience]\nSUGGESTED CAPTION HOOK: [one punchy first line]`);
+    if(editorSelections.hook)sections.push(`INTRO HOOK RECOMMENDATIONS\n\nFind the 3 best moments for a podcast intro hook (spliced before theme music). Each must be 20–45 seconds when spoken. For each:\n\nHOOK #[N] — [RECOMMENDED / ALTERNATE 1 / ALTERNATE 2]\nTIMESTAMP: [approx time]\nDURATION: [estimated — must be 20–45 seconds]\nQUOTE: [exact words — [Speaker]]\nWHY THIS WORKS: [why it hooks this show's audience specifically]\nAUDIENCE TRIGGER: [emotional hook — e.g. Curiosity, Validation, Relief]`);
+    if(editorSelections.pullquotes)sections.push(`PULL QUOTES\n\nFind 6-8 of the most shareable, standalone quotes. Each must be meaningful without episode context. Do NOT add any sub-headings or section labels. For each quote output exactly:\n\nQUOTE: "[exact words]" — [Speaker]\nWHY IT RESONATES: [1 sentence — tied to audience pain points]\nBEST USE: social graphic, caption, or article pull quote`);
     const dnaBase=`You are an expert editor coach and content strategist for ${d.name}.\n\nOUTPUT FORMAT: PLAIN TEXT only. Zero markdown. No asterisks. No bold. ALL section headers in ALL CAPS. Separate major sections with ---.\n\nCRITICAL: Every quote pulled from the transcript must attribute the speaker by name — format as "quote text" — [Name]. Never leave a quote unattributed.\n\nSHOW DNA (all outputs must reflect this):\nShow: ${d.name} — "${d.tag}"\nHost(s): ${d.hosts}\n${guest?"GUEST episode.":"SOLO episode."}\nVoice/Tone: ${voiceTraits}\nEnergy: ${d.voice?.energy||""}\nAudience: ${d.aud?.who||""}\nAudience pain points: ${(d.aud?.pains||[]).join(", ")}\nWhat resonates with this audience: ${d.voice?.use||""}\nPhrases this show uses: ${(d.voice?.phrases||[]).join(" | ")}\nAvoid: ${d.voice?.avoid||""}\nEditing level: ${lvl.name} — ${lvl.desc}\nShow rules: ${d.rules||"none"}\n\nGenerate ONLY the sections below. Analyze the full transcript carefully before writing. Every output must be grounded in what actually appears in this specific transcript — not generic podcast advice.`;
     setEditorGenerating(true);setErr("");setSecs([]);
     try{
@@ -1998,9 +1998,18 @@ The email should:
       if(!t.trim()){setErr("No content generated. Please try again.");return;}
       setRaw(strip(t));const parsed=parse(t);
       setSecs(parsed.length?parsed:[{id:"full",title:"Editor Brief",content:strip(t)}]);
-      // Extract QUOTE: lines and highlight them in the transcript
+      // Extract QUOTE: lines and highlight them in the transcript — track section for color coding
       const quoteMatches=[];
-      t.split("\n").forEach(line=>{const qm=line.match(/^QUOTE:\s*(.+)$/i);if(qm){let needle=qm[1].replace(/^[""]|[""]$/g,"").trim();if(!needle)return;if(tx.includes(needle)){quoteMatches.push(needle);return;}const stripped=needle.replace(/^[""]|[""]$/g,"").trim();if(tx.includes(stripped)){quoteMatches.push(stripped);return;}const first80=needle.slice(0,80);if(first80.length>10&&tx.includes(first80))quoteMatches.push(first80);}});
+      let curSec="clip";
+      t.split("\n").forEach(line=>{
+        const lt=line.trim();
+        if(/^SOCIAL CLIP/i.test(lt))curSec="clip";
+        else if(/^INTRO HOOK/i.test(lt))curSec="hook";
+        else if(/^PULL QUOTES/i.test(lt))curSec="quote";
+        else if(/^EDITOR COMPANION/i.test(lt))curSec="clip";
+        const qm=lt.match(/^QUOTE:\s*(.+)$/i);
+        if(qm){let needle=qm[1].replace(/^[""“”]|[""“”]$/g,"").trim();if(!needle)return;let matched=null;if(tx.includes(needle)){matched=needle;}else{const s=needle.replace(/^[""“”]|[""“”]$/g,"").trim();if(tx.includes(s))matched=s;}if(!matched){const f=needle.slice(0,80);if(f.length>10&&tx.includes(f))matched=f;}if(matched)quoteMatches.push({text:matched,type:curSec});}
+      });
       if(quoteMatches.length>0)setTranscriptHighlights(quoteMatches);
       setEditorLeftTab("brief");
     }catch(e){setErr(e.message||"Network error.");}
@@ -2046,15 +2055,15 @@ ${tx.substring(0, 40000)}`;
       const reply = j.content?.filter(i => i.type === "text").map(i => i.text).join("\n") || "";
       if (!reply) throw new Error("Empty response");
       setEditorChat([...newMessages, { role: "assistant", content: reply }]);
-      // Extract quoted phrases from the reply to highlight in transcript
+      // Extract quoted phrases from the reply to highlight in transcript — teal for AI coach
       const quoted = [];
       const quoteRe = /"([^"]{10,120})"/g;
       let m;
       while ((m = quoteRe.exec(reply)) !== null) {
-        if (tx.includes(m[1])) quoted.push(m[1]);
+        if (tx.includes(m[1])) quoted.push({text:m[1],type:"chat"});
       }
       if (quoted.length > 0) {
-        setTranscriptHighlights(quoted);
+        setTranscriptHighlights(prev=>[...prev.filter(h=>h.type!=="chat"),...quoted]);
         setEditorLeftTab("transcript");
       }
     } catch (e) {
@@ -2943,9 +2952,9 @@ ${tx.substring(0, 40000)}`;
               {/* Editor tabs — Brief / Transcript */}
               {mode==="editor"&&(
                 <div style={{display:"flex",gap:"0",marginBottom:"20px",background:T.card,border:"1px solid "+T.cardBorder,borderRadius:"10px",overflow:"hidden",flexShrink:0}}>
-                  {[["brief","📋 Brief"],["transcript","📄 Transcript"]].map(([id,label])=>(
+                  {[["transcript","📄 Transcript"],["brief","📋 Brief"]].map(([id,label])=>(
                     <button key={id} onClick={()=>setEditorLeftTab(id)}
-                      style={{flex:1,padding:"11px 16px",background:editorLeftTab===id?T.coral:"transparent",border:"none",color:editorLeftTab===id?"#fff":T.textMuted,fontSize:"13px",fontWeight:"700",cursor:"pointer",fontFamily:PF,letterSpacing:"1px",transition:"all .15s",borderRight:id==="brief"?"1px solid "+T.cardBorder:"none"}}>
+                      style={{flex:1,padding:"11px 16px",background:editorLeftTab===id?T.coral:"transparent",border:"none",color:editorLeftTab===id?"#fff":T.textMuted,fontSize:"13px",fontWeight:"700",cursor:"pointer",fontFamily:PF,letterSpacing:"1px",transition:"all .15s",borderRight:id==="transcript"?"1px solid "+T.cardBorder:"none"}}>
                       {label}
                       {id==="transcript"&&transcriptHighlights.length>0&&editorLeftTab!=="transcript"&&<span style={{display:"inline-block",marginLeft:"6px",background:"#F5A623",borderRadius:"10px",padding:"1px 7px",fontSize:"10px",color:"#fff",fontWeight:"700"}}>{transcriptHighlights.length}</span>}
                     </button>
@@ -2958,10 +2967,10 @@ ${tx.substring(0, 40000)}`;
                   <div style={{padding:"14px 20px",borderBottom:"1px solid "+T.cardBorder,background:T.surface,display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:"8px"}}>
                     <div style={{fontSize:"12px",fontWeight:"700",letterSpacing:"2px",textTransform:"uppercase",color:T.textMuted,fontFamily:PF}}>Episode Transcript{tx.trim()?` · ${tx.trim().split(/\s+/).length.toLocaleString()} words`:""}</div>
                     <div style={{display:"flex",alignItems:"center",gap:"10px"}}>
-                      {transcriptHighlights.length>0&&<>
-                        <span style={{fontSize:"12px",color:"#F5A623",fontFamily:PF,fontWeight:"700"}}>{transcriptHighlights.length} passage{transcriptHighlights.length!==1?"s":""} highlighted</span>
+                      {transcriptHighlights.length>0&&<div style={{display:"flex",gap:"8px",flexWrap:"wrap",alignItems:"center"}}>
+                        {[["hook","Hooks","#F5A623"],["clip","Clips","#6399D9"],["quote","Quotes","#9B59B6"],["chat","AI Coach","#4CAF84"]].map(([type,label,color])=>{const cnt=transcriptHighlights.filter(h=>h.type===type).length;return cnt>0?(<span key={type} style={{fontSize:"11px",color,fontFamily:PF,fontWeight:"700",display:"flex",alignItems:"center",gap:"3px"}}><span style={{width:"8px",height:"8px",borderRadius:"2px",background:color,display:"inline-block"}}/>{cnt} {label}</span>):null;})}
                         <button onClick={()=>setTranscriptHighlights([])} style={{fontSize:"11px",color:T.textMuted,background:"none",border:"none",cursor:"pointer",fontFamily:PF,padding:0}}>Clear</button>
-                      </>}
+                      </div>}
                       <label style={{display:"flex",alignItems:"center",gap:"6px",cursor:"pointer",fontSize:"12px",color:T.textMuted,fontFamily:PF}}>
                         <input ref={fileRef} type="file" accept=".txt,.md" style={{display:"none"}} onChange={handleFileInput}/>
                         <button onClick={()=>fileRef.current?.click()} style={{fontSize:"11px",padding:"4px 10px",background:"transparent",border:"1px solid "+T.cardBorder,borderRadius:"5px",color:T.textMuted,cursor:"pointer",fontFamily:PF}}>Upload file</button>
@@ -2969,18 +2978,21 @@ ${tx.substring(0, 40000)}`;
                     </div>
                   </div>
                   {transcriptHighlights.length>0?(
-                    <div style={{padding:"20px 24px",maxHeight:"72vh",overflowY:"auto",fontFamily:PF,fontSize:"14px",lineHeight:"1.8",color:T.text,whiteSpace:"pre-wrap"}}>
-                      {(()=>{
-                        const escaped=transcriptHighlights.map(h=>h.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"));
-                        const re=new RegExp(`(${escaped.join("|")})`, "g");
-                        const parts=tx.split(re);
-                        return parts.map((part,i)=>{
-                          const isHighlight=transcriptHighlights.includes(part);
-                          return isHighlight
-                            ? <mark key={i} style={{background:"#F5A62340",borderBottom:"2px solid #F5A623",borderRadius:"2px",padding:"1px 2px",color:T.text}}>{part}</mark>
-                            : <span key={i}>{part}</span>;
-                        });
-                      })()}
+                    <div>
+                      <div style={{padding:"10px 20px",borderBottom:"1px solid "+T.cardBorder,display:"flex",gap:"16px",flexWrap:"wrap"}}>
+                        {[["hook","Hook moments","#F5A623"],["clip","Clip moments","#6399D9"],["quote","Pull quotes","#9B59B6"],["chat","AI Coach finds","#4CAF84"]].map(([type,label,color])=>(<span key={type} style={{display:"flex",alignItems:"center",gap:"5px",fontSize:"11px",color:T.textMuted,fontFamily:PF}}><span style={{width:"10px",height:"10px",borderRadius:"2px",background:color+"66",border:"1px solid "+color,display:"inline-block"}}/>{label}</span>))}
+                      </div>
+                      <div style={{padding:"20px 24px",maxHeight:"68vh",overflowY:"auto",fontFamily:PF,fontSize:"14px",lineHeight:"1.8",color:T.text,whiteSpace:"pre-wrap"}}>
+                        {(()=>{
+                          const hlMap={};transcriptHighlights.forEach(h=>{hlMap[h.text]=h.type;});
+                          const escaped=transcriptHighlights.map(h=>h.text.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).filter(Boolean);
+                          if(!escaped.length)return<span>{tx}</span>;
+                          const re=new RegExp(`(${escaped.join("|")})`, "g");
+                          const parts=tx.split(re);
+                          const typeStyle={hook:["#F5A62340","#F5A623"],clip:["#6399D940","#6399D9"],quote:["#9B59B640","#9B59B6"],chat:["#4CAF8440","#4CAF84"]};
+                          return parts.map((part,i)=>{const type=hlMap[part];if(!type)return<span key={i}>{part}</span>;const[bg,bdr]=typeStyle[type]||typeStyle.clip;return<mark key={i} style={{background:bg,borderBottom:`2px solid ${bdr}`,borderRadius:"2px",padding:"1px 2px",color:T.text}}>{part}</mark>;});
+                        })()}
+                      </div>
                     </div>
                   ):(
                     <div onDragOver={e=>{e.preventDefault();setDragging(true);}} onDragLeave={()=>setDragging(false)} onDrop={e=>{e.preventDefault();setDragging(false);const f=e.dataTransfer.files[0];if(f)readFile(f);}}>
@@ -2988,9 +3000,13 @@ ${tx.substring(0, 40000)}`;
                       <textarea
                         value={tx}
                         onChange={e=>setTx(e.target.value)}
-                        placeholder={"Paste your full episode transcript here — include timestamps if available (e.g. [00:03:47]).\n\nThe AI Editor Coach on the right can then answer questions, find clip moments, and coach you through this episode at the editing level set in your Show DNA."}
-                        style={{width:"100%",minHeight:"65vh",border:"none",outline:"none",resize:"none",padding:"20px 24px",fontSize:"14px",lineHeight:"1.8",color:T.text,background:dragging?"#FFF8F0":T.card,fontFamily:PF,boxSizing:"border-box"}}
+                        placeholder={"Paste your full episode transcript here — include timestamps if available (e.g. [00:03:47]).\n\nOnce it's pasted, go to the Brief tab → select what to generate."}
+                        style={{width:"100%",minHeight:"62vh",border:"none",outline:"none",resize:"none",padding:"20px 24px",fontSize:"14px",lineHeight:"1.8",color:T.text,background:dragging?"#FFF8F0":T.card,fontFamily:PF,boxSizing:"border-box"}}
                       />
+                      {tx.trim()&&<div style={{padding:"12px 20px",borderTop:"1px solid "+T.cardBorder,background:T.surface,display:"flex",alignItems:"center",justifyContent:"space-between",gap:"12px",flexWrap:"wrap"}}>
+                        <span style={{fontSize:"13px",color:T.textMuted,fontFamily:PF}}>✅ {tx.trim().split(/\s+/).length.toLocaleString()} words pasted</span>
+                        <button onClick={()=>setEditorLeftTab("brief")} style={{padding:"8px 18px",background:T.coral,border:"none",borderRadius:"6px",color:"#fff",fontSize:"13px",fontWeight:"700",cursor:"pointer",fontFamily:PF,whiteSpace:"nowrap"}}>Go to Brief → Select What to Generate</button>
+                      </div>}
                     </div>
                   )}
                 </div>
