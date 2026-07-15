@@ -1924,7 +1924,7 @@ The email should:
       else if(mode==="clips")setStep("clips-setup");
       else setStep("configure");
     }
-    else if(step==="result"){if(mode==="prep")setStep("prep-details");else if(mode==="editor")setStep("welcome");else setStep("input");}
+    else if(step==="result"){if(mode==="prep")setStep("prep-details");else if(mode==="editor"){setMode(null);setStep("welcome");}else setStep("input");}
     else if(step==="prep-format"){setStep("welcome");}
     else if(step==="prep-details"){const hasFmts=d?.episodeFormats?.length>0;setStep(hasFmts?"prep-format":"welcome");}
     else if(step==="planner-chat"){const hasFmts=d?.episodeFormats?.length>0;setStep(hasFmts?"prep-format":"welcome");}
@@ -2343,7 +2343,7 @@ ${tx.substring(0, 40000)}`;
                   {[0,1,2].map(i=><div key={i} style={{width:i<ci?"20px":"6px",height:"4px",borderRadius:"2px",background:i<ci?T.coral:T.cardBorder,transition:"all .3s"}}/>)}
                 </div>}
                 <button onClick={goBack} style={ghost}>Back</button>
-                <button onClick={()=>{setMode(null);setStep("welcome");}} style={{...ghost,opacity:.5,fontSize:"12px",padding:"6px 12px"}}>Home</button>
+                <button onClick={()=>{setMode(null);setStep("welcome");}} style={{...ghost,fontSize:"12px",padding:"6px 12px"}}>↩ Studio</button>
               </>
             )}
           </div>
