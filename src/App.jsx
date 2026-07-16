@@ -193,8 +193,7 @@ Option D: [answer — 24 chars max]
 
   // YOUTUBE — if in social platforms, gets full YouTube treatment
   if (social.includes("YouTube")) {
-    const ytBp = stripHtml(show?.bp || "");
-    out += `${n++}. YOUTUBE DESCRIPTION\n[HOOK — 1 sentence]\n\n[SUMMARY: 2-3 sentences optimized for YouTube search]\n\nTIMESTAMPS\n00:00 — Introduction\n[exact MM:SS from transcript] — [Topic]\n[exact MM:SS from transcript] — [Topic]\n[exact MM:SS from transcript] — [Topic]\n[exact MM:SS from transcript] — [Topic]\n[Add all major topics using the precise timestamps from the transcript — do NOT round to whole minutes]\n\n${ytBp || "[BOILERPLATE]"}\n\nHASHTAGS\n[8-12 hashtags with # symbol]\n\nKEYWORDS\n[8-12 comma-separated SEO keywords]\n---\n`;
+    out += `${n++}. YOUTUBE DESCRIPTION\n[HOOK — 1 sentence]\n\n[SUMMARY: 2-3 sentences optimized for YouTube search]\n\nTIMESTAMPS\n00:00 — Introduction\n[exact MM:SS from transcript] — [Topic]\n[exact MM:SS from transcript] — [Topic]\n[exact MM:SS from transcript] — [Topic]\n[exact MM:SS from transcript] — [Topic]\n[Add all major topics using the precise timestamps from the transcript — do NOT round to whole minutes]\n\n[BOILERPLATE]\n\nHASHTAGS\n[8-12 hashtags with # symbol]\n\nKEYWORDS\n[8-12 comma-separated SEO keywords]\n---\n`;
     out += `${n++}. YOUTUBE QUIZ CARD\nWrite one multiple-choice quiz question based on a key insight from this episode. Choose a timestamp from the middle of the video where a viewer would have just learned this. Format exactly as:\n\nTIMESTAMP: [MM:SS]\nQUESTION: [The quiz question — clear, specific, pulled from the episode content]\nA) [Option]\nB) [Option]\nC) [Option]\nD) [Option]\nCORRECT ANSWER: [Letter] — [Brief explanation of why, 1 sentence]\n---\n`;
   }
 
@@ -1439,7 +1438,11 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
       const j=await claudeAPI({model:"claude-sonnet-4-6",max_tokens:mode==="editor"?4000:8000,system:sys(d,show,guest,ep,mode,extraPlatforms,editorClipCount,matched),messages:[{role:"user",content:mode==="editor"?`Analyze this transcript carefully and generate the Editor Brief as instructed.\n\nTRANSCRIPT:\n${tx.substring(0,90000)}`:`Generate the COMPLETE content package in plain text.\n\nTRANSCRIPT:\n${tx.substring(0,90000)}`}]});
       if(j.error){setErr(j.error.message);setStep("input");}
       else{const t=j.content?.filter(i=>i.type==="text").map(i=>i.text).join("\n")||"";if(!t.trim()){setErr("No content generated. Please try again.");setStep("input");return;}setRaw(strip(t));const parsed=parse(t);const bpRaw=d?.bp||null;// Attach original HTML boilerplate to show notes section (spread to ensure React detects change)
-      const withBp=parsed.map(s=>s.id==="shownotes"&&bpRaw?{...s,bpHtml:bpRaw}:s);
+      const withBp=parsed.map(s=>{
+        if(s.id==="shownotes"&&bpRaw)return{...s,bpHtml:bpRaw};
+        if(s.id==="youtube"&&bpRaw){const bpPlain=stripHtml(bpRaw);let c=s.content;if(/\[BOILERPLATE\]/i.test(c)){c=c.replace(/\[BOILERPLATE\]/gi,bpPlain);}else{c=c.replace(/^(HASHTAGS\b)/im,`${bpPlain}\n\nHASHTAGS`);}return{...s,content:c};}
+        return s;
+      });
       setSecs(withBp.length?withBp:[{id:"full",title:"Content Package",content:strip(t)}]);setStep("result");}
     }catch(e){setErr(e.message||"Network error.");setStep("input");}
     finally{setBusy(false);}
