@@ -509,6 +509,7 @@ function SettingsView({ shows, globalSettings, setGlobalSettings, saveGlobalSett
     { id: "workspace", label: "Workspace" },
     ...(accountType === "agency" ? [{ id: "team", label: "Team" }] : []),
     ...(accountType === "agency" ? [{ id: "codes", label: "Access Codes" }] : []),
+    { id: "writing", label: "Writing Standards" },
     { id: "billing", label: "Billing" },
   ];
 
@@ -862,6 +863,81 @@ function SettingsView({ shows, globalSettings, setGlobalSettings, saveGlobalSett
           <AccessCodesSection supabase={supabase} T={T} PF={PF} FF={FF} inp={inp} />
         )}
 
+        {activeSection === "writing" && (() => {
+          const DEFAULT_BLACKLIST = `IMPORTANCE INFLATION — say what happened, not how important it was:
+pivotal moment, significant shift, key turning point, crucial role, vital role, major milestone, defining moment, landmark moment, watershed moment, transformative period
+
+VAGUE MEANING STATEMENTS — show impact with specifics, not declarations:
+highlights the importance of, underscores, demonstrates the power of, serves as a reminder that, is a testament to, speaks to the importance of, reinforces the idea that, illustrates how
+
+TREND PADDING — don't imply something fits a cultural movement:
+contributes to the broader conversation, reflects broader trends, part of a growing movement, signals a shift in the landscape, fits into a larger narrative, part of a wider cultural shift
+
+CORPORATE BUZZWORDS — use plain language instead:
+cutting-edge, groundbreaking, innovative, dynamic, visionary, impactful, forward-thinking, game-changing, industry-leading, transformative
+
+ESSAY TRANSITIONS — use natural sentence flow:
+furthermore, moreover, additionally, in conclusion, ultimately, therefore, consequently, notably, it is worth noting, in today's world
+
+EMPTY INSPIRATIONAL LANGUAGE — name the specific thing, not the abstraction:
+the power of resilience, embracing transformation, finding your authentic self, a journey of healing, stepping into your truth, reclaiming your power
+
+VAGUE PERSON DESCRIPTIONS — describe what they actually did:
+renowned figure, notable leader, respected expert, influential voice, prominent advocate, trailblazer in the field, respected voice
+
+MEDIA COVERAGE BOILERPLATE:
+has been featured in numerous media outlets, is widely recognized, has garnered attention from
+
+SOCIAL MEDIA FILLER:
+maintains an active social media presence, can be found across social platforms, follow along on
+
+AI FILLER SENTENCES — delete or replace with a specific observation:
+this moment reflects a larger truth, this speaks to a deeper issue, this raises important questions, this reveals something powerful, what makes this especially powerful
+
+RULE: When tempted to use any phrase above, rewrite the sentence with a specific, concrete detail instead. Name the thing. Show what happened. Don't declare its importance.`;
+          const currentVal = globalSettings.writingStandards ?? DEFAULT_BLACKLIST;
+          return (
+            <div style={{ maxWidth: "680px" }}>
+              <div style={{ marginBottom: "28px" }}>
+                <div style={{ fontSize: "28px", fontWeight: "normal", color: T.text, marginBottom: "6px", fontFamily: SF }}>Writing Standards</div>
+                <div style={{ fontSize: "15px", color: T.textMuted, fontStyle: "italic" }}>Phrases that will never appear in AI-generated content across this workspace.</div>
+              </div>
+              <div style={{ background: T.card, border: "1px solid " + T.cardBorder, borderRadius: "12px", overflow: "hidden", marginBottom: "16px" }}>
+                <div style={{ padding: "20px 24px", borderBottom: "1px solid " + T.cardBorder, display: "flex", alignItems: "flex-start", gap: "12px" }}>
+                  <span style={{ fontSize: "22px" }}>🚫</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: "15px", fontWeight: "700", color: T.text }}>Anti-AI Phrase Blacklist</div>
+                    <div style={{ fontSize: "13px", color: T.textMuted, fontStyle: "italic", marginTop: "2px" }}>Every AI generation call — show notes, YouTube, social, email, editor briefs — will be instructed to avoid these phrases. Edit the list to match your voice. One phrase or category per line.</div>
+                  </div>
+                </div>
+                <div style={{ padding: "20px 24px" }}>
+                  <textarea
+                    value={currentVal}
+                    onChange={e => setGlobalSettings(s => ({ ...s, writingStandards: e.target.value }))}
+                    rows={24}
+                    style={{ ...inp, fontSize: "13px", lineHeight: "1.7", resize: "vertical", fontFamily: "monospace" }}
+                    placeholder="Enter phrases to avoid, one per line or grouped by category..."
+                  />
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "12px", gap: "10px", flexWrap: "wrap" }}>
+                    <button
+                      onClick={() => setGlobalSettings(s => ({ ...s, writingStandards: DEFAULT_BLACKLIST }))}
+                      style={{ padding: "8px 16px", background: "transparent", border: "1px solid " + T.cardBorder, borderRadius: "6px", color: T.textMuted, fontSize: "13px", cursor: "pointer", fontFamily: FF }}
+                    >
+                      Restore Defaults
+                    </button>
+                    <SaveBtn onClick={() => saveGlobalSettings({ ...globalSettings, writingStandards: globalSettings.writingStandards ?? DEFAULT_BLACKLIST })} />
+                  </div>
+                </div>
+              </div>
+              <div style={{ background: T.surface, border: "1px solid " + T.cardBorder, borderRadius: "8px", padding: "14px 18px" }}>
+                <div style={{ fontSize: "12px", color: T.textMuted, lineHeight: "1.6", fontFamily: FF }}>
+                  <strong style={{ color: T.textSecondary }}>How it works:</strong> The blacklist is injected into every Claude system prompt as a hard rule. Claude is instructed to rewrite any phrase on the list with a specific, concrete detail instead. You can also add show-specific language in each show's DNA under Voice → Avoid.
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+
         {activeSection === "billing" && (
           <div style={{ maxWidth: "680px" }}>
             <div style={{ marginBottom: "28px" }}>
@@ -1068,6 +1144,7 @@ export function AdminPanel({ shows, orgId, onClose, onSaved, accountType = "agen
     { id: "workspace", label: "Workspace" },
     ...(accountType === "agency" ? [{ id: "team", label: "Team" }] : []),
     ...(accountType === "agency" ? [{ id: "codes", label: "Access Codes" }] : []),
+    { id: "writing", label: "Writing Standards" },
     { id: "billing", label: "Billing" },
   ];
 
