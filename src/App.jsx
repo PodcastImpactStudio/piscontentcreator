@@ -3115,6 +3115,10 @@ ${tx.substring(0, 40000)}`;
                         <span style={{fontSize:"11px",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"2px",color:d.clr,fontWeight:"700"}}>✂️ CLIP {clip.index}</span>
                         <button onClick={()=>copyText(clip.content)} style={ghost}>COPY</button>
                       </div>
+                      {clipTexts[i]?.trim()&&<div style={{padding:"14px 24px",borderBottom:`1px solid ${T.cardBorder}`,background:T.bg}}>
+                        <div style={{fontSize:"10px",letterSpacing:"2px",textTransform:"uppercase",color:T.textMuted,fontWeight:"700",fontFamily:"'DM Sans', system-ui, sans-serif",marginBottom:"8px"}}>ORIGINAL TRANSCRIPT</div>
+                        <div style={{fontSize:"13px",color:T.textSecondary,lineHeight:"1.7",fontFamily:"'DM Sans', system-ui, sans-serif",whiteSpace:"pre-wrap"}}>{clipTexts[i].trim()}</div>
+                      </div>}
                       <div style={{padding:"20px 24px"}}>{renderContent(clip.content)}</div>
                     </div>
                   ))}
