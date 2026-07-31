@@ -8,7 +8,9 @@ export default async function handler(req, res) {
   const { showDna } = req.body || {};
   if (!showDna) return res.status(400).json({ error: "showDna is required." });
 
-  const hostName = showDna.hosts || showDna.name || "the host";
+  const rawHostName = showDna.hosts || "";
+  const isPlaceholder = !rawHostName || rawHostName.includes("[") || rawHostName.toLowerCase().includes("unavailable");
+  const hostName = isPlaceholder ? (showDna.name || "the host") : rawHostName;
 
   const showContext = [
     `Show: ${showDna.name || ""}`,
@@ -70,12 +72,15 @@ Respond ONLY with JSON: {"queries": ["...", "...", "..."]}`,
     // Deduplicate by podcast ID, exclude the show itself
     const seen = new Set();
     const showNameLower = (showDna.name || "").toLowerCase();
+    const stopWords = new Set(["the","a","an","of","in","on","at","for","with","and","or","to","by","is","it","my","your"]);
+    const showKeywords = showNameLower.split(/\s+/).filter(w => w.length > 2 && !stopWords.has(w));
     const allPodcasts = [];
     for (const s of searches) {
       for (const p of (s.results || [])) {
         const id = p.id;
         const titleLower = (p.title_original || "").toLowerCase();
-        if (!seen.has(id) && !titleLower.includes(showNameLower.split(" ")[0]?.toLowerCase() || "___")) {
+        const isSelf = showKeywords.length > 0 && showKeywords.some(kw => titleLower.includes(kw));
+        if (!seen.has(id) && !isSelf) {
           seen.add(id);
           allPodcasts.push({
             id,

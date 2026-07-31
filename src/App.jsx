@@ -1774,7 +1774,8 @@ The email should:
       const data=await r.json();
       if(!r.ok)throw new Error(data.error||"Search failed. Please try again.");
       setGuestResults(data.results||[]);
-      setGuestHostName(data.hostName||d?.hosts||"");
+      const hn=data.hostName||d?.hosts||"";
+      setGuestHostName(hn.includes("[")||hn.toLowerCase().includes("unavailable")?(d?.name||""):hn);
       setGuestQuery((data.queries||[]).join(", "));
       setStep("guest-results");
     }catch(e){setErr(e.message);setStep("guest-setup");}
