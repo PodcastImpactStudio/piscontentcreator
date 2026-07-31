@@ -1392,10 +1392,15 @@ export default function App(){
   function handleFileInput(e){const f=e.target?.files?.[0];if(f)readFile(f);}
 
   async function genClips(){
-    if(!tx.trim()){setErr("Paste the episode transcript first.");return;}
+    if(clipTexts.slice(0,clipCount).every(t=>!t.trim())){setErr("Paste at least one clip transcript.");return;}
     setErr("");setClipResults([]);setBusy(true);setStep("generating");
     const platList=clipPlatforms.join(", ");
-    const clipSys=`You are creating social media clip content for ${d.name}.
+    const results=[];
+    for(let i=0;i<clipCount;i++){
+      const clipTx=clipTexts[i].trim();
+      if(!clipTx){results.push({index:i+1,skipped:true,content:""});continue;}
+      try{
+        const clipSys=`You are creating social media clip content for ${d.name}.
 
 PRIMARY RULE: Follow the Show DNA below. It is the source of truth for voice, tone, and language.
 
@@ -1405,50 +1410,45 @@ ANTI-AI LANGUAGE RULE: Never use: "In today's world", "Let's dive in", "Unlock",
 
 VERBATIM QUOTE RULE: Use the speaker's exact words whenever possible. Do not paraphrase powerful phrases.
 
+CRITICAL OUTPUT RULES:
+- PLAIN TEXT only. No markdown, no asterisks, no bold.
+- Hashtags: put the # symbol directly before EACH word. Example: #CancerRisk #Firefighters #ToxicSmoke
+- Title: write ONLY the title text — no label before it
+- Description: write ONLY the description text — no label before it
+- Never write label words like "Title:", "Description:", "Hashtags:", "Caption:"
+- Section headers in ALL CAPS only
+
 Show: ${d.name} | "${d.tag}" | Host(s): ${d.hosts}
 Voice: ${d.voice?.traits||""} | Tone: ${d.tag}
 Audience: ${d.aud?.who||""}
 Platforms: ${platList}
 
-TASK: From the episode transcript, identify the ${clipCount} best short-form clip moments — self-contained, emotionally resonant, under 60 seconds each. For each clip, write social content for every platform listed.
-
-CRITICAL OUTPUT RULES:
-- PLAIN TEXT only. No markdown, no asterisks, no bold.
-- Hashtags: put the # symbol directly before EACH word. Example: #PodcastLife #MomLife
-- Section headers in ALL CAPS only
-- Separate each clip with ---
-
-Use EXACTLY this format for each clip:
-
-CLIP [N]
-
-${clipPlatforms.includes("YouTube")?`YOUTUBE CLIP [N]
-[title — punchy, keyword-rich, under 60 chars, no show name]
-[description — 2-3 sentences optimized for YouTube search]
-[hashtags — 8-12 tags each starting with #, space separated]
+Generate content for EACH platform below using EXACTLY this format — no extra labels:
+${clipPlatforms.includes("YouTube")?`YOUTUBE CLIP ${i+1}
+[title only — punchy, keyword-rich, under 60 chars, no show name]
+[description only — 2-3 sentences optimized for YouTube search]
+[hashtags only — 8-12 tags each starting with #, space separated]
 KEYWORDS
-[8-12 comma-separated keywords]
-`:""}${clipPlatforms.includes("Instagram")?`INSTAGRAM REEL [N]
+[8-12 comma-separated keywords]`:""}
+${clipPlatforms.includes("Instagram")?`INSTAGRAM REEL ${i+1}
 [caption — hook in first line, 100-150 words, end with CTA]
-[hashtags — 15-20 tags each starting with #, space separated]
-`:""}${clipPlatforms.includes("Facebook")?`FACEBOOK REEL [N]
-[post — hook line, 80-120 words, CTA at end]
-`:""}${clipPlatforms.includes("TikTok")?`TIKTOK [N]
-[caption — hook first, under 150 chars, include hashtags with # symbol]
-`:""}${clipPlatforms.includes("Spotify")?`SPOTIFY CLIP [N]
+[hashtags — 15-20 tags each starting with #, space separated]`:""}
+${clipPlatforms.includes("Facebook")?`FACEBOOK REEL ${i+1}
+[post — hook line, 80-120 words, CTA at end]`:""}
+${clipPlatforms.includes("TikTok")?`TIKTOK ${i+1}
+[caption — hook first, under 150 chars, include hashtags with # symbol]`:""}
+${clipPlatforms.includes("Spotify")?`SPOTIFY CLIP ${i+1}
 [title only]
-[description — 1-2 sentences]
-`:""}Write ONLY the sections above for all ${clipCount} clips. No commentary, no preamble, no extra text.`;
-    try{
-      const j=await claudeAPI({model:"claude-sonnet-4-6",max_tokens:6000,system:clipSys,messages:[{role:"user",content:`Identify the best ${clipCount} clip moments and write social content for each.\n\nTRANSCRIPT:\n${tx.substring(0,90000)}`}]});
-      const raw=j.content?.filter(b=>b.type==="text").map(b=>b.text).join("\n")||"";
-      // Split into per-clip results by "CLIP N" headers
-      const clipBlocks=raw.split(/(?=^CLIP \d+$)/m).filter(b=>b.trim());
-      const results=clipBlocks.map((block,i)=>({index:i+1,skipped:false,content:block.trim()}));
-      // Pad with empty if AI returned fewer than requested
-      while(results.length<clipCount)results.push({index:results.length+1,skipped:true,content:""});
-      setClipResults(results);setBusy(false);setStep("result");
-    }catch(e){setErr("Generation failed: "+e.message);setBusy(false);setStep("input");}
+[description — 1-2 sentences]`:""}
+
+Write ONLY the sections above. No labels, no commentary, no extra text.`;
+        if(i>0)await new Promise(res=>setTimeout(res,2000));
+        const j=await claudeAPI({model:"claude-sonnet-4-6",max_tokens:2000,system:clipSys,messages:[{role:"user",content:`CLIP ${i+1} TRANSCRIPT:\n${clipTx.substring(0,8000)}`}]});
+        const t=j.content?.filter(b=>b.type==="text").map(b=>b.text).join("\n")||"";
+        results.push({index:i+1,skipped:false,content:t});
+      }catch(e){results.push({index:i+1,skipped:true,content:""});}
+    }
+    setClipResults(results);setBusy(false);setStep("result");
   }
 
   async function gen(){
@@ -2644,20 +2644,20 @@ ${tx.substring(0, 40000)}`;
                 <>
                   <div style={{marginBottom:"32px"}}>
                     <p style={{fontSize:"14px",color:T.coral,margin:"0 0 10px",letterSpacing:"2px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600"}}>{d.name} · {clipCount} Clip{clipCount>1?"s":""} · {clipPlatforms.join(", ")}</p>
-                    <h1 style={{fontSize:"52px",fontWeight:"700",color:T.text,margin:"0 0 10px",letterSpacing:"-1px",fontFamily:PF,lineHeight:"1.1"}}>Paste your transcript</h1>
-                    <p style={{fontSize:"15px",color:T.textMuted,margin:0,fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.6"}}>Paste the full episode transcript below. The AI will identify the {clipCount} best clip moments and write SEO-optimized titles, captions and hashtags for each — across all your selected platforms.</p>
+                    <h1 style={{fontSize:"52px",fontWeight:"700",color:T.text,margin:"0 0 10px",letterSpacing:"-1px",fontFamily:PF,lineHeight:"1.1"}}>Paste your clips</h1>
+                    <p style={{fontSize:"15px",color:T.textMuted,margin:0,fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.6"}}>Paste the transcript for each clip below. The AI will write the title, description, hashtags and keywords for each one across your selected platforms.</p>
                   </div>
                   {err&&<div style={{background:"#D94F4F18",border:"1px solid #D94F4F44",borderRadius:"8px",padding:"12px 16px",color:"#F09090",fontSize:"14px",marginBottom:"16px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{err}</div>}
-                  <div onDragOver={e=>{e.preventDefault();setDragging(true);}} onDragLeave={()=>setDragging(false)} onDrop={handleDrop} style={{border:`1px dashed ${dragging?T.coral:T.cardBorder}`,borderRadius:"8px",padding:"32px",textAlign:"center",marginBottom:"16px",background:dragging?T.coralSoft:T.card,transition:"all .2s",cursor:"pointer"}} onClick={()=>fileRef.current?.click()}>
-                    <input ref={fileRef} type="file" accept=".txt,.md" style={{display:"none"}} onChange={handleFileInput}/>
-                    <div style={{fontSize:"24px",marginBottom:"8px"}}>{dragging?"📥":"📄"}</div>
-                    <div style={{fontSize:"14px",color:T.textSecondary,marginBottom:"4px"}}>Drag & drop a transcript file</div>
-                    <div style={{fontSize:"12px",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1px"}}>OR CLICK TO BROWSE · .TXT FILES</div>
-                  </div>
-                  <div style={{textAlign:"center",fontSize:"12px",color:T.textMuted,marginBottom:"16px",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1px"}}>— OR PASTE BELOW —</div>
-                  <textarea style={{...field,minHeight:"220px",lineHeight:"1.7",resize:"vertical"}} placeholder="Paste your full episode transcript here. The AI will find the best clip moments and write copy for each one…" value={tx} onChange={e=>setTx(e.target.value)}/>
-                  {tx.trim()&&<div style={{fontSize:"15px",color:T.textMuted,marginTop:"6px",marginBottom:"16px",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1px"}}>{Math.round(tx.split(/\s+/).length).toLocaleString()} WORDS</div>}
-                  <button onClick={genClips} disabled={!tx.trim()} style={{...primary(T.red),opacity:tx.trim()?1:.35}}>Generate {clipCount} Clip{clipCount>1?"s":""} →</button>
+                  {Array.from({length:clipCount},(_,i)=>(
+                    <div key={i} style={{marginBottom:"20px"}}>
+                      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"8px"}}>
+                        <label style={{fontSize:"11px",fontWeight:"700",letterSpacing:"2px",textTransform:"uppercase",color:d.clr,fontFamily:"'DM Sans', system-ui, sans-serif"}}>✂️ Clip {i+1}</label>
+                        {clipTexts[i].trim()&&<span style={{fontSize:"11px",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1px"}}>{clipTexts[i].trim().split(/\s+/).length} words</span>}
+                      </div>
+                      <textarea style={{...field,minHeight:"120px",lineHeight:"1.6",resize:"vertical",borderColor:clipTexts[i].trim()?`${d.clr}55`:T.cardBorder}} placeholder={`Paste the transcript for Clip ${i+1}…`} value={clipTexts[i]} onChange={e=>{const next=[...clipTexts];next[i]=e.target.value;setClipTexts(next);}}/>
+                    </div>
+                  ))}
+                  <button onClick={genClips} disabled={clipTexts.slice(0,clipCount).every(t=>!t.trim())} style={{...primary(T.red),opacity:clipTexts.slice(0,clipCount).some(t=>t.trim())?1:.35}}>Generate {clipCount} Clip{clipCount>1?"s":""} →</button>
                 </>
               ):(
                 <>
