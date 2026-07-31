@@ -79,7 +79,7 @@ Respond ONLY with JSON: {"queries": ["...", "...", "..."]}`,
       for (const p of (s.results || [])) {
         const id = p.id;
         const titleLower = (p.title_original || "").toLowerCase();
-        const isSelf = showKeywords.length > 0 && showKeywords.some(kw => titleLower.includes(kw));
+        const isSelf = showKeywords.length > 0 && showKeywords.every(kw => titleLower.includes(kw));
         if (!seen.has(id) && !isSelf) {
           seen.add(id);
           allPodcasts.push({
