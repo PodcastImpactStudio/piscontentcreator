@@ -1371,6 +1371,11 @@ export default function App(){
   const[guestResults,setGuestResults]=useState([]);
   const[guestCopied,setGuestCopied]=useState(null);
   const[guestEmails,setGuestEmails]=useState({});
+  const[reelInputType,setReelInputType]=useState("topic");
+  const[reelFormat,setReelFormat]=useState("script");
+  const[reelPlatforms,setReelPlatforms]=useState(["Instagram","TikTok"]);
+  const[reelTopic,setReelTopic]=useState("");
+  const[reelResults,setReelResults]=useState([]);
 
   const d=show?shows[show]:null;
   const clr=d?.clr||T.coral;
@@ -1782,6 +1787,74 @@ The email should:
     finally{setBusy(false);}
   }
 
+  async function genReels(){
+    if(reelInputType==="topic"&&!reelTopic.trim()){setErr("Enter a topic or episode idea.");return;}
+    if(reelInputType==="transcript"&&!tx.trim()){setErr("Paste a transcript excerpt to draw from.");return;}
+    setErr("");setReelResults([]);setBusy(true);setStep("generating");
+    const dna=shows[show];
+    const inputContent=reelInputType==="topic"?reelTopic:tx.substring(0,8000);
+    const inputLabel=reelInputType==="topic"?"EPISODE TOPIC / IDEA":"TRANSCRIPT EXCERPT";
+    const formatInstr=reelFormat==="script"
+      ?"Write each talking point as a full natural sentence the host speaks out loud — conversational, not formal."
+      :"Write each talking point as a tight 3–6 word bullet the host reads off camera — teleprompter style.";
+    const voiceTraits=[dna?.voice?.adjectives||"",dna?.voice?.use||""].filter(Boolean).join(". ");
+    const reelSys=`You are a short-form video strategist for ${dna?.name}. Your job is to generate 4 original reel concepts the podcast host can record directly to their phone — NOT pulled from an episode, but original to-camera content inspired by their show's themes and their own expertise and story.
+
+SHOW DNA:
+Show: ${dna?.name} — "${dna?.tag||""}"
+Host(s): ${dna?.hosts||""}
+Voice/Tone: ${voiceTraits}
+Core beliefs: ${dna?.voice?.coreBeliefs||""}
+Audience: ${dna?.audience?.onePerson?.name||dna?.aud?.who||""}
+Audience pain points: ${(dna?.aud?.pains||[]).join(", ")||dna?.audience?.onePerson?.wound||""}
+Phrases this show uses: ${(dna?.voice?.phrases||[]).join(" | ")||""}
+Avoid: ${dna?.voice?.avoid||""}
+Platforms: ${reelPlatforms.join(", ")}
+
+RULES:
+- These are ORIGINAL to-camera concepts — not clips pulled from the episode
+- The host speaks directly to camera from their own experience and perspective
+- Write in the host's authentic voice using the show's established phrases and tone
+- Each reel should feel spontaneous and real, not produced or scripted-sounding
+- Use the input below to find the angles, not to pull quotes
+- Each reel ends with a natural CTA that drives listeners to the podcast
+- Do NOT open with "Picture this", "In today's world", "Game changer", or any AI filler phrase
+- ${formatInstr}
+${writingStandards?`\nWRITING STANDARDS — PHRASES TO NEVER USE:\n${writingStandards}`:""}
+
+OUTPUT FORMAT (plain text only, no markdown, no asterisks, no bold):
+Use this EXACT structure for each of the 4 reels:
+
+REEL 1 — [Short punchy title capturing the real story or tension]
+
+HOOK (First 3 seconds):
+[Stop-scroll opening — start mid-thought, with a bold statement, or a question. NOT "Let me tell you about..."]
+
+${reelFormat==="script"?"SCRIPT:":"TALKING POINTS:"}
+${reelFormat==="script"?"[3–5 sentences the host speaks naturally, in first person, from their own experience]":"[3–5 tight bullets — each 3–6 words, teleprompter style]"}
+
+CALL TO ACTION:
+[Natural conversational CTA — should feel like something the host would actually say]
+
+FILMING NOTE:
+[Where to record this, what energy to bring, any visual context that would help]
+
+---
+
+[Repeat for REEL 2, REEL 3, REEL 4]`;
+
+    try{
+      const j=await claudeAPI({model:"claude-sonnet-4-6",max_tokens:3000,system:reelSys,messages:[{role:"user",content:`${inputLabel}:\n${inputContent}\n\nGenerate 4 original reel concepts the host can record on their phone.`}]});
+      const t=j.content?.filter(b=>b.type==="text").map(b=>b.text).join("\n")||"";
+      const concepts=t.split(/^---+\s*$/m).map(s=>s.trim()).filter(Boolean);
+      setReelResults(concepts);
+      setBusy(false);setStep("result");
+    }catch(e){
+      setErr(e.message||"Generation failed.");
+      setBusy(false);setStep("input");
+    }
+  }
+
   async function doRev(){
     if(!eSec||!eTxt.trim())return;setRev(true);setErr("");
     const label=ED.find(s=>s.id===eSec)?.l||eSec;
@@ -1937,7 +2010,7 @@ The email should:
     }
   }
 
-  function reset(){setStep("welcome");setMode(null);if(Object.keys(shows).length>1)setShow(null);setGuest(null);setEp("");setTx("");setRaw("");setSecs([]);setErr("");setEditing(false);setESec(null);setETxt("");setExtraPlatforms([]);setClipCount(3);setClipTexts(Array(10).fill(""));setClipResults([]);setClipPlatforms(["YouTube"]);setSelectedFormat(null);setEpGuest("");setEpGuestUrl("");setEpGuestPaste("");setEpTopic("");setEpTakeaway("");setEpMoments("");setEpPanelists("");setEpPlanRequest("");setPrepExtras({hook:false,bridge:false,permissionSlip:false,openingQuestions:false});setPlannerChat([]);setPlannerInput("");setShowSaveFormat(false);setSaveFormatName("");setSaveFormatOk(false);setGuestResults([]);setGuestHostName("");setGuestQuery("");setGuestEmails({});setEditorChat([]);setEditorChatInput("");setEditorLeftTab("brief");setTranscriptHighlights([]);}
+  function reset(){setStep("welcome");setMode(null);if(Object.keys(shows).length>1)setShow(null);setGuest(null);setEp("");setTx("");setRaw("");setSecs([]);setErr("");setEditing(false);setESec(null);setETxt("");setExtraPlatforms([]);setClipCount(3);setClipTexts(Array(10).fill(""));setClipResults([]);setClipPlatforms(["YouTube"]);setSelectedFormat(null);setEpGuest("");setEpGuestUrl("");setEpGuestPaste("");setEpTopic("");setEpTakeaway("");setEpMoments("");setEpPanelists("");setEpPlanRequest("");setPrepExtras({hook:false,bridge:false,permissionSlip:false,openingQuestions:false});setPlannerChat([]);setPlannerInput("");setShowSaveFormat(false);setSaveFormatName("");setSaveFormatOk(false);setGuestResults([]);setGuestHostName("");setGuestQuery("");setGuestEmails({});setEditorChat([]);setEditorChatInput("");setEditorLeftTab("brief");setTranscriptHighlights([]);setReelTopic("");setReelResults([]);setReelInputType("topic");setReelFormat("script");setReelPlatforms(["Instagram","TikTok"]);}
 
   function goBack(){
     setErr("");
@@ -1949,7 +2022,7 @@ The email should:
       else if(mode==="clips")setStep("clips-setup");
       else setStep("configure");
     }
-    else if(step==="result"){if(mode==="prep")setStep("prep-details");else if(mode==="editor"){setMode(null);setStep("welcome");}else setStep("input");}
+    else if(step==="result"){if(mode==="prep")setStep("prep-details");else if(mode==="editor"){setMode(null);setStep("welcome");}else if(mode==="reels")setStep("input");else setStep("input");}
     else if(step==="prep-format"){setStep("welcome");}
     else if(step==="prep-details"){const hasFmts=d?.episodeFormats?.length>0;setStep(hasFmts?"prep-format":"welcome");}
     else if(step==="planner-chat"){const hasFmts=d?.episodeFormats?.length>0;setStep(hasFmts?"prep-format":"welcome");}
@@ -2338,6 +2411,7 @@ ${tx.substring(0, 40000)}`;
             {mode==="editor"&&step!=="welcome"&&<span style={{color:T.coral,fontWeight:"700"}}>Editing Assistant</span>}
             {mode==="prep"&&step!=="welcome"&&<span style={{color:T.coral,fontWeight:"700"}}>Planning</span>}
             {mode==="guest"&&step!=="welcome"&&<span style={{color:T.coral,fontWeight:"700"}}>Guest Finder</span>}
+            {mode==="reels"&&step!=="welcome"&&<span style={{color:"#6366F1",fontWeight:"700"}}>Reel Ideas</span>}
             {mode&&step!=="welcome"&&<span style={{color:T.cardBorder}}>›</span>}
             {step==="show-select"&&<span>Select Show</span>}
             {step==="configure"&&<span>Configure</span>}
@@ -2386,6 +2460,9 @@ ${tx.substring(0, 40000)}`;
               const showEditor = !allowed || allowed.includes("editor");
               const showPrep   = !allowed || allowed.includes("prep");
               const showGuest  = !allowed || allowed.includes("guest");
+              const showReels  = !allowed || allowed.includes("reels");
+              const hasStudio  = showFull||showClips||showEditor||showPrep||showGuest;
+              const TC="#6366F1"; // creator tools accent
 
               // For clients with one assigned show, auto-select it
               const availShows = isClient && clientConfig?.assignedShows?.length > 0
@@ -2449,6 +2526,12 @@ ${tx.substring(0, 40000)}`;
 
                 {/* Workflow cards — dimmed until show selected */}
                 <div style={{opacity:show?1:0.3,pointerEvents:show?"auto":"none",transition:"opacity .3s"}}>
+
+                  {/* Section label: STUDIO */}
+                  {hasStudio&&<div style={{display:"flex",alignItems:"center",gap:"12px",marginBottom:"16px"}}>
+                    <div style={{fontSize:"10px",fontWeight:"800",letterSpacing:"3px",textTransform:"uppercase",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",whiteSpace:"nowrap"}}>🎙 Studio</div>
+                    <div style={{flex:1,height:"1px",background:T.cardBorder}}/>
+                  </div>}
 
                   {/* Featured: Content Generation */}
                   {(showFull||showClips)&&(
@@ -2547,6 +2630,40 @@ ${tx.substring(0, 40000)}`;
                     )}
 
                   </div>
+
+                  {/* Section label: CREATOR TOOLS */}
+                  {showReels&&<div style={{display:"flex",alignItems:"center",gap:"12px",margin:"28px 0 16px"}}>
+                    <div style={{fontSize:"10px",fontWeight:"800",letterSpacing:"3px",textTransform:"uppercase",color:TC,fontFamily:"'DM Sans', system-ui, sans-serif",whiteSpace:"nowrap",opacity:0.8}}>📱 Creator Tools</div>
+                    <div style={{flex:1,height:"1px",background:TC+"33"}}/>
+                    <div style={{fontSize:"11px",color:TC,fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600",opacity:0.7,whiteSpace:"nowrap"}}>NEW</div>
+                  </div>}
+
+                  {/* Reel Ideas */}
+                  {showReels&&(
+                  <div {...cardHover} onClick={()=>handleSidebarNav("reels")}
+                    style={{background:T.card,border:`1px solid ${TC}33`,borderRadius:"14px",overflow:"hidden",cursor:"pointer",boxShadow:"0 1px 4px rgba(30,20,10,.06),0 4px 14px rgba(30,20,10,.05)",transition:"box-shadow .16s,transform .16s,border-color .16s"}}>
+                    <div style={{height:"2px",background:`linear-gradient(90deg,${TC},${TC}22 80%,transparent)`}}/>
+                    <div style={{padding:"22px 28px 20px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:"16px"}}>
+                      <div style={{display:"flex",alignItems:"center",gap:"14px"}}>
+                        <div style={{width:"44px",height:"44px",borderRadius:"10px",background:`${TC}14`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:"22px"}}>📱</div>
+                        <div>
+                          <div style={{fontSize:"11px",fontWeight:"700",letterSpacing:"2px",textTransform:"uppercase",color:TC,marginBottom:"4px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Creator Tools</div>
+                          <div style={{fontFamily:SF,fontSize:"20px",fontWeight:"normal",color:T.text,letterSpacing:"-0.2px"}}>Reel Ideas Generator</div>
+                        </div>
+                      </div>
+                      <span style={{fontSize:"18px",color:TC,flexShrink:0}}>→</span>
+                    </div>
+                    <div style={{padding:"0 28px 24px"}}>
+                      <p style={{fontSize:"15px",color:T.textMuted,lineHeight:"1.65",margin:"0 0 16px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Get 4 original to-camera reel concepts — inspired by your show's themes, written in your voice, ready to record on your phone.</p>
+                      <div style={{display:"flex",gap:"8px",flexWrap:"wrap"}}>
+                        {["Original hooks","Talking points","Filming notes","CTA included"].map(tag=>(
+                          <span key={tag} style={{padding:"4px 12px",background:`${TC}12`,border:`1px solid ${TC}30`,borderRadius:"20px",fontSize:"11px",color:TC,fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600",letterSpacing:"0.5px"}}>{tag}</span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  )}
+
                 </div>
               </div>
               );
@@ -2582,6 +2699,43 @@ ${tx.substring(0, 40000)}`;
                 <h1 style={{fontSize:"52px",fontWeight:"700",color:T.text,margin:"0 0 8px",letterSpacing:"-1px",fontFamily:PF,lineHeight:"1.1"}}>{d.name}</h1>
                 <p style={{fontSize:"15px",color:T.textMuted,margin:0,fontFamily:"'DM Sans', system-ui, sans-serif"}}>Tell us a bit about this episode so we can tailor the content.</p>
               </div>
+              {mode==="reels"?(
+                <>
+                  <div style={{marginBottom:"20px"}}>
+                    <label style={lbl}>What are you starting from?</label>
+                    <div style={{display:"flex",gap:"10px"}}>
+                      {[["topic","💡 I have a topic idea"],["transcript","📝 I have a transcript excerpt"]].map(([v,label])=>(
+                        <button key={v} onClick={()=>setReelInputType(v)} style={{flex:1,padding:"14px 16px",background:reelInputType===v?"#6366F114":T.card,border:reelInputType===v?"1px solid #6366F1":`1px solid ${T.cardBorder}`,borderRadius:"8px",color:reelInputType===v?T.text:T.textSecondary,fontSize:"13px",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:reelInputType===v?"700":"400",transition:"all .15s",textAlign:"left"}}>
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div style={{marginBottom:"20px"}}>
+                    <label style={lbl}>Script format</label>
+                    <div style={{display:"flex",gap:"10px"}}>
+                      {[["script","Full script","Natural sentences the host speaks"],["bullets","Bullet points","Tight teleprompter-style bullets"]].map(([v,label,desc])=>(
+                        <button key={v} onClick={()=>setReelFormat(v)} style={{flex:1,padding:"14px 16px",background:reelFormat===v?"#6366F114":T.card,border:reelFormat===v?"1px solid #6366F1":`1px solid ${T.cardBorder}`,borderRadius:"8px",color:reelFormat===v?T.text:T.textSecondary,fontSize:"13px",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:reelFormat===v?"700":"400",transition:"all .15s",textAlign:"left"}}>
+                          <div style={{fontWeight:"700",marginBottom:"3px"}}>{label}</div>
+                          <div style={{fontSize:"11px",color:T.textMuted,fontWeight:"400"}}>{desc}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div style={{marginBottom:"28px"}}>
+                    <label style={lbl}>Target platforms</label>
+                    <div style={{display:"flex",flexWrap:"wrap",gap:"8px"}}>
+                      {["Instagram","TikTok","YouTube Shorts","Facebook","LinkedIn"].map(p=>{const on=reelPlatforms.includes(p);return(
+                        <button key={p} onClick={()=>setReelPlatforms(prev=>on&&prev.length>1?prev.filter(x=>x!==p):on?prev:[...prev,p])} style={{padding:"8px 18px",background:on?"#6366F114":T.card,border:on?"1px solid #6366F1":`1px solid ${T.cardBorder}`,borderRadius:"6px",fontSize:"13px",color:on?"#6366F1":T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",cursor:"pointer",fontWeight:on?"700":"400",transition:"all .15s",letterSpacing:"1px"}}>
+                          {on?"✓ ":""}{p}
+                        </button>
+                      );})}
+                    </div>
+                  </div>
+                  <button onClick={()=>setStep("input")} style={{...primary(T.red),background:"#6366F1"}}>Continue →</button>
+                </>
+              ):(
+              <>
               {mode!=="clips"&&<div style={{marginBottom:"20px"}}>
                 {d?.publishDay&&d?.publishTime&&d?.publishTz&&(()=>{try{const sched=formatPublishSchedule(d,userProfile?.timezone);if(!sched)return null;return(<div style={{background:T.coralSoft,border:"1px solid "+T.coralMid,borderRadius:"8px",padding:"12px 16px",marginBottom:"20px",display:"flex",alignItems:"center",gap:"10px"}}><span>📅</span><div><div style={{fontSize:"13px",color:T.coral,fontWeight:"600"}}>PUBLISH SCHEDULE</div><div style={{fontSize:"14px",color:T.textSecondary,marginTop:"2px"}}>{sched.showTime}{sched.isDifferent?" · "+sched.localTime+" your time":""}</div></div></div>);}catch{return null;}})()}
                 <label style={lbl}>Episode Number</label>
@@ -2620,6 +2774,7 @@ ${tx.substring(0, 40000)}`;
                 </div>
               )}
               {(mode==="clips"||guest!==null)&&<button onClick={()=>setStep(mode==="clips"?"clips-setup":"input")} style={primary(T.red)}>Continue →</button>}
+              </>)}
             </div>}
 
             {/* CLIPS SETUP */}
@@ -2640,7 +2795,28 @@ ${tx.substring(0, 40000)}`;
 
             {/* INPUT */}
             {step==="input"&&d&&<div style={{animation:"fadeUp .4s ease"}}>
-              {mode==="clips"?(
+              {mode==="reels"?(
+                <>
+                  <div style={{marginBottom:"32px"}}>
+                    <p style={{fontSize:"14px",color:"#6366F1",margin:"0 0 10px",letterSpacing:"2px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600"}}>{d.name} · {reelFormat==="script"?"Full Script":"Bullet Points"} · {reelPlatforms.join(", ")}</p>
+                    <h1 style={{fontSize:"52px",fontWeight:"700",color:T.text,margin:"0 0 10px",letterSpacing:"-1px",fontFamily:PF,lineHeight:"1.1"}}>{reelInputType==="topic"?"What's the episode about?":"Paste a transcript excerpt"}</h1>
+                    <p style={{fontSize:"15px",color:T.textMuted,margin:0,fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.6"}}>{reelInputType==="topic"?"Describe the episode topic, theme, or idea — even a rough sentence works. The AI will use your show DNA to generate 4 original reel concepts you can record on your phone.":"Paste a portion of the transcript below. The AI will pull the angles, themes, and language that translate best to short-form video."}</p>
+                  </div>
+                  {err&&<div style={{background:"#D94F4F18",border:"1px solid #D94F4F44",borderRadius:"8px",padding:"12px 16px",color:"#F09090",fontSize:"14px",marginBottom:"16px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{err}</div>}
+                  {reelInputType==="topic"?(
+                    <>
+                      <textarea style={{...field,minHeight:"140px",lineHeight:"1.7",resize:"vertical",borderColor:reelTopic.trim()?"#6366F155":T.cardBorder}} placeholder="e.g. We're covering why high achievers self-sabotage just before their biggest breakthroughs. Guest is a performance coach who works with Olympic athletes…" value={reelTopic} onChange={e=>setReelTopic(e.target.value)}/>
+                      {reelTopic.trim()&&<div style={{fontSize:"12px",color:T.textMuted,marginTop:"6px",marginBottom:"16px",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1px"}}>{reelTopic.trim().split(/\s+/).length} WORDS</div>}
+                    </>
+                  ):(
+                    <>
+                      <textarea style={{...field,minHeight:"220px",lineHeight:"1.7",resize:"vertical",borderColor:tx.trim()?"#6366F155":T.cardBorder}} placeholder="Paste a section of the transcript — a key story, a turning point, a strong admission, or the most charged exchange. The AI will find the reel angles inside it…" value={tx} onChange={e=>setTx(e.target.value)}/>
+                      {tx.trim()&&<div style={{fontSize:"12px",color:T.textMuted,marginTop:"6px",marginBottom:"16px",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1px"}}>{tx.trim().split(/\s+/).length} WORDS</div>}
+                    </>
+                  )}
+                  <button onClick={genReels} disabled={reelInputType==="topic"?!reelTopic.trim():!tx.trim()} style={{...primary(T.red),background:"#6366F1",opacity:(reelInputType==="topic"?reelTopic.trim():tx.trim())?1:.35}}>Generate Reel Ideas →</button>
+                </>
+              ):mode==="clips"?(
                 <>
                   <div style={{marginBottom:"32px"}}>
                     <p style={{fontSize:"14px",color:T.coral,margin:"0 0 10px",letterSpacing:"2px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600"}}>{d.name} · {clipCount} Clip{clipCount>1?"s":""} · {clipPlatforms.join(", ")}</p>
@@ -2974,7 +3150,49 @@ ${tx.substring(0, 40000)}`;
             </div>}
 
             {/* RESULT */}
-            {step==="result"&&<div style={{animation:"fadeUp .4s ease",display:mode==="editor"?"flex":"block",gap:"24px",alignItems:"flex-start"}}>
+            {step==="result"&&mode==="reels"&&<div style={{animation:"fadeUp .4s ease"}}>
+              <div style={{marginBottom:"32px"}}>
+                <p style={{fontSize:"14px",color:"#6366F1",margin:"0 0 10px",letterSpacing:"2px",textTransform:"uppercase",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600"}}>{d?.name} · {reelResults.length} Reel Idea{reelResults.length!==1?"s":""}</p>
+                <h1 style={{fontSize:"48px",fontWeight:"700",color:T.text,margin:"0 0 10px",letterSpacing:"-1px",fontFamily:PF,lineHeight:"1.1"}}>Your reel concepts</h1>
+                <p style={{fontSize:"15px",color:T.textMuted,margin:0,fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.6"}}>Original to-camera ideas — ready to record. Grab your phone and go.</p>
+              </div>
+              <div style={{display:"flex",flexDirection:"column",gap:"20px"}}>
+                {reelResults.map((concept,i)=>{
+                  const lines=concept.split("\n").filter(Boolean);
+                  const titleLine=lines.find(l=>/^REEL\s+\d+\s*[—\-]/i.test(l))||lines[0]||`Reel ${i+1}`;
+                  const title=titleLine.replace(/^REEL\s+\d+\s*[—\-]\s*/i,"").trim();
+                  const body=lines.filter(l=>l!==titleLine).join("\n");
+                  const isCopied=false;
+                  return(
+                  <div key={i} style={{background:T.card,border:`1px solid ${"#6366F1"}33`,borderRadius:"14px",overflow:"hidden",boxShadow:"0 2px 8px rgba(0,0,0,.04)"}}>
+                    <div style={{height:"2px",background:`linear-gradient(90deg,${"#6366F1"},${"#6366F1"}22 80%,transparent)`}}/>
+                    <div style={{padding:"18px 24px 14px",borderBottom:`1px solid ${T.cardBorder}`,display:"flex",alignItems:"center",justifyContent:"space-between",gap:"16px"}}>
+                      <div style={{display:"flex",alignItems:"center",gap:"12px"}}>
+                        <div style={{width:"32px",height:"32px",borderRadius:"8px",background:"#6366F114",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"14px",fontWeight:"800",color:"#6366F1",fontFamily:"'DM Sans', system-ui, sans-serif",flexShrink:0}}>{i+1}</div>
+                        <div style={{fontFamily:PF,fontSize:"18px",fontWeight:"700",color:T.text,lineHeight:"1.3"}}>{title}</div>
+                      </div>
+                      <button onClick={()=>{navigator.clipboard.writeText(`REEL ${i+1} — ${title}\n\n${body}`);}} style={{flexShrink:0,padding:"6px 14px",background:"#6366F114",border:"1px solid #6366F133",borderRadius:"6px",color:"#6366F1",fontSize:"12px",fontWeight:"700",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"0.5px"}}>Copy</button>
+                    </div>
+                    <div style={{padding:"20px 24px",whiteSpace:"pre-wrap",fontSize:"14px",color:T.textSecondary,lineHeight:"1.8",fontFamily:"'DM Sans', system-ui, sans-serif"}}>
+                      {body.split("\n").map((line,j)=>{
+                        const isSectionHeader=/^(HOOK|SCRIPT|TALKING POINTS|CALL TO ACTION|FILMING NOTE)/i.test(line.trim());
+                        const isBullet=/^[•\-]\s/.test(line.trim());
+                        if(!line.trim())return <div key={j} style={{height:"8px"}}/>;
+                        if(isSectionHeader)return<div key={j} style={{fontSize:"10px",fontWeight:"800",letterSpacing:"2px",textTransform:"uppercase",color:"#6366F1",marginTop:"14px",marginBottom:"6px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{line.replace(/:/,"").trim()}</div>;
+                        return<div key={j} style={{marginBottom:"4px",paddingLeft:isBullet?"8px":"0",color:T.text}}>{line}</div>;
+                      })}
+                    </div>
+                  </div>
+                  );
+                })}
+              </div>
+              <div style={{marginTop:"28px",display:"flex",gap:"12px"}}>
+                <button onClick={genReels} style={{...primary(T.red),background:"#6366F1"}}>↻ Generate Again</button>
+                <button onClick={()=>setStep("input")} style={{...primary(T.red),background:T.surface,color:T.textSecondary,border:`1px solid ${T.cardBorder}`}}>← Change Input</button>
+              </div>
+            </div>}
+
+            {step==="result"&&mode!=="reels"&&<div style={{animation:"fadeUp .4s ease",display:mode==="editor"?"flex":"block",gap:"24px",alignItems:"flex-start"}}>
             <div style={{flex:1,minWidth:0}}>
               {/* Editor tabs — Brief / Transcript */}
               {mode==="editor"&&(
