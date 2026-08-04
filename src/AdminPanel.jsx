@@ -1635,8 +1635,8 @@ ${epfPasteText.substring(0, 8000)}`;
           </button>
         </div>
 
-        {/* NAVIGATE — DNA tabs (shows) or settings sections */}
-        <div style={{ padding: "8px 0" }}>
+        {/* NAVIGATE — only show when a show is selected or in settings */}
+        {(adminView === "settings" || (form && selKey !== "__new__")) && <div style={{ padding: "8px 0" }}>
           <div style={{ fontSize: "12px", color: "#555555", letterSpacing: "2px", textTransform: "uppercase", padding: "4px 16px 6px", fontFamily: FF, fontWeight: "600" }}>NAVIGATE</div>
           {adminView === "settings" ? (
             settingsSections.map(s => {
@@ -1666,7 +1666,7 @@ ${epfPasteText.substring(0, 8000)}`;
               );
             })
           )}
-        </div>
+        </div>}
 
         {/* Spacer */}
         <div style={{ flex: 1 }} />
