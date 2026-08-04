@@ -1383,7 +1383,7 @@ export default function App(){
 
   useEffect(()=>{
     if(!authReady)return;
-    loadShows().then(s=>{setShows(s);setLoadingShows(false);const keys=Object.keys(s);if(keys.length===1)setShow(keys[0]);});
+    loadShows().then(s=>{setShows(s);setLoadingShows(false);const keys=Object.keys(s);if(keys.length===1){setShow(keys[0]);setStep("show-workspace");}});
   },[authReady,orgId]);
   useEffect(()=>{
     if(!showUserMenu)return;
@@ -2010,23 +2010,30 @@ FILMING NOTE:
     }
   }
 
-  function reset(){setStep("welcome");setMode(null);if(Object.keys(shows).length>1)setShow(null);setGuest(null);setEp("");setTx("");setRaw("");setSecs([]);setErr("");setEditing(false);setESec(null);setETxt("");setExtraPlatforms([]);setClipCount(3);setClipTexts(Array(10).fill(""));setClipResults([]);setClipPlatforms(["YouTube"]);setSelectedFormat(null);setEpGuest("");setEpGuestUrl("");setEpGuestPaste("");setEpTopic("");setEpTakeaway("");setEpMoments("");setEpPanelists("");setEpPlanRequest("");setPrepExtras({hook:false,bridge:false,permissionSlip:false,openingQuestions:false});setPlannerChat([]);setPlannerInput("");setShowSaveFormat(false);setSaveFormatName("");setSaveFormatOk(false);setGuestResults([]);setGuestHostName("");setGuestQuery("");setGuestEmails({});setEditorChat([]);setEditorChatInput("");setEditorLeftTab("brief");setTranscriptHighlights([]);setReelTopic("");setReelResults([]);setReelInputType("topic");setReelFormat("script");setReelPlatforms(["Instagram","TikTok"]);}
+  function reset(){
+    const hasShow = show && Object.keys(shows).length >= 1;
+    setStep(hasShow ? "show-workspace" : "welcome");
+    setMode(null);
+    if(Object.keys(shows).length>1)setShow(null);
+    setGuest(null);setEp("");setTx("");setRaw("");setSecs([]);setErr("");setEditing(false);setESec(null);setETxt("");setExtraPlatforms([]);setClipCount(3);setClipTexts(Array(10).fill(""));setClipResults([]);setClipPlatforms(["YouTube"]);setSelectedFormat(null);setEpGuest("");setEpGuestUrl("");setEpGuestPaste("");setEpTopic("");setEpTakeaway("");setEpMoments("");setEpPanelists("");setEpPlanRequest("");setPrepExtras({hook:false,bridge:false,permissionSlip:false,openingQuestions:false});setPlannerChat([]);setPlannerInput("");setShowSaveFormat(false);setSaveFormatName("");setSaveFormatOk(false);setGuestResults([]);setGuestHostName("");setGuestQuery("");setGuestEmails({});setEditorChat([]);setEditorChatInput("");setEditorLeftTab("brief");setTranscriptHighlights([]);setReelTopic("");setReelResults([]);setReelInputType("topic");setReelFormat("script");setReelPlatforms(["Instagram","TikTok"]);
+  }
 
   function goBack(){
     setErr("");
+    const ws = show ? "show-workspace" : "welcome";
     if(step==="show-select"){setStep("welcome");setMode(null);}
-    else if(step==="configure"){setStep("welcome");}
+    else if(step==="configure"){setStep(ws);}
     else if(step==="clips-setup"){setStep("configure");}
     else if(step==="input"){
-      if(mode==="editor")setStep("welcome");
+      if(mode==="editor")setStep(ws);
       else if(mode==="clips")setStep("clips-setup");
       else setStep("configure");
     }
-    else if(step==="result"){if(mode==="prep")setStep("prep-details");else if(mode==="editor"){setMode(null);setStep("welcome");}else if(mode==="reels")setStep("input");else setStep("input");}
-    else if(step==="prep-format"){setStep("welcome");}
-    else if(step==="prep-details"){const hasFmts=d?.episodeFormats?.length>0;setStep(hasFmts?"prep-format":"welcome");}
-    else if(step==="planner-chat"){const hasFmts=d?.episodeFormats?.length>0;setStep(hasFmts?"prep-format":"welcome");}
-    else if(step==="guest-setup"){setStep("welcome");}
+    else if(step==="result"){if(mode==="prep")setStep("prep-details");else if(mode==="editor"){setMode(null);setStep(ws);}else if(mode==="reels")setStep("input");else setStep("input");}
+    else if(step==="prep-format"){setStep(ws);}
+    else if(step==="prep-details"){const hasFmts=d?.episodeFormats?.length>0;setStep(hasFmts?"prep-format":ws);}
+    else if(step==="planner-chat"){const hasFmts=d?.episodeFormats?.length>0;setStep(hasFmts?"prep-format":ws);}
+    else if(step==="guest-setup"){setStep(ws);}
     else if(step==="guest-results"){setStep("guest-setup");}
   }
 
@@ -2291,7 +2298,7 @@ ${tx.substring(0, 40000)}`;
 
         {/* Logo */}
         <div style={{padding:"24px 20px 20px",display:"flex",alignItems:"center",justifyContent:"center",borderBottom:"1px solid #2E2E2E"}}>
-          <img src="/logo-nav.png" alt="Podcast Impact Content Studio" style={{height:"120px",objectFit:"contain",width:"100%",cursor:"pointer"}} onClick={()=>{setMode(null);setStep("welcome");}}/>
+          <img src="/logo-nav.png" alt="Podcast Impact Content Studio" style={{height:"120px",objectFit:"contain",width:"100%",cursor:"pointer"}} onClick={()=>{setMode(null);setStep(show?"show-workspace":"welcome");}}/>
         </div>
 
 
@@ -2307,16 +2314,61 @@ ${tx.substring(0, 40000)}`;
         )}
 
 
-        {/* Home nav */}
+        {/* Nav — context-aware */}
         <div style={{padding:"8px 0",borderBottom:"1px solid #2E2E2E"}}>
-          {(()=>{const isActive=step==="welcome";return(
+          {show?(
+            // In a show: show name label + tool shortcuts
+            <div>
+              {/* Show context label */}
+              <div style={{padding:"6px 16px 10px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                <div style={{fontSize:"10px",fontWeight:"800",letterSpacing:"2px",textTransform:"uppercase",color:"#6B6B6B",fontFamily:"'DM Sans', system-ui, sans-serif",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flex:1}}>{shows[show]?.name||"Show"}</div>
+                {Object.keys(shows).length>1&&(
+                  <button onClick={()=>{setMode(null);setStep("welcome");setShow(null);}}
+                    style={{background:"none",border:"none",color:"#6B6B6B",fontSize:"11px",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",padding:"0 0 0 8px",whiteSpace:"nowrap",flexShrink:0}}>
+                    ← All
+                  </button>
+                )}
+              </div>
+              {/* Tool nav items */}
+              {(()=>{
+                const allowed = isClient && clientConfig?.allowedModes?.length > 0 ? clientConfig.allowedModes : null;
+                const toolNav=[
+                  {id:"full",label:"Full Episode Package",show:!allowed||allowed.includes("full")},
+                  {id:"clips",label:"Clips & Shorts",show:!allowed||allowed.includes("clips")},
+                  {id:"editor",label:"Editor Companion",show:!allowed||allowed.includes("editor")},
+                  {id:"prep",label:"Episode Prep + Sage",show:!allowed||allowed.includes("prep")},
+                  {id:"guest",label:"Guest Research",show:!allowed||allowed.includes("guest")},
+                  {id:"reels",label:"Reel Ideas",show:!allowed||allowed.includes("reels")},
+                ];
+                return toolNav.filter(t=>t.show).map(t=>{
+                  const isActive=mode===t.id&&step!=="welcome"&&step!=="show-workspace";
+                  return(
+                    <button key={t.id} onClick={()=>advanceToMode(t.id,show)}
+                      className="sidebar-nav-item"
+                      style={{width:"100%",padding:"8px 16px",background:isActive?"#2E2E2E":"transparent",border:"none",borderLeft:`3px solid ${isActive?T.coral:"transparent"}`,color:isActive?"#FFFFFF":"#8A8A8A",fontSize:"13px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",display:"flex",alignItems:"center",gap:"8px",transition:"all .15s"}}>
+                      <span style={{width:"5px",height:"5px",borderRadius:"50%",background:isActive?T.coral:"#444",flexShrink:0,display:"inline-block"}}/>
+                      <span>{t.label}</span>
+                    </button>
+                  );
+                });
+              })()}
+              {/* Show Workspace shortcut */}
+              <button onClick={()=>{setMode(null);setStep("show-workspace");}}
+                className="sidebar-nav-item"
+                style={{width:"100%",padding:"8px 16px",marginTop:"4px",background:(step==="show-workspace")?"#2E2E2E":"transparent",border:"none",borderLeft:`3px solid ${step==="show-workspace"?T.coral:"transparent"}`,color:(step==="show-workspace")?"#FFFFFF":"#555",fontSize:"12px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",display:"flex",alignItems:"center",gap:"8px",transition:"all .15s"}}>
+                <span style={{width:"5px",height:"5px",borderRadius:"50%",background:(step==="show-workspace")?T.coral:"#333",flexShrink:0,display:"inline-block"}}/>
+                <span>Overview</span>
+              </button>
+            </div>
+          ):(
+            // No show selected: plain Home button
             <button onClick={()=>{setMode(null);setStep("welcome");setShow(null);}}
               className="sidebar-nav-item"
-              style={{width:"100%",padding:"9px 16px",background:isActive?"#2E2E2E":"transparent",border:"none",borderLeft:`3px solid ${isActive?T.coral:"transparent"}`,color:isActive?"#FFFFFF":"#8A8A8A",fontSize:"14px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",display:"flex",alignItems:"center",gap:"10px",transition:"all .15s"}}>
-              <span style={{width:"6px",height:"6px",borderRadius:"50%",background:isActive?T.coral:"#444",flexShrink:0,display:"inline-block"}}/>
+              style={{width:"100%",padding:"9px 16px",background:(step==="welcome")?"#2E2E2E":"transparent",border:"none",borderLeft:`3px solid ${step==="welcome"?T.coral:"transparent"}`,color:(step==="welcome")?"#FFFFFF":"#8A8A8A",fontSize:"14px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",display:"flex",alignItems:"center",gap:"10px",transition:"all .15s"}}>
+              <span style={{width:"6px",height:"6px",borderRadius:"50%",background:(step==="welcome")?T.coral:"#444",flexShrink:0,display:"inline-block"}}/>
               <span>Home</span>
             </button>
-          );})()}
+          )}
         </div>
 
         {/* Spacer */}
@@ -2407,12 +2459,12 @@ ${tx.substring(0, 40000)}`;
         {/* Top bar — 48px, breadcrumb + back/start over */}
         <div style={{height:"48px",background:T.surface,borderBottom:`1px solid ${T.cardBorder}`,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 32px",flexShrink:0}}>
           <div style={{fontSize:"12px",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"1.5px",textTransform:"uppercase",display:"flex",alignItems:"center",gap:"8px"}}>
-            {(mode==="full"||mode==="clips")&&step!=="welcome"&&<span style={{color:T.coral,fontWeight:"700"}}>Content</span>}
-            {mode==="editor"&&step!=="welcome"&&<span style={{color:T.coral,fontWeight:"700"}}>Editing Assistant</span>}
-            {mode==="prep"&&step!=="welcome"&&<span style={{color:T.coral,fontWeight:"700"}}>Planning</span>}
-            {mode==="guest"&&step!=="welcome"&&<span style={{color:T.coral,fontWeight:"700"}}>Guest Finder</span>}
-            {mode==="reels"&&step!=="welcome"&&<span style={{color:"#6366F1",fontWeight:"700"}}>Reel Ideas</span>}
-            {mode&&step!=="welcome"&&<span style={{color:T.cardBorder}}>›</span>}
+            {(mode==="full"||mode==="clips")&&step!=="welcome"&&step!=="show-workspace"&&<span style={{color:T.coral,fontWeight:"700"}}>Content</span>}
+            {mode==="editor"&&step!=="welcome"&&step!=="show-workspace"&&<span style={{color:T.coral,fontWeight:"700"}}>Editing Assistant</span>}
+            {mode==="prep"&&step!=="welcome"&&step!=="show-workspace"&&<span style={{color:T.coral,fontWeight:"700"}}>Planning</span>}
+            {mode==="guest"&&step!=="welcome"&&step!=="show-workspace"&&<span style={{color:T.coral,fontWeight:"700"}}>Guest Finder</span>}
+            {mode==="reels"&&step!=="welcome"&&step!=="show-workspace"&&<span style={{color:"#6366F1",fontWeight:"700"}}>Reel Ideas</span>}
+            {mode&&step!=="welcome"&&step!=="show-workspace"&&<span style={{color:T.cardBorder}}>›</span>}
             {step==="show-select"&&<span>Select Show</span>}
             {step==="configure"&&<span>Configure</span>}
             {step==="clips-setup"&&<span>Clips Setup</span>}
@@ -2428,7 +2480,7 @@ ${tx.substring(0, 40000)}`;
           {/* Progress + nav buttons */}
           <div style={{display:"flex",alignItems:"center",gap:"12px"}}>
             {/* Compact show switcher — visible in all non-welcome steps */}
-            {step!=="welcome"&&Object.keys(shows).length>1&&(
+            {step!=="welcome"&&step!=="show-workspace"&&Object.keys(shows).length>1&&(
               <select value={show||""} onChange={e=>{if(e.target.value)advanceToMode(mode,e.target.value);}}
                 style={{height:"30px",padding:"0 8px",background:T.card,border:"1px solid "+T.cardBorder,borderRadius:"6px",color:T.textSecondary,fontSize:"12px",fontFamily:PF,cursor:"pointer",outline:"none",maxWidth:"140px"}}>
                 {[...Object.entries(shows)].sort(([,a],[,b])=>a.name.localeCompare(b.name)).map(([k,s])=>(
@@ -2436,13 +2488,13 @@ ${tx.substring(0, 40000)}`;
                 ))}
               </select>
             )}
-            {step!=="welcome"&&step!=="generating"&&(
+            {step!=="welcome"&&step!=="show-workspace"&&step!=="generating"&&(
               <>
                 {ci>0&&<div style={{display:"flex",gap:"3px",alignItems:"center"}}>
                   {[0,1,2].map(i=><div key={i} style={{width:i<ci?"20px":"6px",height:"4px",borderRadius:"2px",background:i<ci?T.coral:T.cardBorder,transition:"all .3s"}}/>)}
                 </div>}
                 <button onClick={goBack} style={ghost}>Back</button>
-                <button onClick={()=>{setMode(null);setStep("welcome");}} style={{...ghost,fontSize:"12px",padding:"6px 12px"}}>↩ Studio</button>
+                <button onClick={()=>{setMode(null);setStep(show?"show-workspace":"welcome");}} style={{...ghost,fontSize:"12px",padding:"6px 12px"}}>↩ Studio</button>
               </>
             )}
           </div>
@@ -2452,8 +2504,70 @@ ${tx.substring(0, 40000)}`;
         <div style={{flex:1,overflowY:"auto",padding:"40px 48px"}}>
           <div style={{maxWidth:"1100px",margin:"0 auto",width:"100%"}}>
 
-            {/* WELCOME SCREEN */}
+            {/* ── STUDIO HOME — show cards grid ── */}
             {step==="welcome"&&(()=>{
+              const availShows = isClient && clientConfig?.assignedShows?.length > 0
+                ? Object.fromEntries(Object.entries(shows).filter(([k])=>clientConfig.assignedShows.includes(k)))
+                : shows;
+              const availKeys = Object.keys(availShows).sort((a,b)=>availShows[a].name.localeCompare(availShows[b].name));
+              const cardHover = {
+                onMouseEnter:e=>{e.currentTarget.style.boxShadow="0 8px 28px rgba(30,20,10,.14)";e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.borderColor="#CEC3B6";},
+                onMouseLeave:e=>{e.currentTarget.style.boxShadow="0 1px 4px rgba(30,20,10,.06),0 4px 14px rgba(30,20,10,.05)";e.currentTarget.style.transform="";e.currentTarget.style.borderColor=T.cardBorder;}
+              };
+              return(
+              <div style={{animation:"fadeUp .4s ease"}}>
+                <div style={{marginBottom:"36px"}}>
+                  <div style={{fontSize:"13px",fontWeight:"700",letterSpacing:"2.5px",textTransform:"uppercase",color:T.coral,marginBottom:"12px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{(()=>{const h=new Date().getHours();return h<12?"Good morning":h<17?"Good afternoon":"Good evening";})()}, {displayName?displayName.split(" ")[0]:"there"}</div>
+                  <h1 style={{fontFamily:SF,fontSize:"44px",fontWeight:"normal",color:T.text,margin:"0 0 12px",letterSpacing:"-1px",lineHeight:"1.1"}}>Which show are we working on?</h1>
+                  <p style={{fontSize:"17px",color:T.textMuted,margin:0,fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.6"}}>Select a show to open its studio.</p>
+                </div>
+                {loadingShows?(
+                  <div style={{color:T.textMuted,fontSize:"13px",letterSpacing:"2px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>LOADING SHOWS...</div>
+                ):availKeys.length===0&&isAdmin?(
+                  <div style={{background:T.card,border:`1px solid ${T.cardBorder}`,borderRadius:"12px",padding:"28px",display:"flex",alignItems:"center",gap:"16px",maxWidth:"500px"}}>
+                    <span style={{fontSize:"28px"}}>🎙️</span>
+                    <div>
+                      <div style={{fontSize:"15px",fontWeight:"600",color:T.text,fontFamily:"'DM Sans', system-ui, sans-serif",marginBottom:"6px"}}>No shows set up yet</div>
+                      <button onClick={()=>setShowAdmin(true)} style={{fontSize:"14px",color:T.coral,background:"none",border:"none",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600",padding:0,textDecoration:"underline"}}>Open Settings to add your first show →</button>
+                    </div>
+                  </div>
+                ):(
+                  <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:"18px",maxWidth:"900px"}}>
+                    {availKeys.map(k=>{
+                      const s=availShows[k];
+                      const accent=s.clr||T.coral;
+                      return(
+                        <div key={k} {...cardHover} onClick={()=>{setShow(k);setStep("show-workspace");}}
+                          style={{background:T.card,border:`1px solid ${T.cardBorder}`,borderRadius:"14px",overflow:"hidden",cursor:"pointer",boxShadow:"0 1px 4px rgba(30,20,10,.06),0 4px 14px rgba(30,20,10,.05)",transition:"box-shadow .16s,transform .16s,border-color .16s"}}>
+                          <div style={{height:"3px",background:accent}}/>
+                          <div style={{padding:"22px 24px 20px"}}>
+                            <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:"12px",marginBottom:"12px"}}>
+                              <div style={{width:"42px",height:"42px",borderRadius:"10px",background:accent+"18",border:`1px solid ${accent}30`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:"20px"}}>🎙️</div>
+                              <span style={{fontSize:"18px",color:T.cardBorder}}>→</span>
+                            </div>
+                            <div style={{fontFamily:SF,fontSize:"20px",fontWeight:"normal",color:T.text,marginBottom:"6px",lineHeight:"1.2"}}>{s.name}</div>
+                            {s.tag&&<div style={{fontSize:"13px",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.5"}}>{s.tag}</div>}
+                          </div>
+                        </div>
+                      );
+                    })}
+                    {isAdmin&&(
+                      <div onClick={()=>setShowAdmin(true)}
+                        style={{background:"transparent",border:`2px dashed ${T.cardBorder}`,borderRadius:"14px",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"32px 24px",gap:"8px",transition:"border-color .15s",minHeight:"140px"}}
+                        onMouseEnter={e=>{e.currentTarget.style.borderColor=T.coral;}}
+                        onMouseLeave={e=>{e.currentTarget.style.borderColor=T.cardBorder;}}>
+                        <div style={{fontSize:"24px",color:T.cardBorder}}>+</div>
+                        <div style={{fontSize:"14px",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600"}}>Add Show</div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+              );
+            })()}
+
+            {/* ── SHOW WORKSPACE — tool picker ── */}
+            {step==="show-workspace"&&show&&(()=>{
               const allowed = isClient && clientConfig?.allowedModes?.length > 0 ? clientConfig.allowedModes : null;
               const showFull   = !allowed || allowed.includes("full");
               const showClips  = !allowed || allowed.includes("clips");
@@ -2461,209 +2575,47 @@ ${tx.substring(0, 40000)}`;
               const showPrep   = !allowed || allowed.includes("prep");
               const showGuest  = !allowed || allowed.includes("guest");
               const showReels  = !allowed || allowed.includes("reels");
-              const hasStudio  = showFull||showClips||showEditor||showPrep||showGuest;
-              const TC="#6366F1"; // creator tools accent
-
-              // For clients with one assigned show, auto-select it
-              const availShows = isClient && clientConfig?.assignedShows?.length > 0
-                ? Object.fromEntries(Object.entries(shows).filter(([k])=>clientConfig.assignedShows.includes(k)))
-                : shows;
-              const availKeys = Object.keys(availShows);
-              const hasShows = !loadingShows && availKeys.length > 0;
-
+              const TC="#6366F1";
+              const accent=d?.clr||T.coral;
               const cardHover = {
                 onMouseEnter:e=>{e.currentTarget.style.boxShadow="0 6px 24px rgba(30,20,10,.13)";e.currentTarget.style.transform="translateY(-1px)";e.currentTarget.style.borderColor="#CEC3B6";},
                 onMouseLeave:e=>{e.currentTarget.style.boxShadow="0 1px 4px rgba(30,20,10,.06),0 4px 14px rgba(30,20,10,.05)";e.currentTarget.style.transform="";e.currentTarget.style.borderColor=T.cardBorder;}
               };
-              const subBtnHover = {
-                onMouseEnter:e=>{e.currentTarget.style.borderColor=T.coral;},
-                onMouseLeave:e=>{e.currentTarget.style.borderColor=T.cardBorder;}
-              };
-
+              const tools=[
+                showFull&&{id:"full",label:"Full Episode Package",sub:"Show notes, YouTube, social, email & blog",icon:<svg width="20" height="20" viewBox="0 0 16 16" fill="none"><rect x="1" y="4" width="14" height="10" rx="1.5" stroke={accent} strokeWidth="1.5"/><path d="M5 4V3a3 3 0 016 0v1" stroke={accent} strokeWidth="1.5" strokeLinecap="round"/><path d="M1 8h14" stroke={accent} strokeWidth="1" strokeOpacity=".4"/></svg>,bg:accent+"18",border:`1px solid ${accent}30`},
+                showClips&&{id:"clips",label:"Clips & Shorts",sub:"AI identifies best moments, writes captions",icon:<svg width="18" height="18" viewBox="0 0 14 14" fill="none"><polygon points="3,1 11,7 3,13" fill={accent} opacity=".7"/></svg>,bg:accent+"12",border:`1px solid ${accent}25`},
+                showEditor&&{id:"editor",label:"Editor Companion",sub:"Hook picks, timestamps & editor brief",icon:<svg width="18" height="18" viewBox="0 0 14 14" fill="none"><rect x="1" y="2.5" width="8" height="9" rx="1" stroke="#7A5C4A" strokeWidth="1.4"/><path d="M9 5l4-2v8l-4-2V5z" stroke="#7A5C4A" strokeWidth="1.4" strokeLinejoin="round"/></svg>,bg:"rgba(100,85,70,.09)",border:"1px solid rgba(100,85,70,.15)"},
+                showPrep&&{id:"prep",label:"Episode Prep + Sage",sub:"Structure, hooks & talking points before you record",icon:<svg width="17" height="17" viewBox="0 0 13 14" fill="none"><rect x="1" y="1.5" width="11" height="11" rx="1.5" stroke="#485060" strokeWidth="1.4"/><path d="M3.5 5h6M3.5 7.5h6M3.5 10h4" stroke="#485060" strokeWidth="1.2" strokeLinecap="round"/></svg>,bg:"rgba(60,70,90,.08)",border:"1px solid rgba(60,70,90,.12)"},
+                showGuest&&{id:"guest",label:"Guest Research",sub:"Deep-dive research on any guest or pitch target",icon:<svg width="17" height="17" viewBox="0 0 13 14" fill="none"><rect x="4" y="1" width="5" height="7" rx="2.5" stroke="#707070" strokeWidth="1.4"/><path d="M1.5 7.5A5 5 0 0011.5 7.5" stroke="#707070" strokeWidth="1.4" strokeLinecap="round"/><line x1="6.5" y1="12.5" x2="6.5" y2="10" stroke="#707070" strokeWidth="1.4" strokeLinecap="round"/></svg>,bg:"rgba(30,30,30,.06)",border:"1px solid rgba(30,30,30,.1)"},
+                showReels&&{id:"reels",label:"Reel Ideas",sub:"4 original to-camera reel concepts in your voice",icon:<span style={{fontSize:"18px"}}>📱</span>,bg:`${TC}14`,border:`1px solid ${TC}30`,accent:TC},
+              ].filter(Boolean);
               return(
-              <div style={{animation:"fadeUp .4s ease"}}>
-
-                {/* Greeting */}
+              <div style={{animation:"fadeUp .35s ease"}}>
+                {/* Show header */}
                 <div style={{marginBottom:"36px"}}>
-                  <div style={{fontSize:"13px",fontWeight:"700",letterSpacing:"2.5px",textTransform:"uppercase",color:T.coral,marginBottom:"12px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>{(()=>{const h=new Date().getHours();return h<12?"Good morning":h<17?"Good afternoon":"Good evening";})()}, {displayName?displayName.split(" ")[0]:"there"}</div>
-                  <h1 style={{fontFamily:SF,fontSize:"48px",fontWeight:"normal",color:T.text,margin:"0 0 12px",letterSpacing:"-1px",lineHeight:"1.1",textWrap:"balance"}}>Your podcast companion is ready.</h1>
-                  <p style={{fontSize:"18px",color:T.textMuted,margin:0,fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.6",maxWidth:"560px"}}>Select your show, then choose a workflow — everything generated will match your voice and audience.</p>
+                  <div style={{width:"40px",height:"3px",background:accent,borderRadius:"2px",marginBottom:"16px"}}/>
+                  <h1 style={{fontFamily:SF,fontSize:"40px",fontWeight:"normal",color:T.text,margin:"0 0 8px",letterSpacing:"-0.8px",lineHeight:"1.1"}}>{d?.name}</h1>
+                  {d?.tag&&<p style={{fontSize:"16px",color:T.textMuted,margin:0,fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.5"}}>{d.tag}</p>}
                 </div>
-
-                {/* Show picker */}
-                {loadingShows?(
-                  <div style={{background:T.card,border:`1px solid ${T.cardBorder}`,borderRadius:"12px",padding:"16px 20px",maxWidth:"820px",marginBottom:"22px",color:T.textMuted,fontSize:"12px",letterSpacing:"2px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>LOADING SHOWS...</div>
-                ):Object.keys(shows).length===0&&isAdmin?(
-                  <div style={{background:T.card,border:`1px solid ${T.cardBorder}`,borderRadius:"12px",padding:"24px",maxWidth:"820px",marginBottom:"22px",display:"flex",alignItems:"center",gap:"16px"}}>
-                    <span style={{fontSize:"24px"}}>🎙️</span>
-                    <div>
-                      <div style={{fontSize:"14px",fontWeight:"600",color:T.text,fontFamily:"'DM Sans', system-ui, sans-serif",marginBottom:"4px"}}>No shows set up yet</div>
-                      <button onClick={()=>setShowAdmin(true)} style={{fontSize:"13px",color:T.coral,background:"none",border:"none",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600",padding:0,textDecoration:"underline"}}>Open Podcast Settings to add your first show →</button>
-                    </div>
-                  </div>
-                ):(
-                  <div style={{background:T.card,border:`1px solid ${T.cardBorder}`,borderRadius:"12px",padding:"18px 24px",marginBottom:"24px",display:"flex",alignItems:"center",gap:"16px",boxShadow:"0 1px 4px rgba(30,20,10,.05)"}}>
-                    <div style={{width:"26px",height:"26px",borderRadius:"50%",background:T.coral,color:"#fff",fontSize:"12px",fontWeight:"700",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>1</div>
-                    <div style={{fontSize:"12px",fontWeight:"700",letterSpacing:"2px",textTransform:"uppercase",color:T.textMuted,whiteSpace:"nowrap",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Select Show</div>
-                    <div style={{flex:1,position:"relative"}}>
-                      <select
-                        value={show||""}
-                        onChange={e=>{const k=e.target.value;if(k)setShow(k);else setShow(null);}}
-                        className="sidebar-show-select"
-                        style={{width:"100%",appearance:"none",background:"#fff",border:`1px solid ${T.cardBorder}`,borderRadius:"8px",padding:"11px 36px 11px 15px",fontSize:"16px",fontWeight:"600",color:show?T.text:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",cursor:"pointer",outline:"none"}}>
-                        <option value="">Choose a show…</option>
-                        {[...Object.entries(availShows)].sort(([,a],[,b])=>a.name.localeCompare(b.name)).map(([k,s])=>(
-                          <option key={k} value={k}>{s.name}</option>
-                        ))}
-                      </select>
-                      <span style={{position:"absolute",right:"13px",top:"50%",transform:"translateY(-50%)",pointerEvents:"none",color:T.textMuted,fontSize:"12px"}}>▾</span>
-                    </div>
-                    <div style={{fontSize:"13px",color:show?"#3A6B3A":T.textMuted,whiteSpace:"nowrap",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:show?"600":"400"}}>
-                      {show?"DNA loaded ✓":"Show DNA loads automatically"}
-                    </div>
-                  </div>
-                )}
-
-                {/* Workflow cards — dimmed until show selected */}
-                <div style={{opacity:show?1:0.3,pointerEvents:show?"auto":"none",transition:"opacity .3s"}}>
-
-                  {/* Section label: STUDIO */}
-                  {hasStudio&&<div style={{display:"flex",alignItems:"center",gap:"12px",marginBottom:"16px"}}>
-                    <div style={{fontSize:"10px",fontWeight:"800",letterSpacing:"3px",textTransform:"uppercase",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",whiteSpace:"nowrap"}}>🎙 Studio</div>
-                    <div style={{flex:1,height:"1px",background:T.cardBorder}}/>
-                  </div>}
-
-                  {/* Featured: Content Generation */}
-                  {(showFull||showClips)&&(
-                  <div {...cardHover} style={{background:T.card,border:`1px solid ${T.cardBorder}`,borderRadius:"14px",overflow:"hidden",marginBottom:"16px",cursor:"pointer",boxShadow:"0 1px 4px rgba(30,20,10,.06),0 4px 14px rgba(30,20,10,.05)",transition:"box-shadow .16s,transform .16s,border-color .16s"}}>
-                    <div style={{height:"2px",background:`linear-gradient(90deg,${T.coral},rgba(122,0,25,.2) 80%,transparent)`}}/>
-                    <div style={{padding:"22px 28px 18px",borderBottom:`1px solid ${T.cardBorder}`,display:"flex",alignItems:"center",justifyContent:"space-between",gap:"16px"}}>
-                      <div style={{display:"flex",alignItems:"center",gap:"14px"}}>
-                        <div style={{width:"44px",height:"44px",borderRadius:"10px",background:T.coralSoft,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><svg width="20" height="20" viewBox="0 0 16 16" fill="none"><rect x="1" y="4" width="14" height="10" rx="1.5" stroke={T.coral} strokeWidth="1.5"/><path d="M5 4V3a3 3 0 016 0v1" stroke={T.coral} strokeWidth="1.5" strokeLinecap="round"/><path d="M1 8h14" stroke={T.coral} strokeWidth="1" strokeOpacity=".4"/></svg></div>
-                        <div>
-                          <div style={{fontSize:"11px",fontWeight:"700",letterSpacing:"2px",textTransform:"uppercase",color:T.coral,marginBottom:"4px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Content Generation</div>
-                          <div style={{fontFamily:SF,fontSize:"20px",fontWeight:"normal",color:T.text,letterSpacing:"-0.2px"}}>Turn your transcript into a full content package</div>
-                        </div>
-                      </div>
-                      <span style={{fontSize:"18px",color:T.cardBorder,flexShrink:0}}>→</span>
-                    </div>
-                    <div style={{padding:"18px 28px 24px"}}>
-                      <p style={{fontSize:"16px",color:T.textMuted,lineHeight:"1.65",margin:"0 0 16px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Paste your transcript and get show notes, YouTube, social, email, and blog — all written in your show's voice.</p>
-                      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"12px"}}>
-                        {showFull&&(
-                        <button onClick={()=>handleSidebarNav("full")} {...subBtnHover}
-                          style={{background:"#fff",border:`1px solid ${T.cardBorder}`,borderRadius:"10px",padding:"14px 16px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",transition:"border-color .13s"}}>
-                          <div style={{fontSize:"14px",fontWeight:"600",color:T.text,marginBottom:"4px"}}>Full Episode Package</div>
-                          <div style={{fontSize:"12.5px",color:T.textMuted,lineHeight:"1.4"}}>Show notes, YouTube, social, email &amp; blog</div>
-                        </button>
-                        )}
-                        {showClips&&(
-                        <button onClick={()=>handleSidebarNav("clips")} {...subBtnHover}
-                          style={{background:"#fff",border:`1px solid ${T.cardBorder}`,borderRadius:"10px",padding:"14px 16px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",transition:"border-color .13s"}}>
-                          <div style={{fontSize:"14px",fontWeight:"600",color:T.text,marginBottom:"4px"}}>Clips &amp; Shorts</div>
-                          <div style={{fontSize:"12.5px",color:T.textMuted,lineHeight:"1.4"}}>Titles, captions &amp; hashtags per clip</div>
-                        </button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  )}
-
-                  {/* 3-column row */}
-                  <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"16px"}}>
-
-                    {showEditor&&(
-                    <div onClick={()=>handleSidebarNav("editor")} {...cardHover}
-                      style={{background:T.card,border:`1px solid ${T.cardBorder}`,borderRadius:"13px",overflow:"hidden",cursor:"pointer",boxShadow:"0 1px 4px rgba(30,20,10,.06),0 4px 14px rgba(30,20,10,.05)",transition:"box-shadow .16s,transform .16s,border-color .16s"}}>
-                      <div style={{padding:"20px 22px 16px",borderBottom:`1px solid ${T.cardBorder}`,display:"flex",alignItems:"center",justifyContent:"space-between",gap:"10px"}}>
-                        <div style={{display:"flex",alignItems:"center",gap:"12px"}}>
-                          <div style={{width:"38px",height:"38px",borderRadius:"9px",background:"rgba(100,85,70,.09)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><svg width="17" height="17" viewBox="0 0 14 14" fill="none"><rect x="1" y="2.5" width="8" height="9" rx="1" stroke="#7A5C4A" strokeWidth="1.4"/><path d="M9 5l4-2v8l-4-2V5z" stroke="#7A5C4A" strokeWidth="1.4" strokeLinejoin="round"/></svg></div>
-                          <div>
-                            <div style={{fontSize:"10px",fontWeight:"700",letterSpacing:"2px",textTransform:"uppercase",color:"#5A4F45",marginBottom:"4px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Editing Assistant</div>
-                            <div style={{fontFamily:SF,fontSize:"17px",fontWeight:"normal",color:T.text}}>Editor briefs &amp; clip guidance</div>
+                {/* Tool grid */}
+                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:"16px",maxWidth:"900px"}}>
+                  {tools.map(t=>{
+                    const ta=t.accent||accent;
+                    return(
+                      <div key={t.id} {...cardHover} onClick={()=>advanceToMode(t.id,show)}
+                        style={{background:T.card,border:`1px solid ${T.cardBorder}`,borderRadius:"13px",overflow:"hidden",cursor:"pointer",boxShadow:"0 1px 4px rgba(30,20,10,.06),0 4px 14px rgba(30,20,10,.05)",transition:"box-shadow .16s,transform .16s,border-color .16s"}}>
+                        <div style={{height:"2px",background:ta}}/>
+                        <div style={{padding:"20px 22px 18px"}}>
+                          <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:"12px",marginBottom:"12px"}}>
+                            <div style={{width:"40px",height:"40px",borderRadius:"9px",background:t.bg,border:t.border,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{t.icon}</div>
+                            <span style={{fontSize:"16px",color:T.cardBorder}}>→</span>
                           </div>
-                        </div>
-                        <span style={{fontSize:"16px",color:T.cardBorder,flexShrink:0}}>→</span>
-                      </div>
-                      <div style={{padding:"14px 22px 20px"}}>
-                        <p style={{fontSize:"15px",color:T.textMuted,lineHeight:"1.65",margin:0,fontFamily:"'DM Sans', system-ui, sans-serif"}}>Hook picks, timestamps, and a complete brief for your editor — built from your show's DNA.</p>
-                      </div>
-                    </div>
-                    )}
-
-                    {showPrep&&(
-                    <div onClick={()=>handleSidebarNav("prep")} {...cardHover}
-                      style={{background:T.card,border:`1px solid ${T.cardBorder}`,borderRadius:"13px",overflow:"hidden",cursor:"pointer",boxShadow:"0 1px 4px rgba(30,20,10,.06),0 4px 14px rgba(30,20,10,.05)",transition:"box-shadow .16s,transform .16s,border-color .16s"}}>
-                      <div style={{padding:"20px 22px 16px",borderBottom:`1px solid ${T.cardBorder}`,display:"flex",alignItems:"center",justifyContent:"space-between",gap:"10px"}}>
-                        <div style={{display:"flex",alignItems:"center",gap:"12px"}}>
-                          <div style={{width:"38px",height:"38px",borderRadius:"9px",background:"rgba(60,70,90,.08)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><svg width="16" height="17" viewBox="0 0 13 14" fill="none"><rect x="1" y="1.5" width="11" height="11" rx="1.5" stroke="#485060" strokeWidth="1.4"/><path d="M3.5 5h6M3.5 7.5h6M3.5 10h4" stroke="#485060" strokeWidth="1.2" strokeLinecap="round"/></svg></div>
-                          <div>
-                            <div style={{fontSize:"10px",fontWeight:"700",letterSpacing:"2px",textTransform:"uppercase",color:"#485060",marginBottom:"4px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Episode Planning</div>
-                            <div style={{fontFamily:SF,fontSize:"17px",fontWeight:"normal",color:T.text}}>Plan before you record</div>
-                          </div>
-                        </div>
-                        <span style={{fontSize:"16px",color:T.cardBorder,flexShrink:0}}>→</span>
-                      </div>
-                      <div style={{padding:"14px 22px 20px"}}>
-                        <p style={{fontSize:"15px",color:T.textMuted,lineHeight:"1.65",margin:0,fontFamily:"'DM Sans', system-ui, sans-serif"}}>Scripted hooks, talking points, and a full structure — before the mic is on.</p>
-                      </div>
-                    </div>
-                    )}
-
-                    {showGuest&&(
-                    <div onClick={()=>handleSidebarNav("guest")} {...cardHover}
-                      style={{background:T.card,border:`1px solid ${T.cardBorder}`,borderRadius:"13px",overflow:"hidden",cursor:"pointer",boxShadow:"0 1px 4px rgba(30,20,10,.06),0 4px 14px rgba(30,20,10,.05)",transition:"box-shadow .16s,transform .16s,border-color .16s"}}>
-                      <div style={{padding:"20px 22px 16px",borderBottom:`1px solid ${T.cardBorder}`,display:"flex",alignItems:"center",justifyContent:"space-between",gap:"10px"}}>
-                        <div style={{display:"flex",alignItems:"center",gap:"12px"}}>
-                          <div style={{width:"38px",height:"38px",borderRadius:"9px",background:"rgba(30,30,30,.06)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><svg width="16" height="17" viewBox="0 0 13 14" fill="none"><rect x="4" y="1" width="5" height="7" rx="2.5" stroke="#707070" strokeWidth="1.4"/><path d="M1.5 7.5A5 5 0 0011.5 7.5" stroke="#707070" strokeWidth="1.4" strokeLinecap="round"/><line x1="6.5" y1="12.5" x2="6.5" y2="10" stroke="#707070" strokeWidth="1.4" strokeLinecap="round"/></svg></div>
-                          <div>
-                            <div style={{fontSize:"10px",fontWeight:"700",letterSpacing:"2px",textTransform:"uppercase",color:"#707070",marginBottom:"4px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Podcast Assistant</div>
-                            <div style={{fontFamily:SF,fontSize:"17px",fontWeight:"normal",color:T.text,display:"flex",alignItems:"baseline",gap:"8px"}}>Guest Finder <span style={{fontFamily:"'DM Sans', system-ui, sans-serif",fontSize:"8px",fontWeight:"800",letterSpacing:".8px",background:T.coral,color:"#fff",padding:"2px 6px",borderRadius:"3px",verticalAlign:"middle"}}>NEW</span></div>
-                          </div>
-                        </div>
-                        <span style={{fontSize:"16px",color:T.cardBorder,flexShrink:0}}>→</span>
-                      </div>
-                      <div style={{padding:"14px 22px 20px"}}>
-                        <p style={{fontSize:"15px",color:T.textMuted,lineHeight:"1.65",margin:0,fontFamily:"'DM Sans', system-ui, sans-serif"}}>Find shows your host should appear on — pitches drafted from your audience DNA.</p>
-                      </div>
-                    </div>
-                    )}
-
-                  </div>
-
-                  {/* Section label: CREATOR TOOLS */}
-                  {showReels&&<div style={{display:"flex",alignItems:"center",gap:"12px",margin:"28px 0 16px"}}>
-                    <div style={{fontSize:"10px",fontWeight:"800",letterSpacing:"3px",textTransform:"uppercase",color:TC,fontFamily:"'DM Sans', system-ui, sans-serif",whiteSpace:"nowrap",opacity:0.8}}>📱 Creator Tools</div>
-                    <div style={{flex:1,height:"1px",background:TC+"33"}}/>
-                    <div style={{fontSize:"11px",color:TC,fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600",opacity:0.7,whiteSpace:"nowrap"}}>NEW</div>
-                  </div>}
-
-                  {/* Reel Ideas */}
-                  {showReels&&(
-                  <div {...cardHover} onClick={()=>handleSidebarNav("reels")}
-                    style={{background:T.card,border:`1px solid ${TC}33`,borderRadius:"14px",overflow:"hidden",cursor:"pointer",boxShadow:"0 1px 4px rgba(30,20,10,.06),0 4px 14px rgba(30,20,10,.05)",transition:"box-shadow .16s,transform .16s,border-color .16s"}}>
-                    <div style={{height:"2px",background:`linear-gradient(90deg,${TC},${TC}22 80%,transparent)`}}/>
-                    <div style={{padding:"22px 28px 20px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:"16px"}}>
-                      <div style={{display:"flex",alignItems:"center",gap:"14px"}}>
-                        <div style={{width:"44px",height:"44px",borderRadius:"10px",background:`${TC}14`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:"22px"}}>📱</div>
-                        <div>
-                          <div style={{fontSize:"11px",fontWeight:"700",letterSpacing:"2px",textTransform:"uppercase",color:TC,marginBottom:"4px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Creator Tools</div>
-                          <div style={{fontFamily:SF,fontSize:"20px",fontWeight:"normal",color:T.text,letterSpacing:"-0.2px"}}>Reel Ideas Generator</div>
+                          <div style={{fontFamily:SF,fontSize:"18px",fontWeight:"normal",color:T.text,marginBottom:"5px"}}>{t.label}</div>
+                          <div style={{fontSize:"13px",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.5"}}>{t.sub}</div>
                         </div>
                       </div>
-                      <span style={{fontSize:"18px",color:TC,flexShrink:0}}>→</span>
-                    </div>
-                    <div style={{padding:"0 28px 24px"}}>
-                      <p style={{fontSize:"15px",color:T.textMuted,lineHeight:"1.65",margin:"0 0 16px",fontFamily:"'DM Sans', system-ui, sans-serif"}}>Get 4 original to-camera reel concepts — inspired by your show's themes, written in your voice, ready to record on your phone.</p>
-                      <div style={{display:"flex",gap:"8px",flexWrap:"wrap"}}>
-                        {["Original hooks","Talking points","Filming notes","CTA included"].map(tag=>(
-                          <span key={tag} style={{padding:"4px 12px",background:`${TC}12`,border:`1px solid ${TC}30`,borderRadius:"20px",fontSize:"11px",color:TC,fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600",letterSpacing:"0.5px"}}>{tag}</span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                  )}
-
+                    );
+                  })}
                 </div>
               </div>
               );
