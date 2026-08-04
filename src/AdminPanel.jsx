@@ -1739,41 +1739,60 @@ ${epfPasteText.substring(0, 8000)}`;
           <SettingsView shows={shows} globalSettings={globalSettings} setGlobalSettings={setGlobalSettings} saveGlobalSettings={saveGlobalSettings} globalSettingsSaved={globalSettingsSaved} globalSettingsLoading={globalSettingsLoading} orgId={orgId} accountType={accountType} userEmail={userEmail} orgData={orgData} setOrgData={setOrgData} saveOrgData={saveOrgData} orgDataSaved={orgDataSaved} activeSection={activeSettingsSection} setActiveSection={setActiveSettingsSection} />
         ) : (<>
 
-        {/* ── STUDIO-STYLE SHOW SELECTOR BAR ── */}
-        <div style={{ background: T.card, borderBottom: `1px solid ${T.cardBorder}`, padding: "14px 32px", display: "flex", alignItems: "center", gap: "16px", flexShrink: 0, boxShadow: "0 1px 4px rgba(30,20,10,.05)" }}>
-          <div style={{ width: "26px", height: "26px", borderRadius: "50%", background: T.coral, color: "#fff", fontSize: "12px", fontWeight: "700", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>1</div>
-          <div style={{ fontSize: "12px", fontWeight: "700", letterSpacing: "2px", textTransform: "uppercase", color: T.textMuted, whiteSpace: "nowrap", fontFamily: FF }}>Select Show</div>
-          <div style={{ flex: 1, position: "relative" }}>
-            <select className="admin-show-select"
-              value={selKey && selKey !== "__new__" ? selKey : ""}
-              onChange={e => e.target.value ? selectShow(e.target.value) : null}
-              style={{ width: "100%", appearance: "none", background: "#fff", border: `1px solid ${T.cardBorder}`, borderRadius: "8px", padding: "11px 36px 11px 15px", fontSize: "16px", fontWeight: "600", color: selKey && selKey !== "__new__" ? T.text : T.textMuted, fontFamily: FF, cursor: "pointer", outline: "none" }}>
-              <option value="">Choose a show…</option>
-              {[...Object.entries(shows)].sort(([,a],[,b]) => a.name.localeCompare(b.name)).map(([k, s]) => (
-                <option key={k} value={k}>{s.name}</option>
-              ))}
-            </select>
-            <span style={{ position: "absolute", right: "13px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: T.textMuted, fontSize: "12px" }}>▾</span>
+        {/* ── SHOW BAR — only when a show is selected ── */}
+        {form && selKey !== "__new__" && (
+          <div style={{ background: T.card, borderBottom: `1px solid ${T.cardBorder}`, padding: "12px 32px", display: "flex", alignItems: "center", gap: "16px", flexShrink: 0, boxShadow: "0 1px 4px rgba(30,20,10,.05)" }}>
+            <div style={{ width:"8px", height:"8px", borderRadius:"50%", background: shows[selKey]?.clr||T.coral, flexShrink:0 }}/>
+            <div style={{ fontSize: "15px", fontWeight: "600", color: T.text, fontFamily: FF, flex:1 }}>{shows[selKey]?.name}</div>
+            <button onClick={() => { setForm(null); setSelKey(null); }}
+              style={{ fontSize: "13px", color: T.coral, background: "transparent", border: "1px solid " + T.coral + "55", padding: "6px 14px", borderRadius: "6px", cursor: "pointer", fontFamily: FF, whiteSpace: "nowrap" }}>
+              ← All Shows
+            </button>
+            <button onClick={startNew}
+              style={{ flexShrink: 0, fontSize: "13px", fontWeight: "700", color: T.coral, background: "transparent", border: "1px solid " + T.coral + "55", padding: "6px 14px", borderRadius: "6px", cursor: "pointer", fontFamily: FF, whiteSpace: "nowrap" }}>
+              + Add Show
+            </button>
           </div>
-          <div style={{ fontSize: "13px", color: selKey && selKey !== "__new__" ? "#3A6B3A" : T.textMuted, whiteSpace: "nowrap", fontFamily: FF, fontWeight: selKey && selKey !== "__new__" ? "600" : "400" }}>
-            {selKey && selKey !== "__new__" ? "DNA loaded ✓" : "Show DNA loads automatically"}
-          </div>
-          <button onClick={startNew}
-            style={{ flexShrink: 0, fontSize: "13px", fontWeight: "700", color: T.coral, background: "transparent", border: "1px solid " + T.coral + "55", padding: "8px 14px", borderRadius: "7px", cursor: "pointer", fontFamily: FF, whiteSpace: "nowrap" }}>
-            + Add Show
-          </button>
-        </div>
+        )}
 
         {/* ── CONTENT ── */}
         <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
 
         {!form ? (
-          /* ── EMPTY STATE ── */
-          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <div style={{ textAlign: "center", color: T.textMuted }}>
-              <div style={{ fontSize: "40px", marginBottom: "16px", opacity: 0.4 }}>🎙️</div>
-              <div style={{ fontFamily: "Georgia, serif", fontSize: "20px", color: T.textSecondary, marginBottom: "6px", fontWeight: "normal" }}>Select a show to edit its DNA</div>
-              <div style={{ fontSize: "13px", color: T.textMuted, fontFamily: FF }}>or click <strong style={{ color: T.coral }}>+ Add Show</strong> to create a new one</div>
+          /* ── SHOW CARD GRID ── */
+          <div style={{ flex: 1, overflowY: "auto", padding: "40px 48px" }}>
+            <div style={{ maxWidth: "900px", margin: "0 auto" }}>
+              <h1 style={{ fontFamily: SF, fontSize: "36px", fontWeight: "normal", color: T.text, margin: "0 0 8px", letterSpacing: "-0.5px" }}>Podcast Settings</h1>
+              <p style={{ fontSize: "16px", color: T.textMuted, margin: "0 0 36px", fontFamily: FF }}>Select a show to edit its DNA, or add a new one.</p>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(260px,1fr))", gap: "18px" }}>
+                {[...Object.entries(shows)].sort(([,a],[,b]) => a.name.localeCompare(b.name)).map(([k, s]) => {
+                  const accent = s.clr || T.coral;
+                  return (
+                    <div key={k} onClick={() => selectShow(k)}
+                      style={{ background: T.card, border: `1px solid ${T.cardBorder}`, borderRadius: "14px", overflow: "hidden", cursor: "pointer", boxShadow: "0 1px 4px rgba(30,20,10,.06),0 4px 14px rgba(30,20,10,.05)", transition: "box-shadow .16s,transform .16s,border-color .16s" }}
+                      onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 8px 28px rgba(30,20,10,.14)"; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.borderColor = "#CEC3B6"; }}
+                      onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 1px 4px rgba(30,20,10,.06),0 4px 14px rgba(30,20,10,.05)"; e.currentTarget.style.transform = ""; e.currentTarget.style.borderColor = T.cardBorder; }}>
+                      <div style={{ height: "3px", background: accent }} />
+                      <div style={{ padding: "22px 24px 20px" }}>
+                        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "12px", marginBottom: "12px" }}>
+                          <div style={{ width: "42px", height: "42px", borderRadius: "10px", background: accent + "18", border: `1px solid ${accent}30`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: "20px" }}>🎙️</div>
+                          <span style={{ fontSize: "18px", color: T.cardBorder }}>→</span>
+                        </div>
+                        <div style={{ fontFamily: SF, fontSize: "20px", fontWeight: "normal", color: T.text, marginBottom: "6px", lineHeight: "1.2" }}>{s.name}</div>
+                        {s.tag && <div style={{ fontSize: "13px", color: T.textMuted, fontFamily: FF, lineHeight: "1.5" }}>{s.tag}</div>}
+                      </div>
+                    </div>
+                  );
+                })}
+                {/* Add Show card */}
+                <div onClick={startNew}
+                  style={{ background: "transparent", border: `2px dashed ${T.cardBorder}`, borderRadius: "14px", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "32px 24px", gap: "8px", transition: "border-color .15s", minHeight: "140px" }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = T.coral; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = T.cardBorder; }}>
+                  <div style={{ fontSize: "24px", color: T.cardBorder }}>+</div>
+                  <div style={{ fontSize: "14px", color: T.textMuted, fontFamily: FF, fontWeight: "600" }}>Add Show</div>
+                </div>
+              </div>
             </div>
           </div>
 
