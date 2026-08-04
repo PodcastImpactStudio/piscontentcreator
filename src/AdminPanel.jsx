@@ -1957,6 +1957,21 @@ ${epfPasteText.substring(0, 8000)}`;
                 </div>
               </div>
 
+              {/* ── TAB NAV BAR ── */}
+              <div style={{ background: T.surface, borderBottom: "1px solid " + T.cardBorder, overflowX: "auto", flexShrink: 0, display: "flex" }}>
+                {TABS.map(t => {
+                  const isActive = tab === t.id;
+                  return (
+                    <button key={t.id} onClick={() => setTab(t.id)}
+                      style={{ padding: "12px 18px", background: "transparent", border: "none", borderBottom: isActive ? `2px solid ${T.coral}` : "2px solid transparent", color: isActive ? T.text : T.textMuted, fontSize: "13px", fontWeight: isActive ? "700" : "400", cursor: "pointer", fontFamily: FF, whiteSpace: "nowrap", flexShrink: 0, transition: "color .15s,border-color .15s" }}
+                      onMouseEnter={e => { if (!isActive) { e.currentTarget.style.color = T.textSecondary; } }}
+                      onMouseLeave={e => { if (!isActive) { e.currentTarget.style.color = T.textMuted; } }}>
+                      {t.label}
+                    </button>
+                  );
+                })}
+              </div>
+
               {/* Delete confirmation modal */}
               {deleteConfirm && selKey !== "__new__" && (
                 <div onClick={() => !deleting && setDeleteConfirm(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: "20px" }}>
