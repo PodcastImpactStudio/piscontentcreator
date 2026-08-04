@@ -1383,8 +1383,19 @@ export default function App(){
 
   useEffect(()=>{
     if(!authReady)return;
-    loadShows().then(s=>{setShows(s);setLoadingShows(false);const keys=Object.keys(s);if(keys.length===1){setShow(keys[0]);setStep("show-workspace");}});
+    loadShows().then(s=>{
+      setShows(s);setLoadingShows(false);
+      const keys=Object.keys(s);
+      if(keys.length===1){setShow(keys[0]);setStep("show-workspace");}
+      else if(keys.length>1){
+        const last=localStorage.getItem("pis_last_show_"+orgId);
+        if(last&&s[last]){setShow(last);setStep("show-workspace");}
+      }
+    });
   },[authReady,orgId]);
+  useEffect(()=>{
+    if(show&&orgId)localStorage.setItem("pis_last_show_"+orgId,show);
+  },[show,orgId]);
   useEffect(()=>{
     if(!showUserMenu)return;
     function handleClick(e){if(userMenuRef.current&&!userMenuRef.current.contains(e.target))setShowUserMenu(false);}
@@ -2021,7 +2032,7 @@ FILMING NOTE:
   function goBack(){
     setErr("");
     const ws = show ? "show-workspace" : "welcome";
-    if(step==="show-select"){setStep("welcome");setMode(null);}
+    if(step==="show-select"){setStep(ws);setMode(null);}
     else if(step==="configure"){setStep(ws);}
     else if(step==="clips-setup"){setStep("configure");}
     else if(step==="input"){
