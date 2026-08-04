@@ -2317,10 +2317,8 @@ ${tx.substring(0, 40000)}`;
         {/* Nav — context-aware */}
         <div style={{padding:"8px 0",borderBottom:"1px solid #2E2E2E"}}>
           {show?(
-            // In a show: show name label + tool shortcuts
             <div>
-              {/* Show context label */}
-              <div style={{padding:"6px 16px 10px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+              <div style={{padding:"6px 16px 4px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
                 <div style={{fontSize:"10px",fontWeight:"800",letterSpacing:"2px",textTransform:"uppercase",color:"#6B6B6B",fontFamily:"'DM Sans', system-ui, sans-serif",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flex:1}}>{shows[show]?.name||"Show"}</div>
                 {Object.keys(shows).length>1&&(
                   <button onClick={()=>{setMode(null);setStep("welcome");setShow(null);}}
@@ -2329,39 +2327,14 @@ ${tx.substring(0, 40000)}`;
                   </button>
                 )}
               </div>
-              {/* Tool nav items */}
-              {(()=>{
-                const allowed = isClient && clientConfig?.allowedModes?.length > 0 ? clientConfig.allowedModes : null;
-                const toolNav=[
-                  {id:"full",label:"Full Episode Package",show:!allowed||allowed.includes("full")},
-                  {id:"clips",label:"Clips & Shorts",show:!allowed||allowed.includes("clips")},
-                  {id:"editor",label:"Editor Companion",show:!allowed||allowed.includes("editor")},
-                  {id:"prep",label:"Episode Prep + Sage",show:!allowed||allowed.includes("prep")},
-                  {id:"guest",label:"Guest Research",show:!allowed||allowed.includes("guest")},
-                  {id:"reels",label:"Reel Ideas",show:!allowed||allowed.includes("reels")},
-                ];
-                return toolNav.filter(t=>t.show).map(t=>{
-                  const isActive=mode===t.id&&step!=="welcome"&&step!=="show-workspace";
-                  return(
-                    <button key={t.id} onClick={()=>advanceToMode(t.id,show)}
-                      className="sidebar-nav-item"
-                      style={{width:"100%",padding:"8px 16px",background:isActive?"#2E2E2E":"transparent",border:"none",borderLeft:`3px solid ${isActive?T.coral:"transparent"}`,color:isActive?"#FFFFFF":"#8A8A8A",fontSize:"13px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",display:"flex",alignItems:"center",gap:"8px",transition:"all .15s"}}>
-                      <span style={{width:"5px",height:"5px",borderRadius:"50%",background:isActive?T.coral:"#444",flexShrink:0,display:"inline-block"}}/>
-                      <span>{t.label}</span>
-                    </button>
-                  );
-                });
-              })()}
-              {/* Show Workspace shortcut */}
               <button onClick={()=>{setMode(null);setStep("show-workspace");}}
                 className="sidebar-nav-item"
-                style={{width:"100%",padding:"8px 16px",marginTop:"4px",background:(step==="show-workspace")?"#2E2E2E":"transparent",border:"none",borderLeft:`3px solid ${step==="show-workspace"?T.coral:"transparent"}`,color:(step==="show-workspace")?"#FFFFFF":"#555",fontSize:"12px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",display:"flex",alignItems:"center",gap:"8px",transition:"all .15s"}}>
-                <span style={{width:"5px",height:"5px",borderRadius:"50%",background:(step==="show-workspace")?T.coral:"#333",flexShrink:0,display:"inline-block"}}/>
-                <span>Overview</span>
+                style={{width:"100%",padding:"8px 16px",background:(step==="show-workspace")?"#2E2E2E":"transparent",border:"none",borderLeft:`3px solid ${step==="show-workspace"?T.coral:"transparent"}`,color:(step==="show-workspace")?"#FFFFFF":"#8A8A8A",fontSize:"13px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",display:"flex",alignItems:"center",gap:"8px",transition:"all .15s"}}>
+                <span style={{width:"5px",height:"5px",borderRadius:"50%",background:(step==="show-workspace")?T.coral:"#444",flexShrink:0,display:"inline-block"}}/>
+                <span>Studio Home</span>
               </button>
             </div>
           ):(
-            // No show selected: plain Home button
             <button onClick={()=>{setMode(null);setStep("welcome");setShow(null);}}
               className="sidebar-nav-item"
               style={{width:"100%",padding:"9px 16px",background:(step==="welcome")?"#2E2E2E":"transparent",border:"none",borderLeft:`3px solid ${step==="welcome"?T.coral:"transparent"}`,color:(step==="welcome")?"#FFFFFF":"#8A8A8A",fontSize:"14px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",display:"flex",alignItems:"center",gap:"10px",transition:"all .15s"}}>
@@ -2581,14 +2554,39 @@ ${tx.substring(0, 40000)}`;
                 onMouseEnter:e=>{e.currentTarget.style.boxShadow="0 6px 24px rgba(30,20,10,.13)";e.currentTarget.style.transform="translateY(-1px)";e.currentTarget.style.borderColor="#CEC3B6";},
                 onMouseLeave:e=>{e.currentTarget.style.boxShadow="0 1px 4px rgba(30,20,10,.06),0 4px 14px rgba(30,20,10,.05)";e.currentTarget.style.transform="";e.currentTarget.style.borderColor=T.cardBorder;}
               };
-              const tools=[
+              const contentTools=[
                 showFull&&{id:"full",label:"Full Episode Package",sub:"Show notes, YouTube, social, email & blog",icon:<svg width="20" height="20" viewBox="0 0 16 16" fill="none"><rect x="1" y="4" width="14" height="10" rx="1.5" stroke={accent} strokeWidth="1.5"/><path d="M5 4V3a3 3 0 016 0v1" stroke={accent} strokeWidth="1.5" strokeLinecap="round"/><path d="M1 8h14" stroke={accent} strokeWidth="1" strokeOpacity=".4"/></svg>,bg:accent+"18",border:`1px solid ${accent}30`},
                 showClips&&{id:"clips",label:"Clips & Shorts",sub:"AI identifies best moments, writes captions",icon:<svg width="18" height="18" viewBox="0 0 14 14" fill="none"><polygon points="3,1 11,7 3,13" fill={accent} opacity=".7"/></svg>,bg:accent+"12",border:`1px solid ${accent}25`},
                 showEditor&&{id:"editor",label:"Editor Companion",sub:"Hook picks, timestamps & editor brief",icon:<svg width="18" height="18" viewBox="0 0 14 14" fill="none"><rect x="1" y="2.5" width="8" height="9" rx="1" stroke="#7A5C4A" strokeWidth="1.4"/><path d="M9 5l4-2v8l-4-2V5z" stroke="#7A5C4A" strokeWidth="1.4" strokeLinejoin="round"/></svg>,bg:"rgba(100,85,70,.09)",border:"1px solid rgba(100,85,70,.15)"},
-                showPrep&&{id:"prep",label:"Episode Prep + Sage",sub:"Structure, hooks & talking points before you record",icon:<svg width="17" height="17" viewBox="0 0 13 14" fill="none"><rect x="1" y="1.5" width="11" height="11" rx="1.5" stroke="#485060" strokeWidth="1.4"/><path d="M3.5 5h6M3.5 7.5h6M3.5 10h4" stroke="#485060" strokeWidth="1.2" strokeLinecap="round"/></svg>,bg:"rgba(60,70,90,.08)",border:"1px solid rgba(60,70,90,.12)"},
-                showGuest&&{id:"guest",label:"Guest Research",sub:"Deep-dive research on any guest or pitch target",icon:<svg width="17" height="17" viewBox="0 0 13 14" fill="none"><rect x="4" y="1" width="5" height="7" rx="2.5" stroke="#707070" strokeWidth="1.4"/><path d="M1.5 7.5A5 5 0 0011.5 7.5" stroke="#707070" strokeWidth="1.4" strokeLinecap="round"/><line x1="6.5" y1="12.5" x2="6.5" y2="10" stroke="#707070" strokeWidth="1.4" strokeLinecap="round"/></svg>,bg:"rgba(30,30,30,.06)",border:"1px solid rgba(30,30,30,.1)"},
                 showReels&&{id:"reels",label:"Reel Ideas",sub:"4 original to-camera reel concepts in your voice",icon:<span style={{fontSize:"18px"}}>📱</span>,bg:`${TC}14`,border:`1px solid ${TC}30`,accent:TC},
               ].filter(Boolean);
+              const planningTools=[
+                showPrep&&{id:"prep",label:"Episode Planning",sub:"Structure, hooks & talking points before you record",icon:<svg width="17" height="17" viewBox="0 0 13 14" fill="none"><rect x="1" y="1.5" width="11" height="11" rx="1.5" stroke="#485060" strokeWidth="1.4"/><path d="M3.5 5h6M3.5 7.5h6M3.5 10h4" stroke="#485060" strokeWidth="1.2" strokeLinecap="round"/></svg>,bg:"rgba(60,70,90,.08)",border:"1px solid rgba(60,70,90,.12)"},
+                showGuest&&{id:"guest",label:"Guest Research",sub:"Deep-dive research on any guest or pitch target",icon:<svg width="17" height="17" viewBox="0 0 13 14" fill="none"><rect x="4" y="1" width="5" height="7" rx="2.5" stroke="#707070" strokeWidth="1.4"/><path d="M1.5 7.5A5 5 0 0011.5 7.5" stroke="#707070" strokeWidth="1.4" strokeLinecap="round"/><line x1="6.5" y1="12.5" x2="6.5" y2="10" stroke="#707070" strokeWidth="1.4" strokeLinecap="round"/></svg>,bg:"rgba(30,30,30,.06)",border:"1px solid rgba(30,30,30,.1)"},
+              ].filter(Boolean);
+
+              const ToolCard=({t})=>{const ta=t.accent||accent;return(
+                <div {...cardHover} onClick={()=>advanceToMode(t.id,show)}
+                  style={{background:T.card,border:`1px solid ${T.cardBorder}`,borderRadius:"13px",overflow:"hidden",cursor:"pointer",boxShadow:"0 1px 4px rgba(30,20,10,.06),0 4px 14px rgba(30,20,10,.05)",transition:"box-shadow .16s,transform .16s,border-color .16s"}}>
+                  <div style={{height:"2px",background:ta}}/>
+                  <div style={{padding:"20px 22px 18px"}}>
+                    <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:"12px",marginBottom:"12px"}}>
+                      <div style={{width:"40px",height:"40px",borderRadius:"9px",background:t.bg,border:t.border,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{t.icon}</div>
+                      <span style={{fontSize:"16px",color:T.cardBorder}}>→</span>
+                    </div>
+                    <div style={{fontFamily:SF,fontSize:"18px",fontWeight:"normal",color:T.text,marginBottom:"5px"}}>{t.label}</div>
+                    <div style={{fontSize:"13px",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.5"}}>{t.sub}</div>
+                  </div>
+                </div>
+              );};
+
+              const SectionLabel=({label})=>(
+                <div style={{display:"flex",alignItems:"center",gap:"12px",marginBottom:"16px"}}>
+                  <div style={{fontSize:"10px",fontWeight:"800",letterSpacing:"3px",textTransform:"uppercase",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",whiteSpace:"nowrap"}}>{label}</div>
+                  <div style={{flex:1,height:"1px",background:T.cardBorder}}/>
+                </div>
+              );
+
               return(
               <div style={{animation:"fadeUp .35s ease"}}>
                 {/* Show header */}
@@ -2597,26 +2595,16 @@ ${tx.substring(0, 40000)}`;
                   <h1 style={{fontFamily:SF,fontSize:"40px",fontWeight:"normal",color:T.text,margin:"0 0 8px",letterSpacing:"-0.8px",lineHeight:"1.1"}}>{d?.name}</h1>
                   {d?.tag&&<p style={{fontSize:"16px",color:T.textMuted,margin:0,fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.5"}}>{d.tag}</p>}
                 </div>
-                {/* Tool grid */}
-                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:"16px",maxWidth:"900px"}}>
-                  {tools.map(t=>{
-                    const ta=t.accent||accent;
-                    return(
-                      <div key={t.id} {...cardHover} onClick={()=>advanceToMode(t.id,show)}
-                        style={{background:T.card,border:`1px solid ${T.cardBorder}`,borderRadius:"13px",overflow:"hidden",cursor:"pointer",boxShadow:"0 1px 4px rgba(30,20,10,.06),0 4px 14px rgba(30,20,10,.05)",transition:"box-shadow .16s,transform .16s,border-color .16s"}}>
-                        <div style={{height:"2px",background:ta}}/>
-                        <div style={{padding:"20px 22px 18px"}}>
-                          <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:"12px",marginBottom:"12px"}}>
-                            <div style={{width:"40px",height:"40px",borderRadius:"9px",background:t.bg,border:t.border,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{t.icon}</div>
-                            <span style={{fontSize:"16px",color:T.cardBorder}}>→</span>
-                          </div>
-                          <div style={{fontFamily:SF,fontSize:"18px",fontWeight:"normal",color:T.text,marginBottom:"5px"}}>{t.label}</div>
-                          <div style={{fontSize:"13px",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",lineHeight:"1.5"}}>{t.sub}</div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                {/* Content Creation section */}
+                {contentTools.length>0&&<><SectionLabel label="Podcast Content Creation"/>
+                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))",gap:"16px",maxWidth:"900px",marginBottom:"32px"}}>
+                  {contentTools.map(t=><ToolCard key={t.id} t={t}/>)}
+                </div></>}
+                {/* Planning section */}
+                {planningTools.length>0&&<><SectionLabel label="Podcast Planning"/>
+                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))",gap:"16px",maxWidth:"900px"}}>
+                  {planningTools.map(t=><ToolCard key={t.id} t={t}/>)}
+                </div></>}
               </div>
               );
             })()}
