@@ -1637,34 +1637,38 @@ ${epfPasteText.substring(0, 8000)}`;
 
         {/* NAVIGATE — only show when a show is selected or in settings */}
         {(adminView === "settings" || (form && selKey !== "__new__")) && <div style={{ padding: "8px 0" }}>
-          <div style={{ fontSize: "12px", color: "#555555", letterSpacing: "2px", textTransform: "uppercase", padding: "4px 16px 6px", fontFamily: FF, fontWeight: "600" }}>NAVIGATE</div>
+          <div style={{ fontSize: "11px", color: "#666666", letterSpacing: "2px", textTransform: "uppercase", padding: "4px 16px 8px", fontFamily: FF, fontWeight: "700" }}>
+            {adminView === "settings" ? "SETTINGS" : "SHOW DNA"}
+          </div>
           {adminView === "settings" ? (
             settingsSections.map(s => {
               const isActive = activeSettingsSection === s.id;
               return (
                 <div key={s.id}
                   onClick={() => setActiveSettingsSection(s.id)}
-                  style={{ width: "100%", padding: "10px 16px", background: isActive ? "#2E2E2E" : "transparent", boxShadow: isActive ? `inset 3px 0 0 ${T.coral}` : "none", color: isActive ? "#FFFFFF" : "#8A8A8A", fontSize: "15px", fontWeight: isActive ? "600" : "400", cursor: "pointer", textAlign: "left", fontFamily: FF, display: "flex", alignItems: "center", userSelect: "none" }}
-                  onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = "#252525"; e.currentTarget.style.color = "#CCCCCC"; } }}
-                  onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#8A8A8A"; } }}>
+                  style={{ width: "100%", padding: "10px 16px", background: isActive ? "#2E2E2E" : "transparent", boxShadow: isActive ? `inset 3px 0 0 ${T.coral}` : "none", color: isActive ? "#FFFFFF" : "#AAAAAA", fontSize: "14px", fontWeight: isActive ? "600" : "400", cursor: "pointer", textAlign: "left", fontFamily: FF, display: "flex", alignItems: "center", userSelect: "none" }}
+                  onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = "#252525"; e.currentTarget.style.color = "#DDDDDD"; } }}
+                  onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#AAAAAA"; } }}>
                   {s.label}
                 </div>
               );
             })
           ) : (
-            TABS.map(t => {
-              const isActive = !!form && tab === t.id;
-              const isEnabled = !!form;
-              return (
-                <div key={t.id}
-                  onClick={() => { if (isEnabled) setTab(t.id); }}
-                  style={{ width: "100%", padding: "10px 16px", background: isActive ? "#2E2E2E" : "transparent", boxShadow: isActive ? `inset 3px 0 0 ${T.coral}` : "none", color: isActive ? "#FFFFFF" : isEnabled ? "#8A8A8A" : "#444444", fontSize: "15px", fontWeight: isActive ? "600" : "400", cursor: isEnabled ? "pointer" : "default", textAlign: "left", fontFamily: FF, display: "flex", alignItems: "center", userSelect: "none" }}
-                  onMouseEnter={e => { if (isActive || !isEnabled) return; e.currentTarget.style.background = "#252525"; e.currentTarget.style.color = "#CCCCCC"; }}
-                  onMouseLeave={e => { if (isActive || !isEnabled) return; e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#8A8A8A"; }}>
-                  {t.label}
-                </div>
-              );
-            })
+            <>
+              {TABS.map(t => {
+                const isActive = !!form && tab === t.id;
+                const isEnabled = !!form;
+                return (
+                  <div key={t.id}
+                    onClick={() => { if (isEnabled) setTab(t.id); }}
+                    style={{ width: "100%", padding: "10px 16px", background: isActive ? "#2E2E2E" : "transparent", boxShadow: isActive ? `inset 3px 0 0 ${T.coral}` : "none", color: isActive ? "#FFFFFF" : isEnabled ? "#BBBBBB" : "#484848", fontSize: "14px", fontWeight: isActive ? "600" : "400", cursor: isEnabled ? "pointer" : "default", textAlign: "left", fontFamily: FF, display: "flex", alignItems: "center", userSelect: "none" }}
+                    onMouseEnter={e => { if (isActive || !isEnabled) return; e.currentTarget.style.background = "#2A2A2A"; e.currentTarget.style.color = "#EEEEEE"; }}
+                    onMouseLeave={e => { if (isActive || !isEnabled) return; e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#BBBBBB"; }}>
+                    {t.label}
+                  </div>
+                );
+              })}
+            </>
           )}
         </div>}
 
