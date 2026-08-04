@@ -2353,12 +2353,7 @@ ${tx.substring(0, 40000)}`;
               </button>
             </div>
           ):(
-            <button onClick={()=>{setMode(null);setStep("welcome");setShow(null);}}
-              className="sidebar-nav-item"
-              style={{width:"100%",padding:"9px 16px",background:(step==="welcome")?"#2E2E2E":"transparent",border:"none",borderLeft:`3px solid ${step==="welcome"?T.coral:"transparent"}`,color:(step==="welcome")?"#FFFFFF":"#8A8A8A",fontSize:"14px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",display:"flex",alignItems:"center",gap:"10px",transition:"all .15s"}}>
-              <span style={{width:"6px",height:"6px",borderRadius:"50%",background:(step==="welcome")?T.coral:"#444",flexShrink:0,display:"inline-block"}}/>
-              <span>Home</span>
-            </button>
+            null
           )}
         </div>
 
