@@ -1619,8 +1619,8 @@ ${epfPasteText.substring(0, 8000)}`;
         .admin-sidebar-nav-btn:hover{background:#252525 !important;color:#CCCCCC !important;}
       `}</style>
 
-      {/* ── STUDIO-STYLE LEFT SIDEBAR ── */}
-      <div style={{ width: "240px", minWidth: "240px", height: "100vh", background: "#222222", display: "flex", flexDirection: "column", flexShrink: 0, borderRight: "1px solid #2E2E2E", overflowY: "auto" }}>
+      {/* ── STUDIO-STYLE LEFT SIDEBAR — hidden in inline mode ── */}
+      <div style={{ width: "240px", minWidth: "240px", height: "100vh", background: "#222222", display: inline ? "none" : "flex", flexDirection: "column", flexShrink: 0, borderRight: "1px solid #2E2E2E", overflowY: "auto" }}>
 
         {/* Logo */}
         <div style={{ padding: "24px 20px 20px", display: "flex", alignItems: "center", justifyContent: "center", borderBottom: "1px solid #2E2E2E" }}>
