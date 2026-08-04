@@ -1105,7 +1105,7 @@ export function AdminGate({ onSuccess, onClose }) {
   );
 }
 
-export function AdminPanel({ shows, orgId, onClose, onSaved, accountType = "agency", userEmail = "", userName = "", onSignOut, initialView = "shows" }) {
+export function AdminPanel({ shows, orgId, onClose, onSaved, accountType = "agency", userEmail = "", userName = "", onSignOut, initialView = "shows", inline = false }) {
   const [adminView, setAdminView] = useState(initialView);
   const [selKey, setSelKey] = useState(null);
   const [form, setForm] = useState(null);
@@ -1612,7 +1612,7 @@ ${epfPasteText.substring(0, 8000)}`;
   const showKeys = Object.keys(shows);
 
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 1000, display: "flex", flexDirection: "row" }}>
+    <div style={inline ? { flex: 1, display: "flex", flexDirection: "row", overflow: "hidden", minHeight: 0 } : { position: "fixed", inset: 0, zIndex: 1000, display: "flex", flexDirection: "row" }}>
       <style>{`
         .admin-show-select:focus{outline:none;border-color:#7A0019;box-shadow:0 0 0 3px rgba(122,0,25,.08);}
         .admin-sidebar-nav-btn{transition:background .15s,color .15s;}

@@ -1323,7 +1323,9 @@ export default function App(){
   const[clipTexts,setClipTexts]=useState(Array(10).fill(""));
   const[clipResults,setClipResults]=useState([]);
   const[clipPlatforms,setClipPlatforms]=useState(["YouTube"]);
-  const[showAdmin,setShowAdmin]=useState(false);
+  const[appMode,setAppMode]=useState(()=>localStorage.getItem("pis_app_mode")||"studio");
+  const showAdmin=appMode==="settings";
+  function setShowAdmin(val){setAppMode(val?"settings":"studio");}
   const[adminInitialView,setAdminInitialView]=useState("shows");
   const[showAdminGate,setShowAdminGate]=useState(false);
   const[isAdmin,setIsAdmin]=useState(false);
@@ -1396,6 +1398,7 @@ export default function App(){
   useEffect(()=>{
     if(show&&orgId)localStorage.setItem("pis_last_show_"+orgId,show);
   },[show,orgId]);
+  useEffect(()=>{localStorage.setItem("pis_app_mode",appMode);},[appMode]);
   useEffect(()=>{
     if(!showUserMenu)return;
     function handleClick(e){if(userMenuRef.current&&!userMenuRef.current.contains(e.target))setShowUserMenu(false);}
@@ -2233,7 +2236,7 @@ ${tx.substring(0, 40000)}`;
     return(
       <div style={{minHeight:"100vh",width:"100%",background:T.bg,color:T.text}}>
         <style>{`*{box-sizing:border-box}@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}button:hover{opacity:.85}`}</style>
-        {showAdmin&&<AdminPanel shows={shows} orgId={orgId} accountType={accountType} userEmail={currentUser?.email} userName={userProfile?.name||(currentUser?.email?.split("@")[0]||"")} onSignOut={handleSignOut} initialView={adminInitialView} onClose={()=>{setShowAdmin(false);setAdminInitialView("shows");}} onSaved={async()=>{await refreshShows();await markOnboardingComplete();setShowAdmin(false);setAdminInitialView("shows");}}/>}
+        {showAdmin&&<AdminPanel shows={shows} orgId={orgId} accountType={accountType} userEmail={currentUser?.email} userName={userProfile?.name||(currentUser?.email?.split("@")[0]||"")} onSignOut={handleSignOut} initialView={adminInitialView} onClose={()=>setAppMode("studio")} onSaved={async()=>{await refreshShows();await markOnboardingComplete();setAppMode("studio");}}/>}
         <OnboardingScreen
           step={onboardingStep}
           user={currentUser}
@@ -2288,7 +2291,6 @@ ${tx.substring(0, 40000)}`;
       <style>{`*{box-sizing:border-box}@keyframes spin{to{transform:rotate(360deg)}}@keyframes pulse{0%,100%{opacity:.3}50%{opacity:1}}@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}textarea::placeholder,input::placeholder{color:${T.textMuted}}button:hover{opacity:.85}::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#3A3A3A;border-radius:2px}a{transition:opacity .2s}a:hover{opacity:.7}.sidebar-nav-item:hover{background:#252525}.sidebar-show-select:focus{outline:2px solid #C41230;border-color:#C41230}@media(max-width:900px){.welcome-cards{grid-template-columns:repeat(2,1fr)!important}}@media(max-width:560px){.welcome-cards{grid-template-columns:1fr!important}}`}</style>
 
       {showProfile&&currentUser&&<Profile user={currentUser} onClose={()=>setShowProfile(false)} onSignOut={handleSignOut}/>}
-      {showAdmin&&<AdminPanel shows={shows} orgId={orgId} accountType={accountType} userEmail={currentUser?.email} userName={userProfile?.name||(currentUser?.email?.split("@")[0]||"")} onSignOut={handleSignOut} initialView={adminInitialView} onClose={()=>{setShowAdmin(false);setAdminInitialView("shows");}} onSaved={async()=>{await refreshShows();if(!onboardingComplete)await markOnboardingComplete();}}/>}
       {showSuperAdmin&&<SuperAdmin onClose={()=>setShowSuperAdmin(false)}/>}
 
       {/* BETA DISCLAIMER — shown once per user account */}
@@ -2313,14 +2315,19 @@ ${tx.substring(0, 40000)}`;
         </div>
 
 
-        {/* Admin Settings — visible to admins only */}
+        {/* Studio / Settings toggle */}
         {isAdmin&&(
           <div style={{padding:"10px 16px",borderBottom:"1px solid #2E2E2E"}}>
-            <button onClick={()=>setShowAdmin(true)}
-              className="sidebar-nav-item"
-              style={{width:"100%",padding:"9px 14px",background:T.coral,border:"1px solid "+T.coral,borderRadius:"6px",color:"#FFFFFF",fontSize:"13px",fontWeight:"700",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",display:"flex",alignItems:"center",gap:"8px"}}>
-              <span>Podcast Settings</span>
-            </button>
+            <div style={{display:"flex",background:"#2E2E2E",borderRadius:"8px",padding:"3px",gap:"3px"}}>
+              {[{id:"studio",label:"Studio"},{id:"settings",label:"Settings"}].map(m=>(
+                <button key={m.id} onClick={()=>setAppMode(m.id)}
+                  style={{flex:1,padding:"7px 0",borderRadius:"6px",border:"none",cursor:"pointer",fontSize:"12px",fontWeight:"700",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"0.5px",transition:"all .15s",
+                    background:appMode===m.id?"#FFFFFF":"transparent",
+                    color:appMode===m.id?"#1A1A1A":"#6B6B6B"}}>
+                  {m.label}
+                </button>
+              ))}
+            </div>
           </div>
         )}
 
@@ -2382,12 +2389,6 @@ ${tx.substring(0, 40000)}`;
         </div>
         <div style={{height:"1px",background:"#2E2E2E",margin:"0 16px"}}/>
         <div style={{padding:"8px 0 4px"}}>
-          <button
-            className="sidebar-nav-item"
-            onClick={()=>isAdmin?setShowAdmin(true):setShowProfile(true)}
-            style={{width:"100%",padding:"10px 16px",background:"transparent",border:"none",borderLeft:"3px solid transparent",color:"#FFFFFF",fontSize:"15px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",display:"block"}}>
-            Settings
-          </button>
           <div style={{padding:"8px 16px 0"}}>
             <div ref={userMenuRef} style={{position:"relative"}}>
               <button
@@ -2407,10 +2408,6 @@ ${tx.substring(0, 40000)}`;
                   <div style={{padding:"4px 0"}}>
                     {[
                       {label:"My Profile",action:()=>{setShowProfile(true);setShowUserMenu(false);}},
-                      ...(isAdmin?[
-                        {label:"Podcast Settings",action:()=>{setShowAdmin(true);setShowUserMenu(false);}},
-                        {label:"Workspace Settings",action:()=>{setAdminInitialView("settings");setShowAdmin(true);setShowUserMenu(false);}},
-                      ]:[]),
                       ...(orgPlan==="owner"?[
                         {label:"Owner Admin",action:()=>{setShowSuperAdmin(true);setShowUserMenu(false);}},
                       ]:[]),
@@ -2438,7 +2435,13 @@ ${tx.substring(0, 40000)}`;
       </div>
 
       {/* ── MAIN CONTENT AREA ── */}
-      <div style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden",background:T.bg}}>
+      {/* ── SETTINGS MODE — inline AdminPanel ── */}
+      {appMode==="settings"&&isAdmin&&(
+        <AdminPanel inline shows={shows} orgId={orgId} accountType={accountType} userEmail={currentUser?.email} userName={userProfile?.name||(currentUser?.email?.split("@")[0]||"")} onSignOut={handleSignOut} initialView={adminInitialView} onClose={()=>setAppMode("studio")} onSaved={async()=>{await refreshShows();if(!onboardingComplete)await markOnboardingComplete();}}/>
+      )}
+
+      {/* ── STUDIO MODE ── */}
+      <div style={{flex:1,display:appMode==="settings"?"none":"flex",flexDirection:"column",overflow:"hidden",background:T.bg}}>
 
         {/* Top bar — 48px, breadcrumb + back/start over */}
         <div style={{height:"48px",background:T.surface,borderBottom:`1px solid ${T.cardBorder}`,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 32px",flexShrink:0}}>
