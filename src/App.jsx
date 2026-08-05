@@ -2413,7 +2413,7 @@ ${tx.substring(0, 40000)}`;
                 <div style={{fontSize:"14px",color:"#6B6B6B",flexShrink:0}}>→</div>
               </button>
               {showUserMenu&&(
-                <div style={{position:"absolute",bottom:"calc(100% + 8px)",left:0,width:"200px",background:"#252525",border:"1px solid #3A3A3A",borderRadius:"10px",boxShadow:"0 8px 32px rgba(0,0,0,.6)",zIndex:999,overflow:"hidden",animation:"fadeUp .15s ease"}}>
+                <div style={{position:"absolute",bottom:"calc(100% + 8px)",left:0,right:0,background:"#252525",border:"1px solid #3A3A3A",borderRadius:"10px",boxShadow:"0 8px 32px rgba(0,0,0,.6)",zIndex:999,overflow:"hidden",animation:"fadeUp .15s ease"}}>
                   <div style={{padding:"10px 14px",borderBottom:"1px solid #3A3A3A"}}>
                     <div style={{fontSize:"12px",color:"#6B6B6B",fontFamily:"'DM Sans', system-ui, sans-serif",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{currentUser?.email}</div>
                   </div>
