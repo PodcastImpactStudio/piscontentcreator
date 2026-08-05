@@ -2322,7 +2322,7 @@ ${tx.substring(0, 40000)}`;
             <div style={{display:"flex",background:"#2E2E2E",borderRadius:"8px",padding:"3px",gap:"3px"}}>
               {[{id:"studio",label:"Studio"},{id:"settings",label:"Settings"}].map(m=>(
                 <button key={m.id} onClick={()=>setAppMode(m.id)}
-                  style={{flex:1,padding:"7px 0",borderRadius:"6px",border:"none",cursor:"pointer",fontSize:"12px",fontWeight:"700",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"0.5px",transition:"all .15s",
+                  style={{flex:1,padding:"7px 0",borderRadius:"6px",border:"none",cursor:"pointer",fontSize:"15px",fontWeight:"700",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"0.5px",transition:"all .15s",
                     background:appMode===m.id?"#FFFFFF":"transparent",
                     color:appMode===m.id?"#1A1A1A":"#6B6B6B"}}>
                   {m.label}
