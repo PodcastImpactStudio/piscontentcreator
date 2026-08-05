@@ -2340,7 +2340,7 @@ ${tx.substring(0, 40000)}`;
               {id:"shows",label:"Show DNA"},
               {id:"integrations",label:"Integrations"},
               {id:"workspace",label:"Workspace"},
-              ...(accountType==="agency"?[{id:"team",label:"Team"},{id:"codes",label:"Access Codes"}]:[]),
+              ...(accountType==="agency"?[{id:"team",label:"Team"}]:[]),
               {id:"writing",label:"Writing Standards"},
             ].map(item=>{
               const isActive=adminInitialView===item.id;
