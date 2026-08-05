@@ -2347,8 +2347,7 @@ ${tx.substring(0, 40000)}`;
               return(
                 <button key={item.id} onClick={()=>setAdminInitialView(item.id)}
                   className="sidebar-nav-item"
-                  style={{width:"100%",padding:"9px 16px",background:isActive?"#2E2E2E":"transparent",border:"none",borderLeft:`3px solid ${isActive?T.coral:"transparent"}`,color:isActive?"#FFFFFF":"#8A8A8A",fontSize:"15px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",display:"flex",alignItems:"center",gap:"10px",transition:"all .15s"}}>
-                  <span style={{width:"5px",height:"5px",borderRadius:"50%",background:isActive?T.coral:"#444",flexShrink:0,display:"inline-block"}}/>
+                  style={{width:"100%",padding:"9px 16px",background:isActive?"#2E2E2E":"transparent",border:"none",borderLeft:`3px solid ${isActive?T.coral:"transparent"}`,color:isActive?"#FFFFFF":"#8A8A8A",fontSize:"15px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",transition:"all .15s"}}>
                   {item.label}
                 </button>
               );
@@ -2366,9 +2365,8 @@ ${tx.substring(0, 40000)}`;
               </div>
               <button onClick={()=>{setMode(null);setStep("show-workspace");}}
                 className="sidebar-nav-item"
-                style={{width:"100%",padding:"8px 16px",background:(step==="show-workspace")?"#2E2E2E":"transparent",border:"none",borderLeft:`3px solid ${step==="show-workspace"?T.coral:"transparent"}`,color:(step==="show-workspace")?"#FFFFFF":"#8A8A8A",fontSize:"13px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",display:"flex",alignItems:"center",gap:"8px",transition:"all .15s"}}>
-                <span style={{width:"5px",height:"5px",borderRadius:"50%",background:(step==="show-workspace")?T.coral:"#444",flexShrink:0,display:"inline-block"}}/>
-                <span>Studio Home</span>
+                style={{width:"100%",padding:"8px 16px",background:(step==="show-workspace")?"#2E2E2E":"transparent",border:"none",borderLeft:`3px solid ${step==="show-workspace"?T.coral:"transparent"}`,color:(step==="show-workspace")?"#FFFFFF":"#8A8A8A",fontSize:"13px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",transition:"all .15s"}}>
+                Studio Home
               </button>
             </div>
           ):(
