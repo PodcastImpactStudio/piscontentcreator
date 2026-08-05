@@ -538,29 +538,6 @@ function SettingsView({ shows, globalSettings, setGlobalSettings, saveGlobalSett
               <div style={{ fontSize: "28px", fontWeight: "normal", color: T.text, marginBottom: "6px", fontFamily: SF }}>Integrations</div>
               <div style={{ fontSize: "15px", color: T.textMuted, fontFamily: FF }}>Connect external tools to enhance your workflow.</div>
             </div>
-            {/* Content Schedule URL */}
-            <div style={{ background: T.card, border: "1px solid " + T.cardBorder, borderRadius: "12px", marginBottom: "16px", overflow: "hidden" }}>
-              <div style={{ padding: "20px 24px", borderBottom: "1px solid " + T.cardBorder, display: "flex", alignItems: "center", gap: "12px" }}>
-                <span style={{ fontSize: "22px" }}>📅</span>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: "15px", fontWeight: "700", color: T.text }}>Content Schedule</div>
-                  <div style={{ fontSize: "13px", color: T.textMuted, fontStyle: "italic" }}>Link to your Google Sheets content calendar — clients will see a "View Schedule" button in their portal.</div>
-                </div>
-              </div>
-              <div style={{ padding: "20px 24px" }}>
-                <input
-                  value={globalSettings.scheduleUrl || ""}
-                  onChange={e => setGlobalSettings(s => ({ ...s, scheduleUrl: e.target.value }))}
-                  placeholder="https://docs.google.com/spreadsheets/d/..."
-                  style={inp}
-                />
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "10px", flexWrap: "wrap", gap: "8px" }}>
-                  <div style={{ fontSize: "12px", color: T.textMuted, fontFamily: FF }}>Paste your Google Sheets URL. Clients will see a button to open it without needing a Google account.</div>
-                  <SaveBtn onClick={() => saveGlobalSettings(globalSettings)} />
-                </div>
-              </div>
-            </div>
-
             <div style={{ background: T.card, border: "1px solid " + (gConnected ? "#52B78844" : T.cardBorder), borderRadius: "12px", marginBottom: "16px", overflow: "hidden" }}>
               <div style={{ padding: "20px 24px", borderBottom: "1px solid " + T.cardBorder, display: "flex", alignItems: "center", gap: "12px" }}>
                 <span style={{ fontSize: "22px" }}>📁</span>
