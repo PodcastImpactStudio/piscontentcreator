@@ -55,9 +55,12 @@ export default async function handler(req, res) {
       ? `${slug}-${Math.random().toString(36).substring(2, 6)}`
       : slug;
 
+    const trialExpiry = new Date();
+    trialExpiry.setDate(trialExpiry.getDate() + 7);
+
     const { data: org, error: orgErr } = await admin
       .from("organizations")
-      .insert({ name: orgName, slug: finalSlug, owner_id: userId, account_type: accountType || "solo" })
+      .insert({ name: orgName, slug: finalSlug, owner_id: userId, account_type: accountType || "solo", plan: "beta", beta_expires_at: trialExpiry.toISOString() })
       .select()
       .single();
     if (orgErr) throw orgErr;

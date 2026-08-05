@@ -395,19 +395,10 @@ function SignupScreen({ onSwitch, onAuthenticated }) {
     if (!name.trim() || !email.trim() || !orgName.trim() || !password) {
       setError("Please fill in all required fields."); return;
     }
-    if (!accessCode.trim()) { setError("An access code is required to create an account."); return; }
     if (password.length < 8) { setError("Password must be at least 8 characters."); return; }
     if (password !== confirm) { setError("Passwords don't match."); return; }
     setLoading(true); setError("");
     try {
-      // Validate access code first
-      const codeRes = await fetch("/api/validate-code", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: accessCode.trim() }),
-      });
-      const codeResult = await codeRes.json();
-      if (!codeResult.valid) throw new Error(codeResult.error || "Invalid access code.");
 
       const signupOptions = { email: email.trim().toLowerCase(), password };
       if (TURNSTILE_SITE_KEY && captchaToken) signupOptions.options = { captchaToken };
@@ -424,7 +415,6 @@ function SignupScreen({ onSwitch, onAuthenticated }) {
           userName: name.trim(),
           timezone,
           role: role || "Other",
-          accessCode: accessCode.trim(),
           accountType,
         }),
       });
@@ -549,15 +539,6 @@ function SignupScreen({ onSwitch, onAuthenticated }) {
           <select value={timezone} onChange={e => setTimezone(e.target.value)} style={{ ...inp, cursor: "pointer" }}>
             {TIMEZONES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
           </select>
-
-          <label style={lbl}>Access Code *</label>
-          <input
-            type="text"
-            placeholder="Enter your invite code"
-            value={accessCode}
-            onChange={e => setAccessCode(e.target.value.toUpperCase())}
-            style={{ ...inp, letterSpacing: "3px", fontWeight: "700" }}
-          />
 
           <label style={lbl}>Password *</label>
           <input type="password" placeholder="At least 8 characters" value={password} onChange={e => setPassword(e.target.value)} style={inp} />
