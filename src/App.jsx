@@ -494,32 +494,33 @@ function dlDoc(content,filename,bpHtml=""){
   }
   // Show notes was the final section — append boilerplate at the end
   if(inShowNotes&&!bpInserted&&bpHtml){out.push(`<div class="bp">${bpHtml}</div>`);bpInserted=true;}
-  const h=`<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"><title>${filename}</title><style>
-body{font-family:Georgia,serif;font-size:12pt;line-height:1.6;color:#111;max-width:760px;margin:48px auto;padding:0 32px}
-h1{font-size:18pt;font-weight:bold;color:#111;margin-top:0;margin-bottom:4pt}
-.meta{font-size:9pt;color:#888;margin-bottom:20pt;font-family:Arial,sans-serif}
-.sec{font-size:11pt;font-weight:bold;color:#111;margin-top:20pt;margin-bottom:4pt;text-transform:uppercase;letter-spacing:1px;font-family:Arial,sans-serif}
-.sub{font-size:10.5pt;font-weight:bold;color:#333;margin-top:10pt;margin-bottom:2pt;font-family:Arial,sans-serif}
-p{margin:2pt 0 4pt 0;font-size:11pt;font-family:Arial,sans-serif}
+  const h=`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+<head><meta charset="utf-8"><title>${filename}</title>
+<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>90</w:Zoom></w:WordDocument></xml><![endif]-->
+<style>
+body{font-family:Calibri,Arial,sans-serif;font-size:11pt;line-height:1.6;color:#111;margin:72pt 72pt 72pt 72pt}
+h1{font-size:16pt;font-weight:bold;color:#111;margin-top:0;margin-bottom:6pt;font-family:Calibri,Arial,sans-serif}
+.meta{font-size:9pt;color:#666;margin-bottom:18pt;font-family:Calibri,Arial,sans-serif}
+.sec{font-size:11pt;font-weight:bold;color:#111;margin-top:18pt;margin-bottom:4pt;text-transform:uppercase;letter-spacing:1px;font-family:Calibri,Arial,sans-serif;mso-style-name:"Section"}
+.sub{font-size:10.5pt;font-weight:bold;color:#333;margin-top:10pt;margin-bottom:2pt;font-family:Calibri,Arial,sans-serif}
+p{margin:2pt 0 4pt 0;font-size:11pt;font-family:Calibri,Arial,sans-serif}
 a{color:#7A0019;text-decoration:underline}
-li{margin:2pt 0;font-size:11pt;font-family:Arial,sans-serif}
-.blank{margin:4pt 0;font-size:4pt;line-height:1}
-.bp{font-size:11pt;margin-top:6pt;font-family:Arial,sans-serif}
+li{margin:2pt 0;font-size:11pt;font-family:Calibri,Arial,sans-serif}
+.blank{margin:2pt 0;font-size:4pt;line-height:1}
+.bp{font-size:11pt;margin-top:6pt;font-family:Calibri,Arial,sans-serif}
 .bp a{color:#7A0019;text-decoration:underline}
 .bp p{margin:1pt 0 3pt 0}
-hr{border:none;border-top:1px solid #ddd;margin:16pt 0}
+hr{border:none;border-top:1px solid #ccc;margin:14pt 0}
 </style></head>
 <body>
 <h1>${filename}</h1>
 <div class="meta">Podcast Impact Studio &nbsp;·&nbsp; Content Creator &nbsp;·&nbsp; ${new Date().toLocaleDateString("en-US",{year:"numeric",month:"long",day:"numeric"})}</div>
 ${out.join("\n")}
 </body></html>`;
-  const b=new Blob([h],{type:"text/html"});
+  const b=new Blob(["﻿"+h],{type:"application/msword"});
   const u=URL.createObjectURL(b);
   const a=document.createElement("a");
-  a.href=u;a.download=`${filename}.html`;
+  a.href=u;a.download=`${filename}.doc`;
   document.body.appendChild(a);a.click();
   document.body.removeChild(a);URL.revokeObjectURL(u);
 }
