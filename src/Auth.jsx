@@ -149,8 +149,8 @@ function LandingScreen({ onSignup, onLogin }) {
 
       {/* ── Hero ── */}
       <div style={{ maxWidth: "760px", margin: "0 auto", padding: "72px 24px 80px", textAlign: "center", animation: "fadeUp .5s ease both" }}>
-        <div style={{ display: "flex", justifyContent: "center", marginBottom: "28px" }}>
-          <img src="/logo.png" alt="Podcast Impact Content Studio" style={{ height: "140px", width: "140px", objectFit: "contain" }} />
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: "20px" }}>
+          <img src="/logo-nav.png" alt="Podcast Impact Content Studio" style={{ height: "160px", objectFit: "contain" }} />
         </div>
         <div style={{ display: "inline-flex", alignItems: "center", gap: "7px", border: "1px solid rgba(122,0,25,0.25)", background: "rgba(122,0,25,0.06)", borderRadius: "20px", padding: "5px 16px", fontSize: "12px", color: DR, fontWeight: "600", letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: "36px" }}>
           <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: DR, display: "inline-block" }} />
