@@ -188,7 +188,7 @@ function LandingScreen({ onSignup, onLogin }) {
         <div style={{ textAlign: "center", marginBottom: "56px" }}>
           <p style={{ fontSize: "12px", fontWeight: "700", letterSpacing: "3px", textTransform: "uppercase", color: DR, margin: "0 0 14px" }}>How it works</p>
           <h2 style={{ fontSize: "clamp(26px, 4vw, 38px)", fontWeight: "normal", color: "#1A1A1A", margin: "0 0 14px", fontFamily: SF, letterSpacing: "-0.5px" }}>Set it up once. Use it for every episode.</h2>
-          <p style={{ fontSize: "16px", color: "#6B5E52", margin: 0, maxWidth: "520px", marginLeft: "auto", marginRight: "auto" }}>Your Show DNA is the foundation. Every tool pulls from it so the output always sounds like you — not like AI.</p>
+          <p style={{ fontSize: "18px", color: "#6B5E52", margin: 0, maxWidth: "520px", marginLeft: "auto", marginRight: "auto" }}>Your Show DNA is the foundation. Every tool pulls from it so the output always sounds like you — not like AI.</p>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "2px", background: "#E2D9CC", borderRadius: "14px", overflow: "hidden" }}>
           {[
@@ -199,7 +199,7 @@ function LandingScreen({ onSignup, onLogin }) {
             <div key={s.step} style={{ background: "#FFFFFF", padding: "36px 32px" }}>
               <div style={{ fontSize: "12px", fontWeight: "800", color: DR, letterSpacing: "2px", marginBottom: "14px" }}>{s.step}</div>
               <div style={{ fontSize: "17px", fontWeight: "600", color: "#1A1A1A", marginBottom: "10px", fontFamily: SF }}>{s.title}</div>
-              <div style={{ fontSize: "14px", color: "#6B5E52", lineHeight: "1.7" }}>{s.body}</div>
+              <div style={{ fontSize: "16px", color: "#6B5E52", lineHeight: "1.7" }}>{s.body}</div>
             </div>
           ))}
         </div>
@@ -211,14 +211,14 @@ function LandingScreen({ onSignup, onLogin }) {
           <div style={{ textAlign: "center", marginBottom: "56px" }}>
             <p style={{ fontSize: "12px", fontWeight: "700", letterSpacing: "3px", textTransform: "uppercase", color: DR, margin: "0 0 14px" }}>Six tools. One studio.</p>
             <h2 style={{ fontSize: "clamp(26px, 4vw, 38px)", fontWeight: "normal", color: "#1A1A1A", margin: "0 0 14px", fontFamily: SF, letterSpacing: "-0.5px" }}>Everything a podcast creator needs.</h2>
-            <p style={{ fontSize: "16px", color: "#6B5E52", margin: 0 }}>Each tool is voice-aware, show-specific, and built to produce publish-ready output.</p>
+            <p style={{ fontSize: "18px", color: "#6B5E52", margin: 0 }}>Each tool is voice-aware, show-specific, and built to produce publish-ready output.</p>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "16px" }}>
             {tools.map(t => (
               <div key={t.label} className="lp-tool-card" style={{ background: BG, border: "1px solid #E2D9CC", borderRadius: "12px", padding: "28px 28px 24px" }}>
                 <div style={{ fontSize: "26px", marginBottom: "14px" }}>{t.icon}</div>
-                <div style={{ fontSize: "15px", fontWeight: "700", color: "#1A1A1A", marginBottom: "8px", fontFamily: SF }}>{t.label}</div>
-                <div style={{ fontSize: "13px", color: "#6B5E52", lineHeight: "1.65" }}>{t.desc}</div>
+                <div style={{ fontSize: "17px", fontWeight: "700", color: "#1A1A1A", marginBottom: "8px", fontFamily: SF }}>{t.label}</div>
+                <div style={{ fontSize: "15px", color: "#6B5E52", lineHeight: "1.65" }}>{t.desc}</div>
               </div>
             ))}
           </div>
@@ -235,8 +235,8 @@ function LandingScreen({ onSignup, onLogin }) {
           <div style={{ display: "inline-flex", alignItems: "center", gap: "14px" }}>
             <div style={{ width: "44px", height: "44px", borderRadius: "50%", background: DR, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "16px", fontWeight: "700", color: "#fff", fontFamily: FF }}>T</div>
             <div style={{ textAlign: "left" }}>
-              <div style={{ fontSize: "14px", fontWeight: "700", color: "#1A1A1A" }}>Tamar Routly</div>
-              <div style={{ fontSize: "12px", color: "#8B7D72" }}>Founder, Podcast Impact Studio</div>
+              <div style={{ fontSize: "16px", fontWeight: "700", color: "#1A1A1A" }}>Tamar Routly</div>
+              <div style={{ fontSize: "14px", color: "#8B7D72" }}>Founder, Podcast Impact Studio</div>
             </div>
           </div>
         </div>
@@ -247,7 +247,7 @@ function LandingScreen({ onSignup, onLogin }) {
         <h2 style={{ fontSize: "clamp(28px, 4vw, 42px)", fontWeight: "normal", color: "#F5F0E8", margin: "0 0 16px", fontFamily: SF, letterSpacing: "-0.5px" }}>
           Ready to stop rewriting?
         </h2>
-        <p style={{ fontSize: "16px", color: "#A09080", margin: "0 0 40px", lineHeight: "1.6" }}>
+        <p style={{ fontSize: "18px", color: "#A09080", margin: "0 0 40px", lineHeight: "1.6" }}>
           Start your free trial today. No credit card. No commitment.
         </p>
         <button onClick={onSignup}
