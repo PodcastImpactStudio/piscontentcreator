@@ -1490,7 +1490,7 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
       else{const t=j.content?.filter(i=>i.type==="text").map(i=>i.text).join("\n")||"";if(!t.trim()){setErr("No content generated. Please try again.");setStep("input");return;}setRaw(strip(t));const parsed=parse(t);const bpRaw=d?.bp||null;// Attach original HTML boilerplate to show notes section (spread to ensure React detects change)
       const withBp=parsed.map(s=>{
         if(s.id==="shownotes"&&bpRaw)return{...s,bpHtml:bpRaw};
-        if(s.id==="youtube"&&bpRaw){const bpPlain=stripHtml(bpRaw);let c=s.content;if(/\[BOILERPLATE\]/i.test(c)){c=c.replace(/\[BOILERPLATE\]/gi,bpPlain);}else{c=c.replace(/^(HASHTAGS\b)/im,`${bpPlain}\n\nHASHTAGS`);}return{...s,content:c};}
+        if(s.id==="youtube"&&bpRaw){const bpPlain=stripHtml(bpRaw);let c=s.content;if(/\[BOILERPLATE\]/i.test(c)){c=c.replace(/\[BOILERPLATE\]/gi,bpPlain);}else if(/^HASHTAGS\b/im.test(c)){c=c.replace(/^(HASHTAGS\b)/im,`${bpPlain}\n\nHASHTAGS`);}else{c=c+`\n\n${bpPlain}`;}return{...s,content:c};}
         return s;
       });
       setSecs(withBp.length?withBp:[{id:"full",title:"Content Package",content:strip(t)}]);setStep("result");}
