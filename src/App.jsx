@@ -2611,9 +2611,9 @@ ${tx.substring(0, 40000)}`;
               <div style={{animation:"fadeUp .35s ease"}}>
                 {/* Back to all shows */}
                 <button onClick={()=>{setMode(null);setStep("welcome");setShow(null);}}
-                  style={{display:"flex",alignItems:"center",gap:"6px",background:"none",border:"none",color:T.textMuted,fontSize:"13px",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",padding:"0 0 20px",transition:"color .15s"}}
-                  onMouseEnter={e=>e.currentTarget.style.color=T.coral}
-                  onMouseLeave={e=>e.currentTarget.style.color=T.textMuted}>
+                  style={{display:"inline-flex",alignItems:"center",gap:"7px",background:T.card,border:`1px solid ${T.cardBorder}`,borderRadius:"8px",color:T.textSecondary,fontSize:"14px",fontWeight:"600",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",padding:"9px 18px",marginBottom:"28px",transition:"all .15s"}}
+                  onMouseEnter={e=>{e.currentTarget.style.borderColor=T.coral;e.currentTarget.style.color=T.coral;e.currentTarget.style.background=T.coralSoft;}}
+                  onMouseLeave={e=>{e.currentTarget.style.borderColor=T.cardBorder;e.currentTarget.style.color=T.textSecondary;e.currentTarget.style.background=T.card;}}>
                   ← All Shows
                 </button>
                 {/* Show header */}
