@@ -2610,14 +2610,12 @@ ${tx.substring(0, 40000)}`;
               return(
               <div style={{animation:"fadeUp .35s ease"}}>
                 {/* Back to all shows */}
-                {Object.keys(shows).length>1&&(
-                  <button onClick={()=>{setMode(null);setStep("welcome");setShow(null);}}
-                    style={{display:"flex",alignItems:"center",gap:"6px",background:"none",border:"none",color:T.textMuted,fontSize:"13px",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",padding:"0 0 20px",transition:"color .15s"}}
-                    onMouseEnter={e=>e.currentTarget.style.color=T.coral}
-                    onMouseLeave={e=>e.currentTarget.style.color=T.textMuted}>
-                    ← All Shows
-                  </button>
-                )}
+                <button onClick={()=>{setMode(null);setStep("welcome");setShow(null);}}
+                  style={{display:"flex",alignItems:"center",gap:"6px",background:"none",border:"none",color:T.textMuted,fontSize:"13px",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",padding:"0 0 20px",transition:"color .15s"}}
+                  onMouseEnter={e=>e.currentTarget.style.color=T.coral}
+                  onMouseLeave={e=>e.currentTarget.style.color=T.textMuted}>
+                  ← All Shows
+                </button>
                 {/* Show header */}
                 <div style={{marginBottom:"36px"}}>
                   <div style={{width:"40px",height:"3px",background:accent,borderRadius:"2px",marginBottom:"16px"}}/>
