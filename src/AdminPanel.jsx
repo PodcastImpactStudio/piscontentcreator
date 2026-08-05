@@ -30,7 +30,7 @@ export const PLATFORM_CATEGORIES = [
   { id: "podcast", label: "Podcast Hosting", description: "Where your RSS feed is hosted", platforms: ["Spotify for Creators", "Buzzsprout", "Libsyn", "Podbean", "Captivate", "Transistor", "RSS.com", "Simplecast", "Castos"] },
   { id: "social", label: "Social Media", description: "Platform-optimized posts for each selected", platforms: ["YouTube", "Instagram", "Facebook", "TikTok", "LinkedIn", "X (Twitter)", "Pinterest", "Threads", "Reddit"] },
   { id: "community", label: "Community Platform", description: "Companion post, feed prompts, polls, conversation starters", platforms: ["Patreon", "Circle", "Mighty Networks", "Kajabi", "Skool", "Facebook Group"], single: true },
-  { id: "email", label: "Email & Newsletter", description: "Subject, preview, body, CTA, FAQ section", platforms: ["Newsletter"] },
+  { id: "email", label: "Email & Newsletter", description: "Subject, preview, body, CTA, FAQ section", platforms: ["Newsletter", "Substack"] },
   { id: "blog", label: "Web & Blog", description: "Full blog post with SEO meta and FAQ schema", platforms: ["Blog Article"] },
   { id: "extras", label: "Social Media Content Add-Ons", description: "Additional content assets generated from each episode", platforms: ["Quote Cards", "Carousel", "Poll Questions", "Story Slides", "Engagement Prompts", "Guest Kit", "Key Takeaway Graphics"] },
 ];
@@ -406,6 +406,8 @@ function SettingsView({ shows, globalSettings, setGlobalSettings, saveGlobalSett
   const [gConnected, setGConnected] = useState(false);
   const [gConnecting, setGConnecting] = useState(false);
   const gTokenClientRef = useRef(null);
+  const [activePlatformTab, setActivePlatformTab] = useState("youtube");
+  const isOwnerView = ["tamar@podcastimpactstudio.com","tamarroutly@gmail.com"].includes(userEmail?.toLowerCase());
 
   useEffect(() => {
     setGConnected(!!getStoredGDrive());
@@ -915,6 +917,73 @@ RULE: When tempted to use any phrase above, rewrite the sentence with a specific
           );
         })()}
 
+        {activeSection === "platform_intel" && isOwnerView && (() => {
+          const PLATFORMS = [
+            { id: "youtube", label: "YouTube" },
+            { id: "spotify", label: "Spotify" },
+            { id: "apple", label: "Apple Podcasts" },
+            { id: "instagram", label: "Instagram" },
+            { id: "tiktok", label: "TikTok" },
+            { id: "linkedin", label: "LinkedIn" },
+            { id: "substack", label: "Substack" },
+          ];
+          const intel = globalSettings.platformIntel || {};
+          return (
+            <div style={{ maxWidth: "760px" }}>
+              <div style={{ marginBottom: "28px" }}>
+                <div style={{ fontSize: "28px", fontWeight: "normal", color: T.text, marginBottom: "6px", fontFamily: SF }}>Platform Intelligence</div>
+                <div style={{ fontSize: "15px", color: T.textMuted, fontStyle: "italic" }}>Paste monthly platform insights for each channel. AI uses this when generating platform-specific content.</div>
+              </div>
+              <div style={{ background: T.card, border: "1px solid " + T.cardBorder, borderRadius: "12px", overflow: "hidden", marginBottom: "16px" }}>
+                <div style={{ padding: "16px 24px", borderBottom: "1px solid " + T.cardBorder, display: "flex", alignItems: "flex-start", gap: "12px" }}>
+                  <span style={{ fontSize: "22px" }}>📡</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: "15px", fontWeight: "700", color: T.text }}>Monthly Platform Intel</div>
+                    <div style={{ fontSize: "13px", color: T.textMuted, fontStyle: "italic", marginTop: "2px" }}>Update these monthly with what's trending — thumbnail formats, SEO title patterns, algorithm shifts, content formats that are working. Claude will reference this when generating YouTube descriptions, social posts, Substack issues, and more.</div>
+                  </div>
+                </div>
+                <div style={{ display: "flex", borderBottom: "1px solid " + T.cardBorder, overflowX: "auto" }}>
+                  {PLATFORMS.map(p => {
+                    const isActive = activePlatformTab === p.id;
+                    const hasCopy = !!(intel[p.id]||"").trim();
+                    return (
+                      <button key={p.id} onClick={() => setActivePlatformTab(p.id)}
+                        style={{ padding: "10px 16px", background: "transparent", border: "none", borderBottom: isActive ? `2px solid ${T.coral}` : "2px solid transparent", color: isActive ? T.text : T.textMuted, fontSize: "13px", fontWeight: isActive ? "700" : "400", cursor: "pointer", fontFamily: FF, whiteSpace: "nowrap", flexShrink: 0, transition: "color .15s,border-color .15s", display: "flex", alignItems: "center", gap: "5px" }}>
+                        {p.label}
+                        {hasCopy && <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: T.coral, display: "inline-block", flexShrink: 0 }} />}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div style={{ padding: "20px 24px" }}>
+                  <div style={{ fontSize: "12px", color: T.textMuted, marginBottom: "10px", fontFamily: FF }}>
+                    What's working on <strong style={{ color: T.textSecondary }}>{PLATFORMS.find(p=>p.id===activePlatformTab)?.label}</strong> right now — thumbnail styles, title formats, content types, algorithm notes, trends. Paste from your research or notes.
+                  </div>
+                  <textarea
+                    value={intel[activePlatformTab] || ""}
+                    onChange={e => setGlobalSettings(s => ({ ...s, platformIntel: { ...(s.platformIntel||{}), [activePlatformTab]: e.target.value } }))}
+                    rows={14}
+                    style={{ ...inp, fontSize: "13px", lineHeight: "1.7", resize: "vertical", fontFamily: "monospace" }}
+                    placeholder={`e.g. "3-word thumbnail text is outperforming paragraphs. SEO titles with a number and a pain point convert better. Shorts under 60s doing 3x reach of long-form this month..."`}
+                  />
+                  <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "12px" }}>
+                    <button
+                      onClick={() => saveGlobalSettings({ ...globalSettings, platformIntel: { ...(globalSettings.platformIntel||{}), [activePlatformTab]: intel[activePlatformTab]||"" } })}
+                      style={{ padding: "9px 20px", background: T.coral, border: "none", borderRadius: "7px", color: "#fff", fontSize: "13px", fontWeight: "700", cursor: "pointer", fontFamily: FF }}>
+                      {globalSettingsSaved ? "Saved ✓" : globalSettingsLoading ? "Saving…" : "Save"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div style={{ background: T.surface, border: "1px solid " + T.cardBorder, borderRadius: "8px", padding: "14px 18px" }}>
+                <div style={{ fontSize: "12px", color: T.textMuted, lineHeight: "1.6", fontFamily: FF }}>
+                  <strong style={{ color: T.textSecondary }}>How it works:</strong> When you generate content, Claude reads the intel for each active platform and uses it to inform the content style — thumbnail copy, title format, hook patterns, etc. Update it monthly or whenever you notice a shift. The orange dot on a tab means intel has been added.
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+
         {activeSection === "billing" && (
           <div style={{ maxWidth: "680px" }}>
             <div style={{ marginBottom: "28px" }}>
@@ -1120,12 +1189,14 @@ export function AdminPanel({ shows, orgId, onClose, onSaved, accountType = "agen
     if(initialView==="shows"){setAdminView("shows");}
     else{setAdminView("settings");setActiveSettingsSection(initialView);}
   },[initialView]);
+  const isOwner = ["tamar@podcastimpactstudio.com","tamarroutly@gmail.com"].includes(userEmail?.toLowerCase());
   const settingsSections = [
     { id: "integrations", label: "Integrations" },
     { id: "workspace", label: "Workspace" },
     ...(accountType === "agency" ? [{ id: "team", label: "Team" }] : []),
     ...(accountType === "agency" ? [{ id: "codes", label: "Access Codes" }] : []),
     { id: "writing", label: "Writing Standards" },
+    ...(isOwner ? [{ id: "platform_intel", label: "Platform Intelligence" }] : []),
     { id: "billing", label: "Billing" },
   ];
 
