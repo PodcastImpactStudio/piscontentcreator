@@ -131,7 +131,7 @@ function LandingScreen({ onSignup, onLogin }) {
       <div style={{ maxWidth: "680px", margin: "0 auto", padding: "80px 24px 72px", textAlign: "center" }}>
 
         <div style={{ display: "inline-block", border: "1px solid rgba(122,0,25,0.3)", background: "rgba(122,0,25,0.07)", borderRadius: "20px", padding: "5px 18px", fontSize: "11px", color: DR, fontWeight: "700", letterSpacing: "2.5px", textTransform: "uppercase", marginBottom: "32px" }}>
-          Private Beta
+          7-Day Free Trial
         </div>
 
         <h1 style={{ fontSize: "clamp(34px, 5.5vw, 58px)", fontWeight: "normal", color: "#1A1A1A", margin: "0 0 20px", lineHeight: "1.1", letterSpacing: "-1px", fontFamily: SF }}>
@@ -140,10 +140,10 @@ function LandingScreen({ onSignup, onLogin }) {
         </h1>
 
         <p style={{ fontSize: "17px", color: "#4A3F35", margin: "0 0 16px", lineHeight: "1.8", fontWeight: "400" }}>
-          Podcast Impact Content Studio turns episode transcripts into a complete content package — show notes, social captions, newsletters, blog posts — all written in your show's exact voice.
+          Podcast Impact Content Studio is your full content team — from episode transcripts to complete packages, guest research, short-form reels, and episode planning. All written in your show's exact voice.
         </p>
         <p style={{ fontSize: "15px", color: "#6B5E52", margin: "0 0 44px", lineHeight: "1.7" }}>
-          You set up your Show DNA once. Then paste a transcript and get everything in seconds. No templates, no rewrites — just content that actually sounds like you.
+          Set up your Show DNA once. Every tool learns your voice, your audience, and your style — so you stop rewriting and start publishing.
         </p>
 
         <button
@@ -151,11 +151,11 @@ function LandingScreen({ onSignup, onLogin }) {
           onMouseEnter={e => { e.currentTarget.style.background = DRH; e.currentTarget.style.boxShadow = "0 6px 24px rgba(122,0,25,0.45)"; }}
           onMouseLeave={e => { e.currentTarget.style.background = DR; e.currentTarget.style.boxShadow = "0 3px 16px rgba(122,0,25,0.35)"; }}
           style={{ padding: "15px 44px", background: DR, border: "none", borderRadius: "8px", color: "#fff", fontSize: "16px", fontWeight: "700", cursor: "pointer", fontFamily: FF, letterSpacing: "0.3px", boxShadow: "0 3px 16px rgba(122,0,25,0.35)", transition: "all .2s" }}>
-          Create Your Account →
+          Start Your Free Trial →
         </button>
 
         <div style={{ marginTop: "14px", fontSize: "13px", color: "#8B7D72" }}>
-          Access code required · Free during beta · No credit card
+          7 days free · No credit card required
         </div>
       </div>
 
@@ -163,17 +163,17 @@ function LandingScreen({ onSignup, onLogin }) {
       <div style={{ background: "#FFFFFF", borderTop: "1px solid #E2D9CC", borderBottom: "1px solid #E2D9CC", padding: "56px 24px" }}>
         <div style={{ maxWidth: "860px", margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: "40px" }}>
-            <div style={{ fontSize: "11px", fontWeight: "700", letterSpacing: "3px", textTransform: "uppercase", color: DR, marginBottom: "10px" }}>What gets created</div>
-            <p style={{ fontSize: "15px", color: "#6B5E52", margin: 0 }}>Paste one transcript. Walk away with all of this.</p>
+            <div style={{ fontSize: "11px", fontWeight: "700", letterSpacing: "3px", textTransform: "uppercase", color: DR, marginBottom: "10px" }}>Six tools. One studio.</div>
+            <p style={{ fontSize: "15px", color: "#6B5E52", margin: 0 }}>Everything you need to create, plan, and publish — built around your show's voice.</p>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "12px" }}>
             {[
-              { label: "Show Notes", desc: "SEO-ready, in your voice" },
-              { label: "YouTube Description", desc: "With timestamps & links" },
-              { label: "Social Captions", desc: "Platform-specific posts" },
-              { label: "Email Newsletter", desc: "Subscriber-ready recap" },
-              { label: "Blog Post", desc: "Long-form, fully written" },
-              { label: "Episode Prep", desc: "Guest research & questions" },
+              { label: "Full Episode Package", desc: "Show notes, social, newsletter, blog — one transcript, everything done" },
+              { label: "Clips & Shorts", desc: "Pull the best moments for social video" },
+              { label: "Editor Companion", desc: "Editing brief with hook moments and pacing notes" },
+              { label: "Episode Planning", desc: "Pre-episode prep, run-of-show, and talking points" },
+              { label: "Guest Research", desc: "Audience-matched booking targets and pitch angles" },
+              { label: "Reel Ideas", desc: "Original to-camera concepts in the host's voice" },
             ].map(item => (
               <div key={item.label} style={{ background: BG, border: "1px solid #E2D9CC", borderRadius: "10px", padding: "18px 20px" }}>
                 <div style={{ fontSize: "14px", fontWeight: "600", color: "#1A1A1A", marginBottom: "4px" }}>{item.label}</div>
