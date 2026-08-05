@@ -130,8 +130,7 @@ function LandingScreen({ onSignup, onLogin }) {
       `}</style>
 
       {/* ── Nav ── */}
-      <div style={{ position: "sticky", top: 0, zIndex: 100, background: "rgba(245,240,232,0.92)", backdropFilter: "blur(12px)", borderBottom: "1px solid #E2D9CC", padding: "0 40px", height: "68px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <img src="/logo-nav.png" alt="Podcast Impact Content Studio" style={{ height: "52px", objectFit: "contain" }} />
+      <div style={{ position: "sticky", top: 0, zIndex: 100, background: "rgba(245,240,232,0.92)", backdropFilter: "blur(12px)", borderBottom: "1px solid #E2D9CC", padding: "0 40px", height: "68px", display: "flex", justifyContent: "flex-end", alignItems: "center" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <button onClick={onLogin}
             onMouseEnter={e => { e.currentTarget.style.color = DR; }}
@@ -149,7 +148,8 @@ function LandingScreen({ onSignup, onLogin }) {
       </div>
 
       {/* ── Hero ── */}
-      <div style={{ maxWidth: "760px", margin: "0 auto", padding: "96px 24px 80px", textAlign: "center", animation: "fadeUp .5s ease both" }}>
+      <div style={{ maxWidth: "760px", margin: "0 auto", padding: "72px 24px 80px", textAlign: "center", animation: "fadeUp .5s ease both" }}>
+        <img src="/logo-nav.png" alt="Podcast Impact Content Studio" style={{ height: "100px", objectFit: "contain", marginBottom: "32px" }} />
         <div style={{ display: "inline-flex", alignItems: "center", gap: "7px", border: "1px solid rgba(122,0,25,0.25)", background: "rgba(122,0,25,0.06)", borderRadius: "20px", padding: "5px 16px", fontSize: "12px", color: DR, fontWeight: "600", letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: "36px" }}>
           <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: DR, display: "inline-block" }} />
           7-Day Free Trial — No Credit Card
