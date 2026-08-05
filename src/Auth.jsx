@@ -112,103 +112,158 @@ function LandingScreen({ onSignup, onLogin }) {
   const DR = "#7A0019";
   const DRH = "#9B0020";
 
+  const tools = [
+    { icon: "📦", label: "Full Episode Package", desc: "Show notes, YouTube description, social captions, newsletter, and blog post — all from one transcript." },
+    { icon: "✂️", label: "Clips & Shorts", desc: "Identify the highest-impact moments and get ready-to-post short-form content for every platform." },
+    { icon: "🎬", label: "Editor Companion", desc: "A structured editing brief with hook moments, pacing notes, and clip suggestions your editor can actually use." },
+    { icon: "📋", label: "Episode Planning", desc: "Pre-episode prep, run-of-show, guest questions, and talking points — built around your show's format." },
+    { icon: "🔍", label: "Guest Research", desc: "Audience-matched podcast booking targets with personalized pitch angles — ready to send." },
+    { icon: "🎥", label: "Reel Ideas", desc: "Original to-camera reel concepts written in the host's voice, not pulled from the episode." },
+  ];
+
   return (
     <div style={{ minHeight: "100vh", background: BG, fontFamily: FF }}>
+      <style>{`
+        @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+        .lp-tool-card:hover { border-color: rgba(122,0,25,0.25) !important; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.07); }
+        .lp-tool-card { transition: all .2s; }
+      `}</style>
 
-      {/* ── Header ── */}
-      <div style={{ background: "#FFFFFF", borderBottom: "1px solid #E2D9CC", padding: "0 40px", height: "72px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <img src="/logo-nav.png" alt="Podcast Impact Content Studio" style={{ height: "64px", objectFit: "contain" }} />
-        <button
-          onClick={onLogin}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = DR; e.currentTarget.style.color = DR; }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = "#C8BAB0"; e.currentTarget.style.color = "#6B5E52"; }}
-          style={{ padding: "9px 22px", background: "transparent", border: "1px solid #C8BAB0", borderRadius: "6px", color: "#6B5E52", fontSize: "14px", cursor: "pointer", fontFamily: FF, fontWeight: "500", transition: "all .15s" }}>
-          Sign In
-        </button>
+      {/* ── Nav ── */}
+      <div style={{ position: "sticky", top: 0, zIndex: 100, background: "rgba(245,240,232,0.92)", backdropFilter: "blur(12px)", borderBottom: "1px solid #E2D9CC", padding: "0 40px", height: "68px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <img src="/logo-nav.png" alt="Podcast Impact Content Studio" style={{ height: "52px", objectFit: "contain" }} />
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <button onClick={onLogin}
+            onMouseEnter={e => { e.currentTarget.style.color = DR; }}
+            onMouseLeave={e => { e.currentTarget.style.color = "#6B5E52"; }}
+            style={{ padding: "8px 20px", background: "transparent", border: "none", color: "#6B5E52", fontSize: "14px", cursor: "pointer", fontFamily: FF, fontWeight: "500", transition: "color .15s" }}>
+            Sign In
+          </button>
+          <button onClick={onSignup}
+            onMouseEnter={e => { e.currentTarget.style.background = DRH; }}
+            onMouseLeave={e => { e.currentTarget.style.background = DR; }}
+            style={{ padding: "9px 20px", background: DR, border: "none", borderRadius: "7px", color: "#fff", fontSize: "14px", cursor: "pointer", fontFamily: FF, fontWeight: "600", transition: "background .15s" }}>
+            Start Free Trial
+          </button>
+        </div>
       </div>
 
       {/* ── Hero ── */}
-      <div style={{ maxWidth: "680px", margin: "0 auto", padding: "80px 24px 72px", textAlign: "center" }}>
-
-        <div style={{ display: "inline-block", border: "1px solid rgba(122,0,25,0.3)", background: "rgba(122,0,25,0.07)", borderRadius: "20px", padding: "5px 18px", fontSize: "11px", color: DR, fontWeight: "700", letterSpacing: "2.5px", textTransform: "uppercase", marginBottom: "32px" }}>
-          7-Day Free Trial
+      <div style={{ maxWidth: "760px", margin: "0 auto", padding: "96px 24px 80px", textAlign: "center", animation: "fadeUp .5s ease both" }}>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: "7px", border: "1px solid rgba(122,0,25,0.25)", background: "rgba(122,0,25,0.06)", borderRadius: "20px", padding: "5px 16px", fontSize: "12px", color: DR, fontWeight: "600", letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: "36px" }}>
+          <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: DR, display: "inline-block" }} />
+          7-Day Free Trial — No Credit Card
         </div>
 
-        <h1 style={{ fontSize: "clamp(34px, 5.5vw, 58px)", fontWeight: "normal", color: "#1A1A1A", margin: "0 0 20px", lineHeight: "1.1", letterSpacing: "-1px", fontFamily: SF }}>
+        <h1 style={{ fontSize: "clamp(38px, 6vw, 66px)", fontWeight: "normal", color: "#1A1A1A", margin: "0 0 24px", lineHeight: "1.08", letterSpacing: "-1.5px", fontFamily: SF }}>
           Your show's voice.<br />
           <span style={{ color: DR }}>Your content. Done.</span>
         </h1>
 
-        <p style={{ fontSize: "17px", color: "#4A3F35", margin: "0 0 16px", lineHeight: "1.8", fontWeight: "400" }}>
-          Podcast Impact Content Studio is your full content team — from episode transcripts to complete packages, guest research, short-form reels, and episode planning. All written in your show's exact voice.
-        </p>
-        <p style={{ fontSize: "15px", color: "#6B5E52", margin: "0 0 44px", lineHeight: "1.7" }}>
-          Set up your Show DNA once. Every tool learns your voice, your audience, and your style — so you stop rewriting and start publishing.
+        <p style={{ fontSize: "18px", color: "#4A3F35", margin: "0 0 48px", lineHeight: "1.75", fontWeight: "400", maxWidth: "600px", marginLeft: "auto", marginRight: "auto" }}>
+          Six tools built for podcast creators — content packages, clip scripts, editor briefs, episode planning, guest research, and reel ideas. All written in your show's exact voice, every time.
         </p>
 
-        <button
-          onClick={onSignup}
-          onMouseEnter={e => { e.currentTarget.style.background = DRH; e.currentTarget.style.boxShadow = "0 6px 24px rgba(122,0,25,0.45)"; }}
-          onMouseLeave={e => { e.currentTarget.style.background = DR; e.currentTarget.style.boxShadow = "0 3px 16px rgba(122,0,25,0.35)"; }}
-          style={{ padding: "15px 44px", background: DR, border: "none", borderRadius: "8px", color: "#fff", fontSize: "16px", fontWeight: "700", cursor: "pointer", fontFamily: FF, letterSpacing: "0.3px", boxShadow: "0 3px 16px rgba(122,0,25,0.35)", transition: "all .2s" }}>
+        <button onClick={onSignup}
+          onMouseEnter={e => { e.currentTarget.style.background = DRH; e.currentTarget.style.boxShadow = "0 8px 28px rgba(122,0,25,0.4)"; }}
+          onMouseLeave={e => { e.currentTarget.style.background = DR; e.currentTarget.style.boxShadow = "0 4px 18px rgba(122,0,25,0.3)"; }}
+          style={{ padding: "17px 52px", background: DR, border: "none", borderRadius: "9px", color: "#fff", fontSize: "17px", fontWeight: "700", cursor: "pointer", fontFamily: FF, letterSpacing: "0.2px", boxShadow: "0 4px 18px rgba(122,0,25,0.3)", transition: "all .2s" }}>
           Start Your Free Trial →
         </button>
 
-        <div style={{ marginTop: "14px", fontSize: "13px", color: "#8B7D72" }}>
-          7 days free · No credit card required
+        <p style={{ marginTop: "16px", fontSize: "13px", color: "#9B8D82", margin: "16px 0 0" }}>
+          7 days free · No credit card required · Cancel anytime
+        </p>
+      </div>
+
+      {/* ── Divider ── */}
+      <div style={{ maxWidth: "900px", margin: "0 auto 0", padding: "0 24px" }}>
+        <div style={{ height: "1px", background: "linear-gradient(90deg, transparent, #D4C9BC, transparent)" }} />
+      </div>
+
+      {/* ── How it works ── */}
+      <div style={{ maxWidth: "860px", margin: "0 auto", padding: "80px 24px 64px" }}>
+        <div style={{ textAlign: "center", marginBottom: "56px" }}>
+          <p style={{ fontSize: "12px", fontWeight: "700", letterSpacing: "3px", textTransform: "uppercase", color: DR, margin: "0 0 14px" }}>How it works</p>
+          <h2 style={{ fontSize: "clamp(26px, 4vw, 38px)", fontWeight: "normal", color: "#1A1A1A", margin: "0 0 14px", fontFamily: SF, letterSpacing: "-0.5px" }}>Set it up once. Use it for every episode.</h2>
+          <p style={{ fontSize: "16px", color: "#6B5E52", margin: 0, maxWidth: "520px", marginLeft: "auto", marginRight: "auto" }}>Your Show DNA is the foundation. Every tool pulls from it so the output always sounds like you — not like AI.</p>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "2px", background: "#E2D9CC", borderRadius: "14px", overflow: "hidden" }}>
+          {[
+            { step: "01", title: "Build your Show DNA", body: "Set your show's voice, audience, platforms, and style once. The more detail you add, the better every output gets." },
+            { step: "02", title: "Paste a transcript", body: "Drop in your episode transcript and choose your tool. The AI reads the full conversation before writing anything." },
+            { step: "03", title: "Publish in minutes", body: "Get a complete, ready-to-use content package written in your voice — no rewrites, no generic filler." },
+          ].map(s => (
+            <div key={s.step} style={{ background: "#FFFFFF", padding: "36px 32px" }}>
+              <div style={{ fontSize: "12px", fontWeight: "800", color: DR, letterSpacing: "2px", marginBottom: "14px" }}>{s.step}</div>
+              <div style={{ fontSize: "17px", fontWeight: "600", color: "#1A1A1A", marginBottom: "10px", fontFamily: SF }}>{s.title}</div>
+              <div style={{ fontSize: "14px", color: "#6B5E52", lineHeight: "1.7" }}>{s.body}</div>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* ── What you get ── */}
-      <div style={{ background: "#FFFFFF", borderTop: "1px solid #E2D9CC", borderBottom: "1px solid #E2D9CC", padding: "56px 24px" }}>
-        <div style={{ maxWidth: "860px", margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: "40px" }}>
-            <div style={{ fontSize: "11px", fontWeight: "700", letterSpacing: "3px", textTransform: "uppercase", color: DR, marginBottom: "10px" }}>Six tools. One studio.</div>
-            <p style={{ fontSize: "15px", color: "#6B5E52", margin: 0 }}>Everything you need to create, plan, and publish — built around your show's voice.</p>
+      {/* ── Tools grid ── */}
+      <div style={{ background: "#FFFFFF", borderTop: "1px solid #E2D9CC", borderBottom: "1px solid #E2D9CC", padding: "80px 24px" }}>
+        <div style={{ maxWidth: "960px", margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: "56px" }}>
+            <p style={{ fontSize: "12px", fontWeight: "700", letterSpacing: "3px", textTransform: "uppercase", color: DR, margin: "0 0 14px" }}>Six tools. One studio.</p>
+            <h2 style={{ fontSize: "clamp(26px, 4vw, 38px)", fontWeight: "normal", color: "#1A1A1A", margin: "0 0 14px", fontFamily: SF, letterSpacing: "-0.5px" }}>Everything a podcast creator needs.</h2>
+            <p style={{ fontSize: "16px", color: "#6B5E52", margin: 0 }}>Each tool is voice-aware, show-specific, and built to produce publish-ready output.</p>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "12px" }}>
-            {[
-              { label: "Full Episode Package", desc: "Show notes, social, newsletter, blog — one transcript, everything done" },
-              { label: "Clips & Shorts", desc: "Pull the best moments for social video" },
-              { label: "Editor Companion", desc: "Editing brief with hook moments and pacing notes" },
-              { label: "Episode Planning", desc: "Pre-episode prep, run-of-show, and talking points" },
-              { label: "Guest Research", desc: "Audience-matched booking targets and pitch angles" },
-              { label: "Reel Ideas", desc: "Original to-camera concepts in the host's voice" },
-            ].map(item => (
-              <div key={item.label} style={{ background: BG, border: "1px solid #E2D9CC", borderRadius: "10px", padding: "18px 20px" }}>
-                <div style={{ fontSize: "14px", fontWeight: "600", color: "#1A1A1A", marginBottom: "4px" }}>{item.label}</div>
-                <div style={{ fontSize: "12px", color: "#8B7D72" }}>{item.desc}</div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "16px" }}>
+            {tools.map(t => (
+              <div key={t.label} className="lp-tool-card" style={{ background: BG, border: "1px solid #E2D9CC", borderRadius: "12px", padding: "28px 28px 24px" }}>
+                <div style={{ fontSize: "26px", marginBottom: "14px" }}>{t.icon}</div>
+                <div style={{ fontSize: "15px", fontWeight: "700", color: "#1A1A1A", marginBottom: "8px", fontFamily: SF }}>{t.label}</div>
+                <div style={{ fontSize: "13px", color: "#6B5E52", lineHeight: "1.65" }}>{t.desc}</div>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      {/* ── Note from Tamar ── */}
-      <div style={{ maxWidth: "600px", margin: "0 auto", padding: "64px 24px" }}>
-        <div style={{ background: "#FFFFFF", border: "1px solid #E2D9CC", borderRadius: "12px", padding: "36px 40px" }}>
-          <div style={{ fontSize: "11px", fontWeight: "700", letterSpacing: "3px", textTransform: "uppercase", color: DR, marginBottom: "20px" }}>A note from Tamar</div>
-          <p style={{ fontSize: "15px", color: "#4A3F35", lineHeight: "1.85", margin: "0 0 20px", fontFamily: SF, fontStyle: "italic" }}>
-            "I built this for podcast producers who are tired of spending hours on content that should take minutes. If you're in the beta, it's because I think you'll get real value from it — and I want your honest feedback."
+      {/* ── Quote ── */}
+      <div style={{ maxWidth: "680px", margin: "0 auto", padding: "80px 24px" }}>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ fontSize: "32px", color: DR, marginBottom: "20px", fontFamily: SF, lineHeight: 1 }}>"</div>
+          <p style={{ fontSize: "20px", color: "#2A2020", lineHeight: "1.75", margin: "0 0 32px", fontFamily: SF, fontStyle: "italic", fontWeight: "normal" }}>
+            I built this for podcast producers who are tired of spending hours on content that should take minutes. Set your Show DNA once — and every episode practically writes itself.
           </p>
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <div>
-              <div style={{ fontSize: "14px", fontWeight: "600", color: "#1A1A1A" }}>Tamar Routly</div>
-              <div style={{ fontSize: "12px", color: "#8B7D72" }}>Podcast Impact Studio</div>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: "14px" }}>
+            <div style={{ width: "44px", height: "44px", borderRadius: "50%", background: DR, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "16px", fontWeight: "700", color: "#fff", fontFamily: FF }}>T</div>
+            <div style={{ textAlign: "left" }}>
+              <div style={{ fontSize: "14px", fontWeight: "700", color: "#1A1A1A" }}>Tamar Routly</div>
+              <div style={{ fontSize: "12px", color: "#8B7D72" }}>Founder, Podcast Impact Studio</div>
             </div>
           </div>
         </div>
       </div>
 
+      {/* ── Bottom CTA ── */}
+      <div style={{ background: "#1A1A1A", padding: "80px 24px", textAlign: "center" }}>
+        <h2 style={{ fontSize: "clamp(28px, 4vw, 42px)", fontWeight: "normal", color: "#F5F0E8", margin: "0 0 16px", fontFamily: SF, letterSpacing: "-0.5px" }}>
+          Ready to stop rewriting?
+        </h2>
+        <p style={{ fontSize: "16px", color: "#A09080", margin: "0 0 40px", lineHeight: "1.6" }}>
+          Start your free trial today. No credit card. No commitment.
+        </p>
+        <button onClick={onSignup}
+          onMouseEnter={e => { e.currentTarget.style.background = DRH; }}
+          onMouseLeave={e => { e.currentTarget.style.background = DR; }}
+          style={{ padding: "17px 52px", background: DR, border: "none", borderRadius: "9px", color: "#fff", fontSize: "17px", fontWeight: "700", cursor: "pointer", fontFamily: FF, transition: "background .2s" }}>
+          Start Your Free Trial →
+        </button>
+        <p style={{ marginTop: "16px", fontSize: "13px", color: "#6B5E52" }}>7 days free · No credit card required</p>
+      </div>
+
       {/* ── Footer ── */}
-      <div style={{ borderTop: "1px solid #E2D9CC", padding: "24px", textAlign: "center" }}>
-        <div style={{ fontSize: "13px", color: "#8B7D72" }}>
-          © {new Date().getFullYear()} Podcast Impact Studio ·{" "}
-          <span style={{ cursor: "pointer", color: DR }} onClick={onLogin}>Sign in</span>
-          {" · "}
-          <a href="/privacy.html" target="_blank" rel="noopener" style={{ color: "#8B7D72", textDecoration: "underline" }}>Privacy Policy</a>
-          {" · "}
-          <a href={"mailto:tamar@podcastimpactstudio.com"} style={{ color: "#8B7D72", textDecoration: "underline" }}>tamar@podcastimpactstudio.com</a>
+      <div style={{ background: "#111111", borderTop: "1px solid #2A2A2A", padding: "24px 40px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
+        <div style={{ fontSize: "12px", color: "#4A4A4A" }}>© {new Date().getFullYear()} Podcast Impact Studio</div>
+        <div style={{ display: "flex", gap: "20px", fontSize: "12px" }}>
+          <span style={{ cursor: "pointer", color: "#6B6B6B", transition: "color .15s" }} onClick={onLogin}>Sign In</span>
+          <a href="/privacy.html" target="_blank" rel="noopener" style={{ color: "#6B6B6B", textDecoration: "none" }}>Privacy Policy</a>
+          <a href="mailto:tamar@podcastimpactstudio.com" style={{ color: "#6B6B6B", textDecoration: "none" }}>Contact</a>
         </div>
       </div>
 
