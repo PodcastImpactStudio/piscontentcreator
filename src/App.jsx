@@ -2475,8 +2475,18 @@ ${tx.substring(0, 40000)}`;
                 {ci>0&&<div style={{display:"flex",gap:"3px",alignItems:"center"}}>
                   {[0,1,2].map(i=><div key={i} style={{width:i<ci?"20px":"6px",height:"4px",borderRadius:"2px",background:i<ci?T.coral:T.cardBorder,transition:"all .3s"}}/>)}
                 </div>}
-                <button onClick={goBack} style={ghost}>Back</button>
-                <button onClick={()=>{setMode(null);setStep(show?"show-workspace":"welcome");}} style={{...ghost,fontSize:"12px",padding:"6px 12px"}}>↩ Studio</button>
+                <button onClick={goBack}
+                  style={{padding:"7px 16px",background:"transparent",border:`1px solid ${T.cardBorder}`,borderRadius:"6px",color:T.textSecondary,fontSize:"13px",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"600",display:"flex",alignItems:"center",gap:"5px"}}
+                  onMouseEnter={e=>{e.currentTarget.style.borderColor=T.coral;e.currentTarget.style.color=T.coral;}}
+                  onMouseLeave={e=>{e.currentTarget.style.borderColor=T.cardBorder;e.currentTarget.style.color=T.textSecondary;}}>
+                  ← Back
+                </button>
+                <button onClick={()=>{setMode(null);setStep(show?"show-workspace":"welcome");}}
+                  style={{padding:"7px 16px",background:T.coral,border:"none",borderRadius:"6px",color:"#fff",fontSize:"13px",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",fontWeight:"700",display:"flex",alignItems:"center",gap:"5px"}}
+                  onMouseEnter={e=>e.currentTarget.style.opacity="0.85"}
+                  onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
+                  ↩ Studio Home
+                </button>
               </>
             )}
           </div>
@@ -2598,6 +2608,15 @@ ${tx.substring(0, 40000)}`;
 
               return(
               <div style={{animation:"fadeUp .35s ease"}}>
+                {/* Back to all shows */}
+                {Object.keys(shows).length>1&&(
+                  <button onClick={()=>{setMode(null);setStep("welcome");setShow(null);}}
+                    style={{display:"flex",alignItems:"center",gap:"6px",background:"none",border:"none",color:T.textMuted,fontSize:"13px",cursor:"pointer",fontFamily:"'DM Sans', system-ui, sans-serif",padding:"0 0 20px",transition:"color .15s"}}
+                    onMouseEnter={e=>e.currentTarget.style.color=T.coral}
+                    onMouseLeave={e=>e.currentTarget.style.color=T.textMuted}>
+                    ← All Shows
+                  </button>
+                )}
                 {/* Show header */}
                 <div style={{marginBottom:"36px"}}>
                   <div style={{width:"40px",height:"3px",background:accent,borderRadius:"2px",marginBottom:"16px"}}/>
