@@ -1106,7 +1106,7 @@ export function AdminGate({ onSuccess, onClose }) {
 }
 
 export function AdminPanel({ shows, orgId, onClose, onSaved, accountType = "agency", userEmail = "", userName = "", onSignOut, initialView = "shows", inline = false }) {
-  const [adminView, setAdminView] = useState(initialView);
+  const [adminView, setAdminView] = useState(initialView==="shows"?"shows":"settings");
   const [selKey, setSelKey] = useState(null);
   const [form, setForm] = useState(null);
   const [tab, setTab] = useState("basic");
@@ -1138,7 +1138,11 @@ export function AdminPanel({ shows, orgId, onClose, onSaved, accountType = "agen
   const [showPresetsPanel, setShowPresetsPanel] = useState(false);
   const [showAIPanel, setShowAIPanel] = useState(false);
   const [showUserMenuAdmin, setShowUserMenuAdmin] = useState(false);
-  const [activeSettingsSection, setActiveSettingsSection] = useState("integrations");
+  const [activeSettingsSection, setActiveSettingsSection] = useState(initialView!=="shows"?initialView:"integrations");
+  useEffect(()=>{
+    if(initialView==="shows"){setAdminView("shows");}
+    else{setAdminView("settings");setActiveSettingsSection(initialView);}
+  },[initialView]);
   const settingsSections = [
     { id: "integrations", label: "Integrations" },
     { id: "workspace", label: "Workspace" },

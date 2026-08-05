@@ -2335,7 +2335,25 @@ ${tx.substring(0, 40000)}`;
 
         {/* Nav — context-aware */}
         <div style={{padding:"8px 0",borderBottom:"1px solid #2E2E2E"}}>
-          {show?(
+          {appMode==="settings"?(<>
+            {[
+              {id:"shows",label:"Show DNA"},
+              {id:"integrations",label:"Integrations"},
+              {id:"workspace",label:"Workspace"},
+              ...(accountType==="agency"?[{id:"team",label:"Team"},{id:"codes",label:"Access Codes"}]:[]),
+              {id:"writing",label:"Writing Standards"},
+            ].map(item=>{
+              const isActive=adminInitialView===item.id;
+              return(
+                <button key={item.id} onClick={()=>setAdminInitialView(item.id)}
+                  className="sidebar-nav-item"
+                  style={{width:"100%",padding:"9px 16px",background:isActive?"#2E2E2E":"transparent",border:"none",borderLeft:`3px solid ${isActive?T.coral:"transparent"}`,color:isActive?"#FFFFFF":"#8A8A8A",fontSize:"15px",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans', system-ui, sans-serif",display:"flex",alignItems:"center",gap:"10px",transition:"all .15s"}}>
+                  <span style={{width:"5px",height:"5px",borderRadius:"50%",background:isActive?T.coral:"#444",flexShrink:0,display:"inline-block"}}/>
+                  {item.label}
+                </button>
+              );
+            })}
+          </>):show?(
             <div>
               <div style={{padding:"6px 16px 4px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
                 <div style={{fontSize:"10px",fontWeight:"800",letterSpacing:"2px",textTransform:"uppercase",color:"#6B6B6B",fontFamily:"'DM Sans', system-ui, sans-serif",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flex:1}}>{shows[show]?.name||"Show"}</div>
