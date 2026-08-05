@@ -347,7 +347,6 @@ function SignupScreen({ onSwitch, onAuthenticated }) {
   const [timezone, setTimezone] = useState(Intl.DateTimeFormat().resolvedOptions().timeZone || "America/Vancouver");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
-  const [accessCode, setAccessCode] = useState("");
   const [captchaToken, setCaptchaToken] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");

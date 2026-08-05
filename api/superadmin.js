@@ -1,4 +1,5 @@
 export default async function handler(req, res) {
+  if (!["GET", "POST", "PATCH"].includes(req.method)) return res.status(405).json({ error: "Method not allowed" });
   const { SUPABASE_SERVICE_ROLE_KEY, VITE_SUPABASE_URL } = process.env;
   if (!SUPABASE_SERVICE_ROLE_KEY || !VITE_SUPABASE_URL) {
     return res.status(500).json({ error: "Server not configured." });
