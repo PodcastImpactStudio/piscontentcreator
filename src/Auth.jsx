@@ -512,7 +512,7 @@ function SignupScreen({ onSwitch, onAuthenticated }) {
     color: primary ? "#fff" : T.textMuted,
     marginTop: primary ? "8px" : "0",
   });
-  const lbl = { fontSize: "12px", letterSpacing: "2px", textTransform: "uppercase", color: T.text, display: "block", marginBottom: "6px", fontFamily: "'DM Sans', system-ui, sans-serif" };
+  const lbl = { fontSize: "13px", letterSpacing: "1.5px", textTransform: "uppercase", color: T.text, display: "block", marginBottom: "8px", fontWeight: "600", fontFamily: "'DM Sans', system-ui, sans-serif" };
 
   // ── CONFIRMATION SCREEN ────────────────────────────────────────────────────
   if (confirming) {
@@ -550,7 +550,7 @@ function SignupScreen({ onSwitch, onAuthenticated }) {
         <div style={{ textAlign: "center", marginBottom: "36px" }}>
           <img src="/logo-auth.png" alt="Podcast Impact Studio" style={{ height: "112px", width: "auto", marginBottom: "16px" }} />
           <div style={{ fontSize: "34px", fontWeight: "normal", color: T.text, letterSpacing: "-0.5px", fontFamily: SF, lineHeight: "1.2" }}>Create your workspace</div>
-          <div style={{ fontSize: "15px", color: T.textMuted, marginTop: "8px", fontFamily: "'DM Sans', system-ui, sans-serif" }}>All your podcasts, team, and content in one place.</div>
+          <div style={{ fontSize: "17px", color: T.textMuted, marginTop: "8px", fontFamily: "'DM Sans', system-ui, sans-serif" }}>All your podcasts, team, and content in one place.</div>
         </div>
         <div style={{ background: T.card, border: "1px solid " + T.cardBorder, borderRadius: "12px", padding: "32px" }}>
 
@@ -564,8 +564,8 @@ function SignupScreen({ onSwitch, onAuthenticated }) {
               <button key={opt.id} type="button" onClick={() => setAccountType(opt.id)}
                 style={{ padding: "14px 10px", background: accountType === opt.id ? T.coralSoft : T.surface, border: "2px solid " + (accountType === opt.id ? T.coral : T.cardBorder), borderRadius: "10px", cursor: "pointer", textAlign: "center", transition: "all .15s" }}>
                 <div style={{ fontSize: "26px", marginBottom: "6px" }}>{opt.icon}</div>
-                <div style={{ fontSize: "13px", fontWeight: "700", color: accountType === opt.id ? T.coral : T.text, fontFamily: "'DM Sans', system-ui, sans-serif", marginBottom: "3px" }}>{opt.label}</div>
-                <div style={{ fontSize: "11px", color: T.textMuted, fontFamily: "'DM Sans', system-ui, sans-serif" }}>{opt.sub}</div>
+                <div style={{ fontSize: "15px", fontWeight: "700", color: accountType === opt.id ? T.coral : T.text, fontFamily: "'DM Sans', system-ui, sans-serif", marginBottom: "4px" }}>{opt.label}</div>
+                <div style={{ fontSize: "13px", color: T.textMuted, fontFamily: "'DM Sans', system-ui, sans-serif" }}>{opt.sub}</div>
               </button>
             ))}
           </div>
@@ -601,7 +601,7 @@ function SignupScreen({ onSwitch, onAuthenticated }) {
           <StrengthBar password={password} />
           <input type="password" placeholder="Confirm password" value={confirm} onChange={e => setConfirm(e.target.value)} onKeyDown={e => e.key === "Enter" && handleSignup()} style={{ ...inp, marginBottom: "16px" }} />
 
-          <div style={{ fontSize: "12px", color: T.textMuted, marginBottom: "16px", fontFamily: "'DM Sans', system-ui, sans-serif", lineHeight: "1.5" }}>
+          <div style={{ fontSize: "14px", color: T.textMuted, marginBottom: "16px", fontFamily: "'DM Sans', system-ui, sans-serif", lineHeight: "1.6" }}>
             Once you're in, you'll add your first podcast and can invite your team members from the admin panel.
           </div>
 
@@ -614,9 +614,9 @@ function SignupScreen({ onSwitch, onAuthenticated }) {
             {loading ? "Creating your workspace…" : "Create Account & Get Started →"}
           </button>
         </div>
-        <div style={{ textAlign: "center", marginTop: "20px", fontSize: "13px", color: T.textMuted, fontFamily: "'DM Sans', system-ui, sans-serif" }}>
+        <div style={{ textAlign: "center", marginTop: "20px", fontSize: "15px", color: T.textMuted, fontFamily: "'DM Sans', system-ui, sans-serif" }}>
           Already have an account?{" "}
-          <button onClick={onSwitch} style={{ background: "none", border: "none", color: T.coral, cursor: "pointer", fontSize: "13px", fontFamily: "'DM Sans', system-ui, sans-serif", padding: 0 }}>
+          <button onClick={onSwitch} style={{ background: "none", border: "none", color: T.coral, cursor: "pointer", fontSize: "15px", fontFamily: "'DM Sans', system-ui, sans-serif", padding: 0 }}>
             Sign in →
           </button>
         </div>
