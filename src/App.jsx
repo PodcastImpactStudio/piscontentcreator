@@ -2351,6 +2351,7 @@ ${tx.substring(0, 40000)}`;
               {id:"workspace",label:"Workspace"},
               ...(accountType==="agency"?[{id:"team",label:"Team"}]:[]),
               {id:"writing",label:"Writing Standards"},
+              ...(["tamar@podcastimpactstudio.com","tamarroutly@gmail.com"].includes(currentUser?.email?.toLowerCase())?[{id:"platform_intel",label:"Platform Intelligence"}]:[]),
             ].map(item=>{
               const isActive=adminInitialView===item.id;
               return(
