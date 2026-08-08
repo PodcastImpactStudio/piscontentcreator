@@ -128,7 +128,7 @@ function hasBoilerplate(snElements) {
   return bp ? bp.enabled : true;
 }
 
-function buildSections(show, g, snTemplate) {
+function buildSections(show, g, snTemplate, includeThumbnail=true) {
   const p = show.platforms || {};
   const podcast  = p.podcast  || [];
   const social   = p.social   || [];
@@ -140,7 +140,7 @@ function buildSections(show, g, snTemplate) {
   let out = ""; let n = 1;
 
   // YOUTUBE THUMBNAIL TITLES — grouped with SEO titles at the top (before show notes)
-  if (social.includes("YouTube")) {
+  if (social.includes("YouTube") && includeThumbnail) {
     out += `${n++}. YOUTUBE THUMBNAIL TITLES\nWrite 5 YouTube thumbnail title options for this episode. Each title must be EXACTLY 3 words — no more, no fewer. Prioritize high-contrast emotional punch, curiosity, or a bold claim. No filler words. No articles (a/an/the) unless they are the most powerful word available. No colons or punctuation within the title.\n\nFormat:\n1. [Three Word Title]\n2. [Three Word Title]\n3. [Three Word Title]\n4. [Three Word Title]\n5. [Three Word Title]\nDo NOT add a RECOMMENDED line.\n---\n`;
   }
 
@@ -359,7 +359,7 @@ function matchEpisodeRules(show, transcript) {
   return show.episodeRules.filter(r => r.trigger && tx.includes(r.trigger.toLowerCase()));
 }
 
-function sys(show, k, g, ep, mode, extras=[], clipCount=5, matchedRules=[], writingStds="", platformIntel={}) {
+function sys(show, k, g, ep, mode, extras=[], clipCount=5, matchedRules=[], writingStds="", platformIntel={}, includeThumbnail=true) {
   const d = show; if (!d) return "";
   const ap = [...(d.platforms?.p||[]),...(d.platforms?.s||[])];
   const bp = stripHtml(d.bp||"");
@@ -463,7 +463,7 @@ SUGGESTED CAPTION HOOK: [one punchy first line using the speaker's own language 
 `;
   }
   const snTpl = buildSNTemplate(d.snElements);
-  const sections = buildSections(d, g, snTpl);
+  const sections = buildSections(d, g, snTpl, includeThumbnail);
   return base+`Generate the COMPLETE content package in plain text. Use ONLY the sections listed below.
 
 1. SEO TITLE OPTIONS
@@ -1303,6 +1303,7 @@ export default function App(){
   const[dlHtmlOk,setDlHtmlOk]=useState(false);
   const[dragging,setDragging]=useState(false);
   const[extraPlatforms,setExtraPlatforms]=useState([]);
+  const[genThumbnail,setGenThumbnail]=useState(true);
   const[clipCount,setClipCount]=useState(3);
   const[editorClipCount,setEditorClipCount]=useState(5);
   const[descriptProjectId,setDescriptProjectId]=useState("");
@@ -1486,7 +1487,7 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
     setErr("");setBusy(true);setRaw("");setSecs([]);setStep("generating");
     try{
       const matched=matchEpisodeRules(d,tx);
-      const j=await claudeAPI({model:"claude-sonnet-4-6",max_tokens:mode==="editor"?4000:8000,system:sys(d,show,guest,ep,mode,extraPlatforms,editorClipCount,matched,writingStandards,platformIntel),messages:[{role:"user",content:mode==="editor"?`Analyze this transcript carefully and generate the Editor Brief as instructed.\n\nTRANSCRIPT:\n${tx.substring(0,90000)}`:`Generate the COMPLETE content package in plain text.\n\nTRANSCRIPT:\n${tx.substring(0,90000)}`}]});
+      const j=await claudeAPI({model:"claude-sonnet-4-6",max_tokens:mode==="editor"?4000:8000,system:sys(d,show,guest,ep,mode,extraPlatforms,editorClipCount,matched,writingStandards,platformIntel,genThumbnail),messages:[{role:"user",content:mode==="editor"?`Analyze this transcript carefully and generate the Editor Brief as instructed.\n\nTRANSCRIPT:\n${tx.substring(0,90000)}`:`Generate the COMPLETE content package in plain text.\n\nTRANSCRIPT:\n${tx.substring(0,90000)}`}]});
       if(j.error){setErr(j.error.message);setStep("input");}
       else{const t=j.content?.filter(i=>i.type==="text").map(i=>i.text).join("\n")||"";if(!t.trim()){setErr("No content generated. Please try again.");setStep("input");return;}const normalized=normalizeBullets(t);setRaw(strip(normalized));const parsed=parse(normalized);const bpRaw=d?.bp||null;// Attach original HTML boilerplate to show notes section (spread to ensure React detects change)
       const withBp=parsed.map(s=>{
@@ -2767,6 +2768,11 @@ ${tx.substring(0, 40000)}`;
                   </div>
                 </div>
               )}
+              {mode!=="clips"&&(d?.platforms?.social||[]).includes("YouTube")&&<div style={{marginBottom:"20px"}}>
+                <label style={lbl}>YouTube Thumbnails</label>
+                <button onClick={()=>setGenThumbnail(v=>!v)} style={{padding:"10px 18px",background:genThumbnail?`${d.clr}18`:T.card,border:genThumbnail?`1px solid ${d.clr}`:`1px solid ${T.cardBorder}`,borderRadius:"6px",fontSize:"13px",color:genThumbnail?d.clr:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",cursor:"pointer",fontWeight:genThumbnail?"700":"400",transition:"all .15s",letterSpacing:"1px"}}>{genThumbnail?"✓ GENERATE THUMBNAIL TITLES":"GENERATE THUMBNAIL TITLES"}</button>
+                <div style={{fontSize:"13px",color:T.textMuted,fontFamily:"'DM Sans', system-ui, sans-serif",marginTop:"6px",fontStyle:"italic"}}>5 punchy 3-word title options for your episode thumbnail</div>
+              </div>}
               {(mode==="clips"||guest!==null)&&<button onClick={()=>setStep(mode==="clips"?"clips-setup":"input")} style={primary(T.red)}>Continue →</button>}
               </>)}
             </div>}
