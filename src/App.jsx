@@ -477,7 +477,7 @@ function revSys(show){const d=show;if(!d)return "";return `Content strategist fo
 function linkifyLine(line){return line.replace(/(https?:\/\/[^\s,)"]+|www\.[^\s,)"]+|[a-zA-Z0-9][a-zA-Z0-9\-]*\.(?:com|org|net|io|co)(?:\/[^\s,)"]*)?)/g,url=>{const href=url.startsWith("http")?url:"https://"+url;return`<a href="${href}" style="color:#7A0019">${url}</a>`;});}
 
 const TOP_SECTIONS=/^(\d+\.\s*)?(SEO TITLE|SHOW NOTES|SPOTIFY FOR CREATORS|INTRO HOOK|SOCIAL CLIP|EDITOR NOTES|YOUTUBE DESC|YOUTUBE QUIZ|YOUTUBE THUMBNAIL|SOCIAL MEDIA|QUOTE CARDS|CAROUSEL|POLL QUESTIONS|STORY SLIDES|ENGAGEMENT PROMPTS|KEY TAKEAWAY GRAPHICS|GUEST SHARE|EMAIL NEWS|NEWSLETTER|SUBSTACK|BLOG (ARTICLE|POST)|PATREON (COMPANION|DISCUSSION|POLL|EXCLUSIVE|POSTS|NEWSLETTER)|CLIPS|SHORTS|REELS)/i;
-const SUB_HEADERS=/^(KEY TAKEAWAYS|NOTABLE QUOTE|TIMESTAMPS|HASHTAGS|KEYWORDS|INSTAGRAM|FACEBOOK|TIKTOK|LINKEDIN|X \(TWITTER\)|QUOTE CARDS|THANK YOU|EPISODE BLURB|SUGGESTED SOCIAL|SUBJECT LINE|PREVIEW TEXT|SOBER SHOT|ELLEVATED ACHIEVERS TAKEAWAY|IN THIS EPISODE|LINKS & RESOURCES|NOTABLE RESOURCES|CONNECT WITH|ABOUT|MUSIC CREDITS|DISCLAIMER|CLIP \d+|YOUTUBE CLIP \d+|INSTAGRAM REEL \d+|FACEBOOK REEL \d+|TIKTOK \d+|SPOTIFY CLIP \d+|SLIDE \d+|CAPTION)/i;
+const SUB_HEADERS=/^(KEY TAKEAWAYS|NOTABLE QUOTE|TIMESTAMPS|HASHTAGS|KEYWORDS|INSTAGRAM|FACEBOOK|TIKTOK|LINKEDIN|X \(TWITTER\)|QUOTE CARDS|THANK YOU|EPISODE BLURB|SUGGESTED SOCIAL|SUBJECT LINE|PREVIEW TEXT|SOBER SHOT|ELLEVATED ACHIEVERS TAKEAWAY|IN THIS EPISODE|LINKS & RESOURCES|NOTABLE RESOURCES|CONNECT WITH|ABOUT|MUSIC CREDITS|DISCLAIMER|ORIGINAL TRANSCRIPT|CLIP \d+|YOUTUBE CLIP \d+|INSTAGRAM REEL \d+|FACEBOOK REEL \d+|TIKTOK \d+|SPOTIFY CLIP \d+|SLIDE \d+|CAPTION)/i;
 
 function dlDoc(content,filename,bpHtml=""){
   // collapse runs of blank lines to at most one blank line
@@ -1476,8 +1476,8 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
         if(i>0)await new Promise(res=>setTimeout(res,2000));
         const j=await claudeAPI({model:"claude-sonnet-4-6",max_tokens:2000,system:clipSys,messages:[{role:"user",content:`CLIP ${i+1} TRANSCRIPT:\n${clipTx.substring(0,8000)}`}]});
         const t=j.content?.filter(b=>b.type==="text").map(b=>b.text).join("\n")||"";
-        results.push({index:i+1,skipped:false,content:t});
-      }catch(e){results.push({index:i+1,skipped:true,content:""});}
+        results.push({index:i+1,skipped:false,content:t,transcript:clipTx});
+      }catch(e){results.push({index:i+1,skipped:true,content:"",transcript:""});}
     }
     setClipResults(results);setBusy(false);setStep("result");
   }
@@ -3322,7 +3322,7 @@ ${tx.substring(0, 40000)}`;
                 <div style={{display:"flex",gap:"8px",flexWrap:"wrap"}}>
                   {mode!=="clips"&&mode!=="editor"&&<button onClick={()=>{const bpH=secs.find(s=>s.bpHtml)?.bpHtml||"";copyText(raw,bpH);setCpAll(true);setTimeout(()=>setCpAll(false),2000);}} style={{...ghost,background:cpAll?T.coralSoft:"transparent",borderColor:cpAll?T.coralMid:T.cardBorder,color:cpAll?T.coral:T.textMuted}}>{cpAll?"✓ COPIED":"COPY ALL"}</button>}
                   {mode!=="clips"&&mode!=="editor"&&<button onClick={()=>{dlDoc(raw,`${d?.name}${mode==="prep"?` — Episode Prep${epTopic?` — ${epTopic}`:""}`:ep?` — Ep ${ep}`:""} Content Package`,d?.bp);setDlOk(true);setTimeout(()=>setDlOk(false),2500);}} style={{...ghost,background:dlOk?T.coralSoft:"transparent",borderColor:dlOk?T.coralMid:T.cardBorder,color:dlOk?T.coral:T.textMuted}}>{dlOk?"✓ DOWNLOADED":"📄 WORD DOC"}</button>}
-                  {mode==="clips"&&<button onClick={()=>{const clipDoc=clipResults.map((r,i)=>r.skipped?null:`CLIP ${r.index}\n\n${r.content}${clipTexts[i]?.trim()?"\n\nORIGINAL TRANSCRIPT\n"+clipTexts[i].trim():""}`).filter(Boolean).join("\n\n---\n\n");dlDoc(clipDoc,`${d?.name}${ep?` — Ep ${ep}`:""} — Clips`);setDlOk(true);setTimeout(()=>setDlOk(false),2500);}} style={{...ghost,background:dlOk?T.coralSoft:"transparent",borderColor:dlOk?T.coralMid:T.cardBorder,color:dlOk?T.coral:T.textMuted}}>{dlOk?"✓ DOWNLOADED":"📄 WORD DOC"}</button>}
+                  {mode==="clips"&&<button onClick={()=>{const clipDoc=clipResults.filter(r=>!r.skipped).map(r=>`CLIP ${r.index}\n\n${r.content}${r.transcript?.trim()?"\n\nORIGINAL TRANSCRIPT\n"+r.transcript.trim():""}`).join("\n\n---\n\n");dlDoc(clipDoc,`${d?.name}${ep?` — Ep ${ep}`:""} — Clips`);setDlOk(true);setTimeout(()=>setDlOk(false),2500);}} style={{...ghost,background:dlOk?T.coralSoft:"transparent",borderColor:dlOk?T.coralMid:T.cardBorder,color:dlOk?T.coral:T.textMuted}}>{dlOk?"✓ DOWNLOADED":"📄 WORD DOC"}</button>}
                   {mode!=="clips"&&mode!=="editor"&&<button onClick={uploadToGDrive} disabled={gDriveStatus==="uploading"} title="Export to Google Drive as a Google Doc" style={{...ghost,background:gDriveStatus==="ok"?T.coralSoft:gDriveStatus==="error"||gDriveStatus==="disconnected"?"#D94F4F18":"transparent",borderColor:gDriveStatus==="ok"?T.coralMid:gDriveStatus==="error"||gDriveStatus==="disconnected"?"#D94F4F44":T.cardBorder,color:gDriveStatus==="ok"?T.coral:gDriveStatus==="error"||gDriveStatus==="disconnected"?"#D94F4F":T.textMuted,opacity:gDriveStatus==="uploading"?.6:1}}>{gDriveStatus==="uploading"?"UPLOADING…":gDriveStatus==="ok"?"✓ EXPORTED TO DRIVE":gDriveStatus==="error"?"✕ EXPORT FAILED":gDriveStatus==="disconnected"?"⚙ CONNECT IN SETTINGS":"📁 EXPORT TO GOOGLE DRIVE"}</button>}
                   {mode==="editor"&&secs.length>0&&<button onClick={()=>{setSecs([]);setRaw("");setEditorLeftTab("brief");}} style={ghost}>GENERATE MORE</button>}
                   <button onClick={()=>{if(mode==="editor"){setTx("");setSecs([]);setRaw("");setEditorChat([]);setEditorChatInput("");setEditorLeftTab("transcript");setTranscriptHighlights([]);}else{setStep(mode==="clips"?"clips-setup":"input");setRaw("");setSecs([]);setClipResults([]);setEditorChat([]);setEditorChatInput("");setEditorLeftTab("brief");setTranscriptHighlights([]);}}} style={ghost}>{mode==="clips"?"NEW CLIPS":"NEW EPISODE"}</button>
@@ -3337,12 +3337,12 @@ ${tx.substring(0, 40000)}`;
                     <div key={i} style={{background:T.card,border:`1px solid ${T.cardBorder}`,borderRadius:"10px",marginBottom:"10px",overflow:"hidden"}}>
                       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 20px",borderBottom:`1px solid ${T.cardBorder}`,background:T.surface}}>
                         <span style={{fontSize:"11px",fontFamily:"'DM Sans', system-ui, sans-serif",letterSpacing:"2px",color:d.clr,fontWeight:"700"}}>✂️ CLIP {clip.index}</span>
-                        <button onClick={()=>copyText(clip.content+(clipTexts[i]?.trim()?"\n\nORIGINAL TRANSCRIPT\n"+clipTexts[i].trim():""))} style={ghost}>COPY</button>
+                        <button onClick={()=>copyText(clip.content+(clip.transcript?.trim()?"\n\nORIGINAL TRANSCRIPT\n"+clip.transcript.trim():""))} style={ghost}>COPY</button>
                       </div>
                       <div style={{padding:"20px 24px"}}>{renderContent(clip.content)}</div>
-                      {clipTexts[i]?.trim()&&<div style={{padding:"14px 24px",borderTop:`1px solid ${T.cardBorder}`,background:T.bg}}>
+                      {clip.transcript?.trim()&&<div style={{padding:"14px 24px",borderTop:`1px solid ${T.cardBorder}`,background:T.bg}}>
                         <div style={{fontSize:"10px",letterSpacing:"2px",textTransform:"uppercase",color:T.textMuted,fontWeight:"700",fontFamily:"'DM Sans', system-ui, sans-serif",marginBottom:"8px"}}>ORIGINAL TRANSCRIPT</div>
-                        <div style={{fontSize:"13px",color:T.textSecondary,lineHeight:"1.7",fontFamily:"'DM Sans', system-ui, sans-serif",whiteSpace:"pre-wrap"}}>{clipTexts[i].trim()}</div>
+                        <div style={{fontSize:"13px",color:T.textSecondary,lineHeight:"1.7",fontFamily:"'DM Sans', system-ui, sans-serif",whiteSpace:"pre-wrap"}}>{clip.transcript.trim()}</div>
                       </div>}
                     </div>
                   ))}
