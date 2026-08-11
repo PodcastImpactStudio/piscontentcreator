@@ -1493,7 +1493,7 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
       const matched=matchEpisodeRules(d,tx);
       const j=await claudeAPI({model:"claude-sonnet-4-6",max_tokens:mode==="editor"?4000:8000,system:sys(d,show,guest,ep,mode,extraPlatforms,editorClipCount,matched,writingStandards,platformIntel,genThumbnail),messages:[{role:"user",content:mode==="editor"?`Analyze this transcript carefully and generate the Editor Brief as instructed.\n\nTRANSCRIPT:\n${tx.substring(0,90000)}`:`Generate the COMPLETE content package in plain text.\n\nTRANSCRIPT:\n${tx.substring(0,90000)}`}]});
       if(j.error){setErr(j.error.message);setStep("input");}
-      else{const t=j.content?.filter(i=>i.type==="text").map(i=>i.text).join("\n")||"";if(!t.trim()){setErr("No content generated. Please try again.");setStep("input");return;}const normalized=normalizeBullets(t);setRaw(strip(normalized));const parsed=parse(normalized);const bpRaw=d?.bp||null;// Attach original HTML boilerplate to show notes section (spread to ensure React detects change)
+      else{const t=j.content?.filter(i=>i.type==="text").map(i=>i.text).join("\n")||"";if(!t.trim()){setErr("No content generated. Please try again.");setStep("input");return;}const stripped=strip(t);const normalized=normalizeBullets(stripped);setRaw(normalized);const parsed=parse(normalized);const bpRaw=d?.bp||null;// Attach original HTML boilerplate to show notes section (spread to ensure React detects change)
       const withBp=parsed.map(s=>{
         if((s.id==="shownotes"||s.id==="youtube")&&bpRaw)return{...s,bpHtml:bpRaw};
         return s;
