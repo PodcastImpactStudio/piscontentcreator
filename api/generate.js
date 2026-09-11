@@ -1,12 +1,22 @@
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  const { OPENAI_API_KEY } = process.env;
+  const { OPENAI_API_KEY, SUPABASE_SERVICE_ROLE_KEY, VITE_SUPABASE_URL } = process.env;
   if (!OPENAI_API_KEY) return res.status(500).json({ error: "API not configured." });
 
   const { model, max_tokens, messages, system } = req.body || {};
   if (!messages || !Array.isArray(messages)) {
     return res.status(400).json({ error: "messages array is required." });
+  }
+
+  // Verify caller has a valid Supabase session
+  if (SUPABASE_SERVICE_ROLE_KEY && VITE_SUPABASE_URL) {
+    const token = (req.headers.authorization || "").replace("Bearer ", "").trim();
+    if (!token) return res.status(401).json({ error: "Unauthorized." });
+    const { createClient } = await import("@supabase/supabase-js");
+    const admin = createClient(VITE_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const { data: { user }, error: authErr } = await admin.auth.getUser(token);
+    if (authErr || !user) return res.status(401).json({ error: "Unauthorized." });
   }
 
   try {

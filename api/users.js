@@ -19,6 +19,16 @@ export default async function handler(req, res) {
     const { createClient } = await import("@supabase/supabase-js");
     const admin = createClient(supabaseUrl, serviceRoleKey);
 
+    // Verify caller is authenticated and belongs to the requested org
+    const token = (req.headers.authorization || "").replace("Bearer ", "").trim();
+    if (!token) return res.status(401).json({ error: "Unauthorized." });
+    const { data: { user }, error: authErr } = await admin.auth.getUser(token);
+    if (authErr || !user) return res.status(401).json({ error: "Unauthorized." });
+    const { data: callerProfile, error: profErr } = await admin
+      .from("profiles").select("org_id, role").eq("id", user.id).single();
+    if (profErr || !callerProfile) return res.status(403).json({ error: "Forbidden." });
+    if (callerProfile.org_id !== orgId) return res.status(403).json({ error: "Forbidden." });
+
     // Get all profile rows for this org
     const { data: profileRows, error: profileErr } = await admin
       .from("profiles")

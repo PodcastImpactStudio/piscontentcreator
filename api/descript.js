@@ -29,13 +29,9 @@ export default async function handler(req, res) {
     try { data = JSON.parse(text); } catch { data = { raw: text }; }
 
     if (!response.ok) {
-      // Return full details so we can debug
       return res.status(response.status).json({
         error: data?.message || data?.error || "Descript API error",
         status: response.status,
-        details: data,
-        url_used: url,
-        key_prefix: apiKey.substring(0, 8) + "...",
       });
     }
 

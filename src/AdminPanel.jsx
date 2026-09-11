@@ -4,9 +4,12 @@ import { supabase } from "./lib/supabase";
 import mammoth from "mammoth";
 
 async function claudeAPI(body) {
+  const { data: { session } } = await supabase.auth.getSession();
+  const headers = { "Content-Type": "application/json" };
+  if (session?.access_token) headers["Authorization"] = `Bearer ${session.access_token}`;
   const r = await fetch("/api/generate", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify(body),
   });
   const data = await r.json();
@@ -440,7 +443,10 @@ function SettingsView({ shows, globalSettings, setGlobalSettings, saveGlobalSett
     async function loadTeam() {
       setTeamLoading(true);
       try {
-        const r = await fetch(`/api/users?orgId=${orgId}`);
+        const { data: { session: teamSession } } = await supabase.auth.getSession();
+        const teamHeaders = {};
+        if (teamSession?.access_token) teamHeaders["Authorization"] = `Bearer ${teamSession.access_token}`;
+        const r = await fetch(`/api/users?orgId=${orgId}`, { headers: teamHeaders });
         const data = await r.json();
         if (!r.ok) throw new Error(data.error);
         const savedTeam = globalSettings.team || [];
@@ -469,9 +475,12 @@ function SettingsView({ shows, globalSettings, setGlobalSettings, saveGlobalSett
     if (isCollab && newMember.assignedShows.length === 0) { setInviteMsg("Please assign at least one show."); return; }
     setInviting(true); setInviteMsg("");
     try {
+      const { data: { session: invSession } } = await supabase.auth.getSession();
+      const invHeaders = { "Content-Type": "application/json" };
+      if (invSession?.access_token) invHeaders["Authorization"] = `Bearer ${invSession.access_token}`;
       const r = await fetch("/api/invite", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: invHeaders,
         body: JSON.stringify({
           email: newMember.email.trim().toLowerCase(),
           role: isCollab ? "collaborator" : newMember.role.toLowerCase(),

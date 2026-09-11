@@ -9,9 +9,12 @@ import SuperAdmin from "./SuperAdmin";
 // API calls go through /api/generate (server-side) — key is never in the browser
 async function claudeAPI(body, attempt = 0) {
   const MAX_RETRIES = 4;
+  const { data: { session } } = await supabase.auth.getSession();
+  const headers = { "Content-Type": "application/json" };
+  if (session?.access_token) headers["Authorization"] = `Bearer ${session.access_token}`;
   const r = await fetch("/api/generate", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify(body),
   });
   const data = await r.json();
