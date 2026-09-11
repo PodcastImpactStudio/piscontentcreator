@@ -348,7 +348,7 @@ Source label: [e.g. "[Show Name] — Episode [#]"]
   // GUEST KIT — auto-generated for every guest episode
   if (g) {
     out += `${n++}. GUEST SHARE KIT
-IMPORTANT: This entire section is written FROM THE GUEST'S PERSPECTIVE — these are ready-to-post promotional assets the show is providing to the guest so they can share their episode appearance with their own audience. Identify the guest's name, role, and expertise from the transcript. Write as if the guest is speaking directly to their own followers/subscribers about their experience appearing on ${d.name}. Reference the host's name and the show name naturally in the text.
+IMPORTANT: This entire section is written FROM THE GUEST'S PERSPECTIVE — these are ready-to-post promotional assets the show is providing to the guest so they can share their episode appearance with their own audience. Identify the guest's name, role, and expertise from the transcript. Write as if the guest is speaking directly to their own followers/subscribers about their experience appearing on ${show.name}. Reference the host's name and the show name naturally in the text.
 
 FACEBOOK/INSTAGRAM POST:
 [Hook — 1 powerful opening sentence from the guest's point of view: a personal insight, honest admission, or bold statement about why this conversation mattered to them. No fluff, no intro.]
