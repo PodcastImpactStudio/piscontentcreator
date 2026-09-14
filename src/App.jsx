@@ -1534,7 +1534,7 @@ Write ONLY the sections above. No labels, no commentary, no extra text.`;
       if(j.error){setErr(j.error.message);setStep("input");}
       else{const t=j.content?.filter(i=>i.type==="text").map(i=>i.text).join("\n")||"";if(!t.trim()){setErr("No content generated. Please try again.");setStep("input");return;}const stripped=strip(t);const normalized=normalizeBullets(stripped);setRaw(normalized);const parsed=parse(normalized);const bpRaw=d?.bp||null;// Attach original HTML boilerplate to show notes section (spread to ensure React detects change)
       const withBp=parsed.map(s=>{
-        if(s.id==="shownotes"&&bpRaw)return{...s,bpHtml:bpRaw};
+        if(s.id==="shownotes"&&bpRaw){const bpPlain=stripHtml(bpRaw);return{...s,content:s.content.trimEnd()+`\n\n${bpPlain}`};}
         if(s.id==="youtube"&&bpRaw){
           const bpPlain=stripHtml(bpRaw);
           let c=s.content;
@@ -1937,7 +1937,7 @@ FILMING NOTE:
     try{
       const j=await claudeAPI({model:"claude-sonnet-4-6",max_tokens:4000,system:revSys(d),messages:[{role:"user",content:`Current:\n\n${raw}\n\n---\n\nRevise "${label}":\n${eTxt}\n\nPlain text only. Only the revised section.`}]});
       if(j.error)setErr(j.error.message);
-      else{const v=strip(j.content.filter(i=>i.type==="text").map(i=>i.text).join("\n"));setRaw(p=>p+`\n\n${"═".repeat(40)}\nREVISION — ${label.toUpperCase()}\n${"═".repeat(40)}\n\n${v}`);const bpRev=d?.bp||null;const revSec={id:eSec+"-rev",title:`Revision — ${label}`,content:v};if(bpRev){if(eSec==="shownotes"){revSec.bpHtml=bpRev;}else if(eSec==="youtube"){const bpPlain=stripHtml(bpRev);let c=v;if(/^HASHTAGS\b/im.test(c)){c=c.replace(/^(HASHTAGS\b)/im,`${bpPlain}\n\nHASHTAGS`);}else if(/^KEYWORDS\b/im.test(c)){c=c.replace(/^(KEYWORDS\b)/im,`${bpPlain}\n\nKEYWORDS`);}else{c=c+`\n\n${bpPlain}`;}revSec.content=c;}}setSecs(p=>[...p,revSec]);}
+      else{const v=strip(j.content.filter(i=>i.type==="text").map(i=>i.text).join("\n"));setRaw(p=>p+`\n\n${"═".repeat(40)}\nREVISION — ${label.toUpperCase()}\n${"═".repeat(40)}\n\n${v}`);const bpRev=d?.bp||null;const revSec={id:eSec+"-rev",title:`Revision — ${label}`,content:v};if(bpRev){if(eSec==="shownotes"){const bpPlain=stripHtml(bpRev);revSec.content=revSec.content.trimEnd()+`\n\n${bpPlain}`;}else if(eSec==="youtube"){const bpPlain=stripHtml(bpRev);let c=v;if(/^HASHTAGS\b/im.test(c)){c=c.replace(/^(HASHTAGS\b)/im,`${bpPlain}\n\nHASHTAGS`);}else if(/^KEYWORDS\b/im.test(c)){c=c.replace(/^(KEYWORDS\b)/im,`${bpPlain}\n\nKEYWORDS`);}else{c=c+`\n\n${bpPlain}`;}revSec.content=c;}}setSecs(p=>[...p,revSec]);}
     }catch(e){setErr(e.message);}
     finally{setRev(false);setEditing(false);setESec(null);setETxt("");}
   }
